@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/RealtimeRoboticsGroup/aos/scouting/scraping"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/frc971/971-Robot-Code/scouting/scraping"
 )
 
 func dumpData[T interface{}](jsonPtr *bool, category string) {

@@ -51,8 +51,8 @@ def run_debug_cli(args: List[str]):
 def find_num_matches_for_event(year, event_code):
     with open(
             RUNFILES.Rlocation(
-                f"org_frc971/scouting/scraping/test_data/{year}_{event_code}.json"
-            ), "r") as file:
+                f"aos/scouting/scraping/test_data/{year}_{event_code}.json"),
+            "r") as file:
         raw_match_list = json.load(file)
     return len(raw_match_list)
 

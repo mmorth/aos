@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
+	"github.com/RealtimeRoboticsGroup/aos/scouting/db"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/frc971/971-Robot-Code/scouting/db"
 )
 
 type MockDatabase struct {
