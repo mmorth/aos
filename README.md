@@ -1,4 +1,6 @@
 # Introduction
+[![Build status](https://badge.buildkite.com/fcbebde155a2437db2ddd5caf1c6d3d49e8302c621289e337e.svg)](https://buildkite.com/realtimeroboticsgroup/ci)
+
 This is AOS's main code repository. There are `README*` files throughout the source tree documenting specifics for their respective folders.
 
 ## Contributing
