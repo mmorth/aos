@@ -822,7 +822,7 @@ sampling phases: 9 ADC clock cycles */
  * @retval None
  */
 #define ADC_CFGR_DISCONTINUOUS_NUM(__NBR_DISCONTINUOUS_CONV__) \
-  (((__NBR_DISCONTINUOUS_CONV__)-1UL) << ADC_CFGR_DISCNUM_Pos)
+  (((__NBR_DISCONTINUOUS_CONV__) - 1UL) << ADC_CFGR_DISCNUM_Pos)
 
 /**
  * @brief Configure the ADC auto delay mode.

@@ -219,63 +219,66 @@ struct DrivetrainConfig {
     CHECK(fbs.imu_transform() != nullptr);
     return {
 #define ASSIGN(field) .field = fbs.field()
-      ASSIGN(shifter_type), ASSIGN(loop_type), ASSIGN(gyro_type),
-          ASSIGN(imu_type),
-          .make_drivetrain_loop =
-              [fbs_copy]() {
-                return MakeStateFeedbackLoop<4, 2, 2>(
-                    *fbs_copy->message().loop_config()->drivetrain_loop());
-              },
-          .make_v_drivetrain_loop =
-              [fbs_copy]() {
-                return MakeStateFeedbackLoop<2, 2, 2>(
-                    *fbs_copy->message()
-                         .loop_config()
-                         ->velocity_drivetrain_loop());
-              },
-          .make_kf_drivetrain_loop =
-              [fbs_copy]() {
-                return MakeStateFeedbackLoop<7, 2, 4>(
-                    *fbs_copy->message()
-                         .loop_config()
-                         ->kalman_drivetrain_loop());
-              },
+        ASSIGN(shifter_type),
+        ASSIGN(loop_type),
+        ASSIGN(gyro_type),
+        ASSIGN(imu_type),
+        .make_drivetrain_loop =
+            [fbs_copy]() {
+              return MakeStateFeedbackLoop<4, 2, 2>(
+                  *fbs_copy->message().loop_config()->drivetrain_loop());
+            },
+        .make_v_drivetrain_loop =
+            [fbs_copy]() {
+              return MakeStateFeedbackLoop<2, 2, 2>(
+                  *fbs_copy->message()
+                       .loop_config()
+                       ->velocity_drivetrain_loop());
+            },
+        .make_kf_drivetrain_loop =
+            [fbs_copy]() {
+              return MakeStateFeedbackLoop<7, 2, 4>(
+                  *fbs_copy->message().loop_config()->kalman_drivetrain_loop());
+            },
 #if defined(__linux__)
-          .make_hybrid_drivetrain_velocity_loop =
-              [fbs_copy]() {
-                return MakeHybridStateFeedbackLoop<2, 2, 2>(
-                    *fbs_copy->message()
-                         .loop_config()
-                         ->hybrid_velocity_drivetrain_loop());
-              },
+        .make_hybrid_drivetrain_velocity_loop =
+            [fbs_copy]() {
+              return MakeHybridStateFeedbackLoop<2, 2, 2>(
+                  *fbs_copy->message()
+                       .loop_config()
+                       ->hybrid_velocity_drivetrain_loop());
+            },
 #endif
-          .dt = std::chrono::nanoseconds(fbs.loop_config()->dt()),
-          .robot_radius = fbs.loop_config()->robot_radius(),
-          .wheel_radius = fbs.loop_config()->wheel_radius(),
-          .v = fbs.loop_config()->motor_kv(),
-          .high_gear_ratio = fbs.loop_config()->high_gear_ratio(),
-          .low_gear_ratio = fbs.loop_config()->low_gear_ratio(),
-          .J = fbs.loop_config()->moment_of_inertia(),
-          .mass = fbs.loop_config()->mass(),
-          .left_drive =
-              fbs.has_left_drive() ? *fbs.left_drive() : ShifterHallEffect{},
-          .right_drive =
-              fbs.has_right_drive() ? *fbs.right_drive() : ShifterHallEffect{},
-          ASSIGN(default_high_gear), ASSIGN(down_offset),
-          ASSIGN(wheel_non_linearity), ASSIGN(quickturn_wheel_multiplier),
-          ASSIGN(wheel_multiplier),
-          ASSIGN(pistol_grip_shift_enables_line_follow),
-          .imu_transform = ToEigenOrDie<3, 3>(*fbs.imu_transform()),
-          ASSIGN(is_simulated),
-          .down_estimator_config =
-              aos::UnpackFlatbuffer(fbs.down_estimator_config()),
-          .line_follow_config =
-              LineFollowConfig::FromFlatbuffer(fbs.line_follow_config()),
-          ASSIGN(top_button_use), ASSIGN(second_button_use),
-          ASSIGN(bottom_button_use),
-          .spline_follower_config = SplineFollowerConfig::FromFlatbuffer(
-              fbs.spline_follower_config()),
-          ASSIGN(require_imu_for_output),
+        .dt = std::chrono::nanoseconds(fbs.loop_config()->dt()),
+        .robot_radius = fbs.loop_config()->robot_radius(),
+        .wheel_radius = fbs.loop_config()->wheel_radius(),
+        .v = fbs.loop_config()->motor_kv(),
+        .high_gear_ratio = fbs.loop_config()->high_gear_ratio(),
+        .low_gear_ratio = fbs.loop_config()->low_gear_ratio(),
+        .J = fbs.loop_config()->moment_of_inertia(),
+        .mass = fbs.loop_config()->mass(),
+        .left_drive =
+            fbs.has_left_drive() ? *fbs.left_drive() : ShifterHallEffect{},
+        .right_drive =
+            fbs.has_right_drive() ? *fbs.right_drive() : ShifterHallEffect{},
+        ASSIGN(default_high_gear),
+        ASSIGN(down_offset),
+        ASSIGN(wheel_non_linearity),
+        ASSIGN(quickturn_wheel_multiplier),
+        ASSIGN(wheel_multiplier),
+        ASSIGN(pistol_grip_shift_enables_line_follow),
+        .imu_transform = ToEigenOrDie<3, 3>(*fbs.imu_transform()),
+        ASSIGN(is_simulated),
+        .down_estimator_config =
+            aos::UnpackFlatbuffer(fbs.down_estimator_config()),
+        .line_follow_config =
+            LineFollowConfig::FromFlatbuffer(fbs.line_follow_config()),
+        ASSIGN(top_button_use),
+        ASSIGN(second_button_use),
+        ASSIGN(bottom_button_use),
+        .spline_follower_config =
+            SplineFollowerConfig::FromFlatbuffer(fbs.spline_follower_config()),
+        ASSIGN(require_imu_for_output),
 #undef ASSIGN
     };
   }

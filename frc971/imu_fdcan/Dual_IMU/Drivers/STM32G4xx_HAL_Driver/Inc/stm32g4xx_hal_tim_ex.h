@@ -923,9 +923,10 @@ typedef struct {
  * @param  __CNTCLK__ counter clock frequency (in Hz)
  * @retval Prescaler value  (between Min_Data=0 and Max_Data=65535)
  */
-#define __HAL_TIM_CALC_PSC(__TIMCLK__, __CNTCLK__)                            \
-  ((__TIMCLK__) >= (__CNTCLK__)) ? (uint32_t)((__TIMCLK__) / (__CNTCLK__)-1U) \
-                                 : 0U
+#define __HAL_TIM_CALC_PSC(__TIMCLK__, __CNTCLK__)   \
+  ((__TIMCLK__) >= (__CNTCLK__))                     \
+      ? (uint32_t)((__TIMCLK__) / (__CNTCLK__) - 1U) \
+      : 0U
 
 /**
  * @brief  HELPER macro calculating the auto-reload value to achieve the

@@ -3086,7 +3086,7 @@ sampling phases: 9 ADC clock cycles */
            (((3UL * (__DECIMAL_NB__))) << ADC_CHANNEL_SMPx_BITOFFSET_POS))) \
        : (((__DECIMAL_NB__) << ADC_CHANNEL_ID_NUMBER_BITOFFSET_POS) |       \
           (ADC_AWD2CR_AWD2CH_0 << (__DECIMAL_NB__)) |                       \
-          (ADC_SMPR2_REGOFFSET | (((3UL * ((__DECIMAL_NB__)-10UL)))         \
+          (ADC_SMPR2_REGOFFSET | (((3UL * ((__DECIMAL_NB__) - 10UL)))       \
                                   << ADC_CHANNEL_SMPx_BITOFFSET_POS))))
 
 /**

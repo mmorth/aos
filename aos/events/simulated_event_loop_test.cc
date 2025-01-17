@@ -2080,8 +2080,9 @@ TEST(SimulatedEventLoopDeathTest, OnStartupWhileRunning) {
   std::unique_ptr<EventLoop> loop = pi1->MakeEventLoop("foo");
   loop->OnRun([&]() { pi1->OnStartup([]() {}); });
 
-  EXPECT_DEATH({ factory.RunFor(chrono::nanoseconds(1)); },
-               "Can only register OnStartup handlers when not running.");
+  EXPECT_DEATH(
+      { factory.RunFor(chrono::nanoseconds(1)); },
+      "Can only register OnStartup handlers when not running.");
 }
 
 // Tests that OnStartup handlers can be added after running and get called, and

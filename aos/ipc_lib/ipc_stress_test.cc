@@ -84,8 +84,9 @@ static_assert(shm_ok<Shared>::value,
               "it's going to get shared between forked processes");
 
 // Gets called after each child forks to run a test.
-void __attribute__((noreturn))
-DoRunTest(Shared *shared, const char *(*test)[kTestMaxArgs], int pipes[2]) {
+void __attribute__((noreturn)) DoRunTest(Shared *shared,
+                                         const char *(*test)[kTestMaxArgs],
+                                         int pipes[2]) {
   if (close(pipes[0]) == -1) {
     PDie("close(%d) of read end of pipe failed", pipes[0]);
   }

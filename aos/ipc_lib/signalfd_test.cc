@@ -70,8 +70,8 @@ TEST(SignalFdDeathTest, ExternalUnblockSignal) {
     CHECK_EQ(0, sigaddset(&test_mask, SIGUSR1));
     PCHECK(sigprocmask(SIG_UNBLOCK, &test_mask, nullptr) == 0);
   };
-  EXPECT_DEATH({ t(); },
-               "Some other code unblocked one or more of our signals");
+  EXPECT_DEATH(
+      { t(); }, "Some other code unblocked one or more of our signals");
 }
 
 }  // namespace aos::ipc_lib::testing

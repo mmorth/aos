@@ -303,10 +303,11 @@ TEST(InterpolatedTimeConverterDeathTest, ReadLostTime) {
   time_converter.ObserveTimePassed(de + kDefaultHistoryDuration + kDt * 3 / 2);
 
   // Yup, can't read the origin anymore.
-  EXPECT_DEATH({ LOG(INFO) << time_converter.ToDistributedClock(0, me); },
-               "forgotten");
-  EXPECT_DEATH({ LOG(INFO) << time_converter.FromDistributedClock(0, de, 0); },
-               "forgotten");
+  EXPECT_DEATH(
+      { LOG(INFO) << time_converter.ToDistributedClock(0, me); }, "forgotten");
+  EXPECT_DEATH(
+      { LOG(INFO) << time_converter.FromDistributedClock(0, de, 0); },
+      "forgotten");
 
   // But can still read the next point.
   EXPECT_EQ(de + kDt, time_converter.ToDistributedClock(0, me + kDt));

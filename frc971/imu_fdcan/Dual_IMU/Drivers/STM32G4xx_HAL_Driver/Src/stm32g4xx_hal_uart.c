@@ -3052,7 +3052,7 @@ HAL_StatusTypeDef UART_SetConfig(UART_HandleTypeDef *huart) {
         }
       } /* if ( (lpuart_ker_ck_pres < (3 * huart->Init.BaudRate) ) ||
                 (lpuart_ker_ck_pres > (4096 * huart->Init.BaudRate) )) */
-    }   /* if (pclk != 0) */
+    } /* if (pclk != 0) */
   }
   /* Check UART Over Sampling to set Baud Rate Register */
   else if (huart->Init.OverSampling == UART_OVERSAMPLING_8) {

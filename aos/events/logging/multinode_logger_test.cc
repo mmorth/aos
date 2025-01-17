@@ -2511,8 +2511,9 @@ TEST_P(MultinodeLoggerDeathTest, LoggerRenameFile) {
   StartLogger(&pi1_logger);
   event_loop_factory_.RunFor(chrono::milliseconds(10000));
   logfile_base1_ = tmp_dir_ + "/logs/new-renamefile/new_multi_logfile1";
-  EXPECT_DEATH({ pi1_logger.log_namer->set_base_name(logfile_base1_); },
-               "Rename of file base from");
+  EXPECT_DEATH(
+      { pi1_logger.log_namer->set_base_name(logfile_base1_); },
+      "Rename of file base from");
 }
 
 // TODO(austin): We can write a test which recreates a logfile and confirms that
@@ -3444,8 +3445,8 @@ TEST_P(MultinodeLoggerTest, MissingPartsFromMiddle) {
   missing_parts.emplace_back(absl::StrCat(
       logfile_base1_, "_", std::get<0>(GetParam()).sha256, Extension()));
 
-  EXPECT_DEATH({ SortParts(missing_parts); },
-               "Broken log, missing part files between");
+  EXPECT_DEATH(
+      { SortParts(missing_parts); }, "Broken log, missing part files between");
 }
 
 // Tests that we properly handle a dead node.  Do this by just disconnecting

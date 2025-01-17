@@ -212,8 +212,8 @@ TEST_P(AbstractEventLoopDeathTest, InvalidSendJson) {
   auto loop2 = MakePrimary();
 
   aos::Sender<TestMessage> sender = loop1->MakeSender<TestMessage>("/test");
-  EXPECT_DEATH({ sender.CheckOk(sender.SendJson(R"json({"val)json")); },
-               "Invalid JSON");
+  EXPECT_DEATH(
+      { sender.CheckOk(sender.SendJson(R"json({"val)json")); }, "Invalid JSON");
 }
 
 // Verifies that a no-arg watcher will not have a data pointer.
@@ -1259,9 +1259,10 @@ TEST_P(AbstractEventLoopDeathTest, TooManySenders) {
   for (int i = 0; i < 10; ++i) {
     senders.emplace_back(loop->MakeSender<TestMessage>("/test"));
   }
-  EXPECT_DEATH({ loop->MakeSender<TestMessage>("/test"); },
-               "Failed to create sender on \\{ \"name\": \"/test\", \"type\": "
-               "\"aos.TestMessage\"[^}]*\\ }, too many senders.");
+  EXPECT_DEATH(
+      { loop->MakeSender<TestMessage>("/test"); },
+      "Failed to create sender on \\{ \"name\": \"/test\", \"type\": "
+      "\"aos.TestMessage\"[^}]*\\ }, too many senders.");
 }
 
 // Verify that creating too many fetchers fails.
@@ -1276,9 +1277,10 @@ TEST_P(AbstractEventLoopDeathTest, TooManyFetchers) {
   for (int i = 0; i < 10; ++i) {
     fetchers.emplace_back(loop->MakeFetcher<TestMessage>("/test"));
   }
-  EXPECT_DEATH({ loop->MakeFetcher<TestMessage>("/test"); },
-               "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
-               "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
+  EXPECT_DEATH(
+      { loop->MakeFetcher<TestMessage>("/test"); },
+      "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
+      "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
 }
 
 // Verify that creating too many fetchers, split between two event loops, fails.
@@ -1295,9 +1297,10 @@ TEST_P(AbstractEventLoopDeathTest, TooManyFetchersTwoLoops) {
     fetchers.emplace_back(loop->MakeFetcher<TestMessage>("/test"));
     fetchers.emplace_back(loop2->MakeFetcher<TestMessage>("/test"));
   }
-  EXPECT_DEATH({ loop->MakeFetcher<TestMessage>("/test"); },
-               "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
-               "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
+  EXPECT_DEATH(
+      { loop->MakeFetcher<TestMessage>("/test"); },
+      "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
+      "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
 }
 
 // Verify that creating too many watchers fails.
@@ -1312,9 +1315,10 @@ TEST_P(AbstractEventLoopDeathTest, TooManyWatchers) {
     loops.emplace_back(Make());
     loops.back()->MakeWatcher("/test", [](const TestMessage &) {});
   }
-  EXPECT_DEATH({ Make()->MakeWatcher("/test", [](const TestMessage &) {}); },
-               "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
-               "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
+  EXPECT_DEATH(
+      { Make()->MakeWatcher("/test", [](const TestMessage &) {}); },
+      "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
+      "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
 }
 
 // Verify that creating too many watchers and fetchers combined fails.
@@ -1332,9 +1336,10 @@ TEST_P(AbstractEventLoopDeathTest, TooManyWatchersAndFetchers) {
     loops.emplace_back(Make());
     loops.back()->MakeWatcher("/test", [](const TestMessage &) {});
   }
-  EXPECT_DEATH({ loop->MakeFetcher<TestMessage>("/test"); },
-               "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
-               "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
+  EXPECT_DEATH(
+      { loop->MakeFetcher<TestMessage>("/test"); },
+      "Failed to create reader on \\{ \"name\": \"/test\", \"type\": "
+      "\"aos.TestMessage\"[^}]*\\ }, too many readers.");
 }
 
 // Verify that we can't create a sender inside OnRun.
@@ -1898,13 +1903,13 @@ TEST_P(AbstractEventLoopDeathTest, InvalidChannelAlignment) {
   EXPECT_DEATH(
       { loop->MakeRawWatcher(channel, [](const Context &, const void *) {}); },
       kError);
-  EXPECT_DEATH({ loop->MakeRawNoArgWatcher(channel, [](const Context &) {}); },
-               kError);
+  EXPECT_DEATH(
+      { loop->MakeRawNoArgWatcher(channel, [](const Context &) {}); }, kError);
 
-  EXPECT_DEATH({ loop->MakeNoArgWatcher<TestMessage>("/test", []() {}); },
-               kError);
-  EXPECT_DEATH({ loop->MakeWatcher("/test", [](const TestMessage &) {}); },
-               kError);
+  EXPECT_DEATH(
+      { loop->MakeNoArgWatcher<TestMessage>("/test", []() {}); }, kError);
+  EXPECT_DEATH(
+      { loop->MakeWatcher("/test", [](const TestMessage &) {}); }, kError);
 }
 
 // Verify that the send time on a message is roughly right when using a watcher.
@@ -3512,8 +3517,8 @@ TEST_P(AbstractEventLoopDeathTest, NodeWatcher) {
 
   auto loop1 = Make();
   auto loop2 = Make();
-  EXPECT_DEATH({ loop1->MakeWatcher("/test", [](const TestMessage &) {}); },
-               "node");
+  EXPECT_DEATH(
+      { loop1->MakeWatcher("/test", [](const TestMessage &) {}); }, "node");
   EXPECT_DEATH(
       {
         loop2->MakeRawWatcher(
@@ -3522,8 +3527,8 @@ TEST_P(AbstractEventLoopDeathTest, NodeWatcher) {
             [](const Context &, const void *) {});
       },
       "node");
-  EXPECT_DEATH({ loop1->MakeNoArgWatcher<TestMessage>("/test", []() {}); },
-               "node");
+  EXPECT_DEATH(
+      { loop1->MakeNoArgWatcher<TestMessage>("/test", []() {}); }, "node");
   EXPECT_DEATH(
       {
         loop2->MakeRawNoArgWatcher(
@@ -3539,8 +3544,8 @@ TEST_P(AbstractEventLoopDeathTest, NodeFetcher) {
   EnableNodes("them");
   auto loop1 = Make();
 
-  EXPECT_DEATH({ auto fetcher = loop1->MakeFetcher<TestMessage>("/test"); },
-               "node");
+  EXPECT_DEATH(
+      { auto fetcher = loop1->MakeFetcher<TestMessage>("/test"); }, "node");
   EXPECT_DEATH(
       {
         auto raw_fetcher = loop1->MakeRawFetcher(configuration::GetChannel(
@@ -3628,8 +3633,8 @@ TEST_P(AbstractEventLoopDeathTest, SetVersionWhileRunning) {
   auto loop1 = MakePrimary();
 
   loop1->OnRun([&loop1, this]() {
-    EXPECT_DEATH({ loop1->SetVersionString("abcdef"); },
-                 "timing report while running");
+    EXPECT_DEATH(
+        { loop1->SetVersionString("abcdef"); }, "timing report while running");
     Exit();
   });
 

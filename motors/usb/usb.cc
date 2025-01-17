@@ -75,9 +75,9 @@ constexpr uint8_t microsoft_vendor_code() { return 0x67; }
 // The total number of endpoints supported by this hardware.
 constexpr int number_endpoints() { return 16; }
 
-__attribute__((aligned(512)))
-BdtEntry usb0_buffer_descriptor_table[number_endpoints() * 2 /* rx/tx */ *
-                                      2 /* even/odd */];
+__attribute__((aligned(512))) BdtEntry
+    usb0_buffer_descriptor_table[number_endpoints() * 2 /* rx/tx */ *
+                                 2 /* even/odd */];
 
 // Returns the specified BDT entry.
 BdtEntry *MutableBdtEntry(int endpoint, Direction direction, EvenOdd odd) {

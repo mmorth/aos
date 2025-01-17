@@ -196,13 +196,12 @@ TEST(RealtimeDeathTest, RawFatal) {
 // Tests that we see which CPUs we tried to set when it fails. This can be
 // useful for debugging.
 TEST(RealtimeDeathTest, SetAffinityErrorMessage) {
-  EXPECT_DEATH({ SetCurrentThreadAffinity(MakeCpusetFromCpus({1000})); },
-               "sched_setaffinity\\(0, sizeof\\(cpuset\\), &cpuset\\) == 0 "
-               "\\{CPUs 1000\\}: Invalid argument");
   EXPECT_DEATH(
-      {
-        SetCurrentThreadAffinity(MakeCpusetFromCpus({1000, 1001}));
-      },
+      { SetCurrentThreadAffinity(MakeCpusetFromCpus({1000})); },
+      "sched_setaffinity\\(0, sizeof\\(cpuset\\), &cpuset\\) == 0 "
+      "\\{CPUs 1000\\}: Invalid argument");
+  EXPECT_DEATH(
+      { SetCurrentThreadAffinity(MakeCpusetFromCpus({1000, 1001})); },
       "sched_setaffinity\\(0, sizeof\\(cpuset\\), &cpuset\\) == 0 "
       "\\{CPUs 1000, 1001\\}: Invalid argument");
 }

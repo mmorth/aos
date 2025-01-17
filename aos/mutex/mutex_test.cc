@@ -266,8 +266,9 @@ TEST_F(IPCMutexLockerTest, Basic) {
 // Tests what happens when the caller doesn't check if the previous owner died
 // with an IPCMutexLocker.
 TEST_F(IPCMutexLockerDeathTest, NoCheckOwnerDied) {
-  EXPECT_DEATH({ aos::IPCMutexLocker locker(&test_mutex_); },
-               "nobody checked if the previous owner of mutex [^ ]+ died.*");
+  EXPECT_DEATH(
+      { aos::IPCMutexLocker locker(&test_mutex_); },
+      "nobody checked if the previous owner of mutex [^ ]+ died.*");
 }
 
 TEST_F(IPCRecursiveMutexLockerTest, Basic) {

@@ -803,8 +803,8 @@ TEST_F(MessageSorterDeathTest, Pull) {
   ASSERT_TRUE(message_sorter.Front() != nullptr);
   message_sorter.PopFront();
 
-  EXPECT_DEATH({ message_sorter.Front(); },
-               "Max out of order of 100000000ns exceeded.");
+  EXPECT_DEATH(
+      { message_sorter.Front(); }, "Max out of order of 100000000ns exceeded.");
 }
 
 // Tests that we can merge data from 2 separate files, including duplicate data.

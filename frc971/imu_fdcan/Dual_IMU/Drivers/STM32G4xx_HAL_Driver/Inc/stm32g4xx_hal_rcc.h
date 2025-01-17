@@ -3666,7 +3666,7 @@ typedef struct {
  */
 #define __HAL_RCC_PLL_PLLM_CONFIG(__PLLM__)  \
   MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM, \
-             ((__PLLM__)-1) << RCC_PLLCFGR_PLLM_Pos)
+             ((__PLLM__) - 1) << RCC_PLLCFGR_PLLM_Pos)
 
 /**
  * @brief  Macro to configure the main PLL clock source, multiplication and
@@ -3707,15 +3707,15 @@ typedef struct {
  *          This parameter must be in the range (2, 4, 6 or 8).
  * @retval None
  */
-#define __HAL_RCC_PLL_CONFIG(__PLLSOURCE__, __PLLM__, __PLLN__, __PLLP__,   \
-                             __PLLQ__, __PLLR__)                            \
-  MODIFY_REG(RCC->PLLCFGR,                                                  \
-             (RCC_PLLCFGR_PLLSRC | RCC_PLLCFGR_PLLM | RCC_PLLCFGR_PLLN |    \
-              RCC_PLLCFGR_PLLQ | RCC_PLLCFGR_PLLR | RCC_PLLCFGR_PLLPDIV),   \
-             ((__PLLSOURCE__) | (((__PLLM__)-1U) << RCC_PLLCFGR_PLLM_Pos) | \
-              ((__PLLN__) << RCC_PLLCFGR_PLLN_Pos) |                        \
-              ((((__PLLQ__) >> 1U) - 1U) << RCC_PLLCFGR_PLLQ_Pos) |         \
-              ((((__PLLR__) >> 1U) - 1U) << RCC_PLLCFGR_PLLR_Pos) |         \
+#define __HAL_RCC_PLL_CONFIG(__PLLSOURCE__, __PLLM__, __PLLN__, __PLLP__,     \
+                             __PLLQ__, __PLLR__)                              \
+  MODIFY_REG(RCC->PLLCFGR,                                                    \
+             (RCC_PLLCFGR_PLLSRC | RCC_PLLCFGR_PLLM | RCC_PLLCFGR_PLLN |      \
+              RCC_PLLCFGR_PLLQ | RCC_PLLCFGR_PLLR | RCC_PLLCFGR_PLLPDIV),     \
+             ((__PLLSOURCE__) | (((__PLLM__) - 1U) << RCC_PLLCFGR_PLLM_Pos) | \
+              ((__PLLN__) << RCC_PLLCFGR_PLLN_Pos) |                          \
+              ((((__PLLQ__) >> 1U) - 1U) << RCC_PLLCFGR_PLLQ_Pos) |           \
+              ((((__PLLR__) >> 1U) - 1U) << RCC_PLLCFGR_PLLR_Pos) |           \
               ((__PLLP__) << RCC_PLLCFGR_PLLPDIV_Pos)))
 
 /** @brief  Macro to get the oscillator used as PLL clock source.

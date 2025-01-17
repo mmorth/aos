@@ -14,8 +14,8 @@ extern "C" {
 //
 // reg must be an address in one of the peripheral modules (on AIPS0, AIPS1, or
 // GPIO) (0x40000000 - 0x400FFFFF).
-#define PERIPHERAL_BITBAND(reg, bit)                                         \
-  (*(volatile uint32_t *)(((uint32_t) & (reg)-0x40000000) * 32 + (bit) * 4 + \
+#define PERIPHERAL_BITBAND(reg, bit)                                           \
+  (*(volatile uint32_t *)(((uint32_t) & (reg) - 0x40000000) * 32 + (bit) * 4 + \
                           0x42000000))
 
 #define NVIC_SET_SANE_PRIORITY(irqnum, priority) \

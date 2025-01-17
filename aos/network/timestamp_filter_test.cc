@@ -796,12 +796,13 @@ TEST_F(NoncausalTimestampFilterDeathTest, FrozenTimestamps) {
     ASSERT_EQ(filter.timestamps_size(), 2u);
     filter.FreezeUntil(tb, {0, monotonic_clock::min_time});
 
-    EXPECT_DEATH({ filter.Sample(tb, oa); },
-                 "monotonic_now.time > frozen_time_ \\(0.100000000sec vs. "
-                 "0.100000000sec\\) : test_a -> test_b Tried to insert "
-                 "\\{.boot=0, .time=0.100000000sec\\} before the frozen time "
-                 "of 0.100000000sec.  "
-                 "Increase --time_estimation_buffer_seconds to greater than 0");
+    EXPECT_DEATH(
+        { filter.Sample(tb, oa); },
+        "monotonic_now.time > frozen_time_ \\(0.100000000sec vs. "
+        "0.100000000sec\\) : test_a -> test_b Tried to insert "
+        "\\{.boot=0, .time=0.100000000sec\\} before the frozen time "
+        "of 0.100000000sec.  "
+        "Increase --time_estimation_buffer_seconds to greater than 0");
   }
 
   {
@@ -850,14 +851,16 @@ TEST_F(NoncausalTimestampFilterDeathTest, FrozenTimestamps) {
     ASSERT_EQ(filter.timestamps_size(), 3u);
     filter.FreezeUntil(tb, {0, monotonic_clock::min_time});
 
-    EXPECT_DEATH({ filter.Sample(tb, oa); },
-                 "monotonic_now.time > frozen_time_ \\(0.100000000sec vs. "
-                 "0.100000000sec\\) : test_a -> test_b Tried to insert "
-                 "\\{.boot=0, .time=0.100000000sec\\} before the frozen time "
-                 "of 0.100000000sec.  "
-                 "Increase --time_estimation_buffer_seconds to greater than 0");
-    EXPECT_DEATH({ filter.Sample(tb + chrono::nanoseconds(1), oa); },
-                 "test_a -> test_b Can't pop an already frozen sample");
+    EXPECT_DEATH(
+        { filter.Sample(tb, oa); },
+        "monotonic_now.time > frozen_time_ \\(0.100000000sec vs. "
+        "0.100000000sec\\) : test_a -> test_b Tried to insert "
+        "\\{.boot=0, .time=0.100000000sec\\} before the frozen time "
+        "of 0.100000000sec.  "
+        "Increase --time_estimation_buffer_seconds to greater than 0");
+    EXPECT_DEATH(
+        { filter.Sample(tb + chrono::nanoseconds(1), oa); },
+        "test_a -> test_b Can't pop an already frozen sample");
   }
 }
 
