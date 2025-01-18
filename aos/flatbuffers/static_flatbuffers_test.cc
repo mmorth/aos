@@ -128,7 +128,9 @@ TEST_F(StaticFlatbuffersTest, DocumentationExample) {
     CHECK(sub_string != nullptr);
     CHECK(sub_string->emplace_back('D'));
   }
-  { object->set_substruct({971, 254}); }
+  {
+    object->set_substruct({971, 254});
+  }
   {
     auto subtable = object->add_subtable();
     subtable->set_foo(1234);
@@ -898,7 +900,9 @@ TEST_F(StaticFlatbuffersTest, ExactSizeSpanAllocator) {
     ASSERT_TRUE(sub_string != nullptr);
     ASSERT_TRUE(sub_string->emplace_back('D'));
   }
-  { object->set_substruct({971, 254}); }
+  {
+    object->set_substruct({971, 254});
+  }
   {
     auto subtable = object->add_subtable();
     subtable->set_foo(1234);
@@ -1064,7 +1068,9 @@ TEST_F(StaticFlatbuffersTest, FixedStackAllocator) {
     ASSERT_TRUE(sub_string != nullptr);
     ASSERT_TRUE(sub_string->emplace_back('D'));
   }
-  { object->set_substruct({971, 254}); }
+  {
+    object->set_substruct({971, 254});
+  }
   {
     auto subtable = object->add_subtable();
     subtable->set_foo(1234);
@@ -1170,7 +1176,9 @@ TEST_F(StaticFlatbuffersTest, BuilderMoveConstructor) {
     ASSERT_TRUE(sub_string != nullptr);
     ASSERT_TRUE(sub_string->emplace_back('D'));
   }
-  { object->set_substruct({971, 254}); }
+  {
+    object->set_substruct({971, 254});
+  }
   {
     auto subtable = object->add_subtable();
     subtable->set_foo(1234);

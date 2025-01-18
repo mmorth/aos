@@ -121,7 +121,7 @@ __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
 #define __RESTRICT __restrict
 #endif
 #ifndef __COMPILER_BARRIER
-#define __COMPILER_BARRIER() __ASM volatile("" ::: "memory")
+#define __COMPILER_BARRIER() __ASM volatile("" :: : "memory")
 #endif
 
 /* #########################  Startup and Lowlevel Init ########################
@@ -715,7 +715,7 @@ __STATIC_FORCEINLINE void __TZ_set_MSPLIM_NS(uint32_t MainStackPtrLimit) {
  */
 #if ((defined(__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
      (defined(__FPU_USED) && (__FPU_USED == 1U)))
-#define __get_FPSCR (uint32_t) __builtin_arm_get_fpscr
+#define __get_FPSCR (uint32_t)__builtin_arm_get_fpscr
 #else
 #define __get_FPSCR() ((uint32_t)0U)
 #endif
@@ -827,7 +827,7 @@ __STATIC_FORCEINLINE void __TZ_set_MSPLIM_NS(uint32_t MainStackPtrLimit) {
   16-bit result. For example, 0x0080 becomes 0x8000. \param [in]    value  Value
   to reverse \return               Reversed value
  */
-#define __REVSH(value) (int16_t) __builtin_bswap16(value)
+#define __REVSH(value) (int16_t)__builtin_bswap16(value)
 
 /**
   \brief   Rotate Right in unsigned value (32 bit)
@@ -893,7 +893,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \param [in]    ptr  Pointer to data
   \return             value of type uint8_t at (*ptr)
  */
-#define __LDREXB (uint8_t) __builtin_arm_ldrex
+#define __LDREXB (uint8_t)__builtin_arm_ldrex
 
 /**
   \brief   LDR Exclusive (16 bit)
@@ -901,7 +901,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \param [in]    ptr  Pointer to data
   \return        value of type uint16_t at (*ptr)
  */
-#define __LDREXH (uint16_t) __builtin_arm_ldrex
+#define __LDREXH (uint16_t)__builtin_arm_ldrex
 
 /**
   \brief   LDR Exclusive (32 bit)
@@ -909,7 +909,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \param [in]    ptr  Pointer to data
   \return        value of type uint32_t at (*ptr)
  */
-#define __LDREXW (uint32_t) __builtin_arm_ldrex
+#define __LDREXW (uint32_t)__builtin_arm_ldrex
 
 /**
   \brief   STR Exclusive (8 bit)
@@ -919,7 +919,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STREXB (uint32_t) __builtin_arm_strex
+#define __STREXB (uint32_t)__builtin_arm_strex
 
 /**
   \brief   STR Exclusive (16 bit)
@@ -929,7 +929,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STREXH (uint32_t) __builtin_arm_strex
+#define __STREXH (uint32_t)__builtin_arm_strex
 
 /**
   \brief   STR Exclusive (32 bit)
@@ -939,7 +939,7 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STREXW (uint32_t) __builtin_arm_strex
+#define __STREXW (uint32_t)__builtin_arm_strex
 
 /**
   \brief   Remove the exclusive lock
@@ -985,9 +985,8 @@ __STATIC_FORCEINLINE uint8_t __CLZ(uint32_t value) {
 __STATIC_FORCEINLINE uint32_t __RRX(uint32_t value) {
   uint32_t result;
 
-  __ASM volatile("rrx %0, %1"
-                 : __CMSIS_GCC_OUT_REG(result)
-                 : __CMSIS_GCC_USE_REG(value));
+  __ASM volatile(
+      "rrx %0, %1" : __CMSIS_GCC_OUT_REG(result) : __CMSIS_GCC_USE_REG(value));
   return (result);
 }
 
@@ -1186,7 +1185,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \param [in]    ptr  Pointer to data
   \return             value of type uint8_t at (*ptr)
  */
-#define __LDAEXB (uint8_t) __builtin_arm_ldaex
+#define __LDAEXB (uint8_t)__builtin_arm_ldaex
 
 /**
   \brief   Load-Acquire Exclusive (16 bit)
@@ -1194,7 +1193,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \param [in]    ptr  Pointer to data
   \return        value of type uint16_t at (*ptr)
  */
-#define __LDAEXH (uint16_t) __builtin_arm_ldaex
+#define __LDAEXH (uint16_t)__builtin_arm_ldaex
 
 /**
   \brief   Load-Acquire Exclusive (32 bit)
@@ -1202,7 +1201,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \param [in]    ptr  Pointer to data
   \return        value of type uint32_t at (*ptr)
  */
-#define __LDAEX (uint32_t) __builtin_arm_ldaex
+#define __LDAEX (uint32_t)__builtin_arm_ldaex
 
 /**
   \brief   Store-Release Exclusive (8 bit)
@@ -1212,7 +1211,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STLEXB (uint32_t) __builtin_arm_stlex
+#define __STLEXB (uint32_t)__builtin_arm_stlex
 
 /**
   \brief   Store-Release Exclusive (16 bit)
@@ -1222,7 +1221,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STLEXH (uint32_t) __builtin_arm_stlex
+#define __STLEXH (uint32_t)__builtin_arm_stlex
 
 /**
   \brief   Store-Release Exclusive (32 bit)
@@ -1232,7 +1231,7 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
   \return          0  Function succeeded
   \return          1  Function failed
  */
-#define __STLEX (uint32_t) __builtin_arm_stlex
+#define __STLEX (uint32_t)__builtin_arm_stlex
 
 #endif /* ((defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
            (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1)) )  \
@@ -1320,9 +1319,8 @@ __STATIC_FORCEINLINE void __STL(uint32_t value, volatile uint32_t *ptr) {
 __STATIC_FORCEINLINE int32_t __SMMLA(int32_t op1, int32_t op2, int32_t op3) {
   int32_t result;
 
-  __ASM volatile("smmla %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smmla %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 

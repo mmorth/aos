@@ -3575,7 +3575,9 @@ TEST_P(AbstractEventLoopDeathTest, MultipleBuilders) {
   auto loop1 = Make();
   aos::Sender<TestMessage> sender = loop1->MakeSender<TestMessage>("/test");
 
-  { auto builder = sender.MakeBuilder(); }
+  {
+    auto builder = sender.MakeBuilder();
+  }
   {
     auto builder = sender.MakeBuilder();
     builder.MakeBuilder<TestMessage>().Finish();

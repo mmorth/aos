@@ -1359,7 +1359,7 @@ __STATIC_INLINE uint32_t LL_SPI_GetDMAParity_TX(const SPI_TypeDef *SPIx) {
  * @retval Address of data register
  */
 __STATIC_INLINE uint32_t LL_SPI_DMA_GetRegAddr(const SPI_TypeDef *SPIx) {
-  return (uint32_t) & (SPIx->DR);
+  return (uint32_t)&(SPIx->DR);
 }
 
 /**

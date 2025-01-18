@@ -120,7 +120,7 @@ __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
 #define __RESTRICT __restrict
 #endif
 #ifndef __COMPILER_BARRIER
-#define __COMPILER_BARRIER() __ASM volatile("" ::: "memory")
+#define __COMPILER_BARRIER() __ASM volatile("" :: : "memory")
 #endif
 
 /* #########################  Startup and Lowlevel Init ########################
@@ -861,7 +861,7 @@ __STATIC_FORCEINLINE void __set_FPSCR(uint32_t fpscr) {
   or memory, after the instruction has been completed.
  */
 __STATIC_FORCEINLINE void __ISB(void) {
-  __ASM volatile("isb 0xF" ::: "memory");
+  __ASM volatile("isb 0xF" :: : "memory");
 }
 
 /**
@@ -871,7 +871,7 @@ __STATIC_FORCEINLINE void __ISB(void) {
   instruction complete.
  */
 __STATIC_FORCEINLINE void __DSB(void) {
-  __ASM volatile("dsb 0xF" ::: "memory");
+  __ASM volatile("dsb 0xF" :: : "memory");
 }
 
 /**
@@ -880,7 +880,7 @@ __STATIC_FORCEINLINE void __DSB(void) {
            and after the instruction, without ensuring their completion.
  */
 __STATIC_FORCEINLINE void __DMB(void) {
-  __ASM volatile("dmb 0xF" ::: "memory");
+  __ASM volatile("dmb 0xF" :: : "memory");
 }
 
 /**
@@ -895,9 +895,8 @@ __STATIC_FORCEINLINE uint32_t __REV(uint32_t value) {
 #else
   uint32_t result;
 
-  __ASM volatile("rev %0, %1"
-                 : __CMSIS_GCC_OUT_REG(result)
-                 : __CMSIS_GCC_USE_REG(value));
+  __ASM volatile(
+      "rev %0, %1" : __CMSIS_GCC_OUT_REG(result) : __CMSIS_GCC_USE_REG(value));
   return result;
 #endif
 }
@@ -911,9 +910,8 @@ __STATIC_FORCEINLINE uint32_t __REV(uint32_t value) {
 __STATIC_FORCEINLINE uint32_t __REV16(uint32_t value) {
   uint32_t result;
 
-  __ASM volatile("rev16 %0, %1"
-                 : __CMSIS_GCC_OUT_REG(result)
-                 : __CMSIS_GCC_USE_REG(value));
+  __ASM volatile("rev16 %0, %1" : __CMSIS_GCC_OUT_REG(
+      result) : __CMSIS_GCC_USE_REG(value));
   return result;
 }
 
@@ -929,9 +927,8 @@ __STATIC_FORCEINLINE int16_t __REVSH(int16_t value) {
 #else
   int16_t result;
 
-  __ASM volatile("revsh %0, %1"
-                 : __CMSIS_GCC_OUT_REG(result)
-                 : __CMSIS_GCC_USE_REG(value));
+  __ASM volatile("revsh %0, %1" : __CMSIS_GCC_OUT_REG(
+      result) : __CMSIS_GCC_USE_REG(value));
   return result;
 #endif
 }
@@ -1077,9 +1074,8 @@ __STATIC_FORCEINLINE uint32_t __LDREXW(volatile uint32_t *addr) {
 __STATIC_FORCEINLINE uint32_t __STREXB(uint8_t value, volatile uint8_t *addr) {
   uint32_t result;
 
-  __ASM volatile("strexb %0, %2, %1"
-                 : "=&r"(result), "=Q"(*addr)
-                 : "r"((uint32_t)value));
+  __ASM volatile("strexb %0, %2, %1" : "=&r"(result),
+                 "=Q"(*addr) : "r"((uint32_t)value));
   return (result);
 }
 
@@ -1095,9 +1091,8 @@ __STATIC_FORCEINLINE uint32_t __STREXH(uint16_t value,
                                        volatile uint16_t *addr) {
   uint32_t result;
 
-  __ASM volatile("strexh %0, %2, %1"
-                 : "=&r"(result), "=Q"(*addr)
-                 : "r"((uint32_t)value));
+  __ASM volatile("strexh %0, %2, %1" : "=&r"(result),
+                 "=Q"(*addr) : "r"((uint32_t)value));
   return (result);
 }
 
@@ -1122,7 +1117,7 @@ __STATIC_FORCEINLINE uint32_t __STREXW(uint32_t value,
   \details Removes the exclusive lock which is created by LDREX.
  */
 __STATIC_FORCEINLINE void __CLREX(void) {
-  __ASM volatile("clrex" ::: "memory");
+  __ASM volatile("clrex" :: : "memory");
 }
 
 #endif /* ((defined (__ARM_ARCH_7M__      ) && (__ARM_ARCH_7M__      == 1)) || \
@@ -1172,9 +1167,8 @@ __STATIC_FORCEINLINE void __CLREX(void) {
 __STATIC_FORCEINLINE uint32_t __RRX(uint32_t value) {
   uint32_t result;
 
-  __ASM volatile("rrx %0, %1"
-                 : __CMSIS_GCC_OUT_REG(result)
-                 : __CMSIS_GCC_USE_REG(value));
+  __ASM volatile(
+      "rrx %0, %1" : __CMSIS_GCC_OUT_REG(result) : __CMSIS_GCC_USE_REG(value));
   return (result);
 }
 
@@ -1431,9 +1425,8 @@ __STATIC_FORCEINLINE uint32_t __LDAEX(volatile uint32_t *ptr) {
 __STATIC_FORCEINLINE uint32_t __STLEXB(uint8_t value, volatile uint8_t *ptr) {
   uint32_t result;
 
-  __ASM volatile("stlexb %0, %2, %1"
-                 : "=&r"(result), "=Q"(*ptr)
-                 : "r"((uint32_t)value));
+  __ASM volatile("stlexb %0, %2, %1" : "=&r"(result),
+                 "=Q"(*ptr) : "r"((uint32_t)value));
   return (result);
 }
 
@@ -1448,9 +1441,8 @@ __STATIC_FORCEINLINE uint32_t __STLEXB(uint8_t value, volatile uint8_t *ptr) {
 __STATIC_FORCEINLINE uint32_t __STLEXH(uint16_t value, volatile uint16_t *ptr) {
   uint32_t result;
 
-  __ASM volatile("stlexh %0, %2, %1"
-                 : "=&r"(result), "=Q"(*ptr)
-                 : "r"((uint32_t)value));
+  __ASM volatile("stlexh %0, %2, %1" : "=&r"(result),
+                 "=Q"(*ptr) : "r"((uint32_t)value));
   return (result);
 }
 
@@ -1465,9 +1457,8 @@ __STATIC_FORCEINLINE uint32_t __STLEXH(uint16_t value, volatile uint16_t *ptr) {
 __STATIC_FORCEINLINE uint32_t __STLEX(uint32_t value, volatile uint32_t *ptr) {
   uint32_t result;
 
-  __ASM volatile("stlex %0, %2, %1"
-                 : "=&r"(result), "=Q"(*ptr)
-                 : "r"((uint32_t)value));
+  __ASM volatile("stlex %0, %2, %1" : "=&r"(result),
+                 "=Q"(*ptr) : "r"((uint32_t)value));
   return (result);
 }
 
@@ -1749,9 +1740,8 @@ __STATIC_FORCEINLINE uint32_t __USADA8(uint32_t op1, uint32_t op2,
                                        uint32_t op3) {
   uint32_t result;
 
-  __ASM volatile("usada8 %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("usada8 %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
@@ -1815,9 +1805,8 @@ __STATIC_FORCEINLINE uint32_t __SMLAD(uint32_t op1, uint32_t op2,
                                       uint32_t op3) {
   uint32_t result;
 
-  __ASM volatile("smlad %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smlad %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
@@ -1825,9 +1814,8 @@ __STATIC_FORCEINLINE uint32_t __SMLADX(uint32_t op1, uint32_t op2,
                                        uint32_t op3) {
   uint32_t result;
 
-  __ASM volatile("smladx %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smladx %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
@@ -1840,13 +1828,13 @@ __STATIC_FORCEINLINE uint64_t __SMLALD(uint32_t op1, uint32_t op2,
   llr.w64 = acc;
 
 #ifndef __ARMEB__ /* Little endian */
-  __ASM volatile("smlald %0, %1, %2, %3"
-                 : "=r"(llr.w32[0]), "=r"(llr.w32[1])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[0]), "1"(llr.w32[1]));
+  __ASM volatile("smlald %0, %1, %2, %3" : "=r"(llr.w32[0]),
+                 "=r"(llr.w32[1]) : "r"(op1), "r"(op2), "0"(llr.w32[0]),
+                 "1"(llr.w32[1]));
 #else /* Big endian */
-  __ASM volatile("smlald %0, %1, %2, %3"
-                 : "=r"(llr.w32[1]), "=r"(llr.w32[0])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[1]), "1"(llr.w32[0]));
+  __ASM volatile("smlald %0, %1, %2, %3" : "=r"(llr.w32[1]),
+                 "=r"(llr.w32[0]) : "r"(op1), "r"(op2), "0"(llr.w32[1]),
+                 "1"(llr.w32[0]));
 #endif
 
   return (llr.w64);
@@ -1861,13 +1849,13 @@ __STATIC_FORCEINLINE uint64_t __SMLALDX(uint32_t op1, uint32_t op2,
   llr.w64 = acc;
 
 #ifndef __ARMEB__ /* Little endian */
-  __ASM volatile("smlaldx %0, %1, %2, %3"
-                 : "=r"(llr.w32[0]), "=r"(llr.w32[1])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[0]), "1"(llr.w32[1]));
+  __ASM volatile("smlaldx %0, %1, %2, %3" : "=r"(llr.w32[0]),
+                 "=r"(llr.w32[1]) : "r"(op1), "r"(op2), "0"(llr.w32[0]),
+                 "1"(llr.w32[1]));
 #else /* Big endian */
-  __ASM volatile("smlaldx %0, %1, %2, %3"
-                 : "=r"(llr.w32[1]), "=r"(llr.w32[0])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[1]), "1"(llr.w32[0]));
+  __ASM volatile("smlaldx %0, %1, %2, %3" : "=r"(llr.w32[1]),
+                 "=r"(llr.w32[0]) : "r"(op1), "r"(op2), "0"(llr.w32[1]),
+                 "1"(llr.w32[0]));
 #endif
 
   return (llr.w64);
@@ -1891,9 +1879,8 @@ __STATIC_FORCEINLINE uint32_t __SMLSD(uint32_t op1, uint32_t op2,
                                       uint32_t op3) {
   uint32_t result;
 
-  __ASM volatile("smlsd %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smlsd %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
@@ -1901,9 +1888,8 @@ __STATIC_FORCEINLINE uint32_t __SMLSDX(uint32_t op1, uint32_t op2,
                                        uint32_t op3) {
   uint32_t result;
 
-  __ASM volatile("smlsdx %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smlsdx %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
@@ -1916,13 +1902,13 @@ __STATIC_FORCEINLINE uint64_t __SMLSLD(uint32_t op1, uint32_t op2,
   llr.w64 = acc;
 
 #ifndef __ARMEB__ /* Little endian */
-  __ASM volatile("smlsld %0, %1, %2, %3"
-                 : "=r"(llr.w32[0]), "=r"(llr.w32[1])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[0]), "1"(llr.w32[1]));
+  __ASM volatile("smlsld %0, %1, %2, %3" : "=r"(llr.w32[0]),
+                 "=r"(llr.w32[1]) : "r"(op1), "r"(op2), "0"(llr.w32[0]),
+                 "1"(llr.w32[1]));
 #else /* Big endian */
-  __ASM volatile("smlsld %0, %1, %2, %3"
-                 : "=r"(llr.w32[1]), "=r"(llr.w32[0])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[1]), "1"(llr.w32[0]));
+  __ASM volatile("smlsld %0, %1, %2, %3" : "=r"(llr.w32[1]),
+                 "=r"(llr.w32[0]) : "r"(op1), "r"(op2), "0"(llr.w32[1]),
+                 "1"(llr.w32[0]));
 #endif
 
   return (llr.w64);
@@ -1937,13 +1923,13 @@ __STATIC_FORCEINLINE uint64_t __SMLSLDX(uint32_t op1, uint32_t op2,
   llr.w64 = acc;
 
 #ifndef __ARMEB__ /* Little endian */
-  __ASM volatile("smlsldx %0, %1, %2, %3"
-                 : "=r"(llr.w32[0]), "=r"(llr.w32[1])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[0]), "1"(llr.w32[1]));
+  __ASM volatile("smlsldx %0, %1, %2, %3" : "=r"(llr.w32[0]),
+                 "=r"(llr.w32[1]) : "r"(op1), "r"(op2), "0"(llr.w32[0]),
+                 "1"(llr.w32[1]));
 #else /* Big endian */
-  __ASM volatile("smlsldx %0, %1, %2, %3"
-                 : "=r"(llr.w32[1]), "=r"(llr.w32[0])
-                 : "r"(op1), "r"(op2), "0"(llr.w32[1]), "1"(llr.w32[0]));
+  __ASM volatile("smlsldx %0, %1, %2, %3" : "=r"(llr.w32[1]),
+                 "=r"(llr.w32[0]) : "r"(op1), "r"(op2), "0"(llr.w32[1]),
+                 "1"(llr.w32[0]));
 #endif
 
   return (llr.w64);
@@ -1971,13 +1957,12 @@ __STATIC_FORCEINLINE int32_t __QSUB(int32_t op1, int32_t op2) {
 }
 
 #if 0
-#define __PKHBT(ARG1, ARG2, ARG3)                     \
-  ({                                                  \
-    uint32_t __RES, __ARG1 = (ARG1), __ARG2 = (ARG2); \
-    __ASM("pkhbt %0, %1, %2, lsl %3"                  \
-          : "=r"(__RES)                               \
-          : "r"(__ARG1), "r"(__ARG2), "I"(ARG3));     \
-    __RES;                                            \
+#define __PKHBT(ARG1, ARG2, ARG3)                                              \
+  ({                                                                           \
+    uint32_t __RES, __ARG1 = (ARG1), __ARG2 = (ARG2);                          \
+    __ASM("pkhbt %0, %1, %2, lsl %3" : "=r"(__RES) : "r"(__ARG1), "r"(__ARG2), \
+          "I"(ARG3));                                                          \
+    __RES;                                                                     \
   })
 
 #define __PKHTB(ARG1, ARG2, ARG3)                                         \
@@ -1986,9 +1971,8 @@ __STATIC_FORCEINLINE int32_t __QSUB(int32_t op1, int32_t op2) {
     if (ARG3 == 0)                                                        \
       __ASM("pkhtb %0, %1, %2" : "=r"(__RES) : "r"(__ARG1), "r"(__ARG2)); \
     else                                                                  \
-      __ASM("pkhtb %0, %1, %2, asr %3"                                    \
-            : "=r"(__RES)                                                 \
-            : "r"(__ARG1), "r"(__ARG2), "I"(ARG3));                       \
+      __ASM("pkhtb %0, %1, %2, asr %3" : "=r"(__RES) : "r"(__ARG1),       \
+            "r"(__ARG2), "I"(ARG3));                                      \
     __RES;                                                                \
   })
 #endif
@@ -2004,9 +1988,8 @@ __STATIC_FORCEINLINE int32_t __QSUB(int32_t op1, int32_t op2) {
 __STATIC_FORCEINLINE int32_t __SMMLA(int32_t op1, int32_t op2, int32_t op3) {
   int32_t result;
 
-  __ASM volatile("smmla %0, %1, %2, %3"
-                 : "=r"(result)
-                 : "r"(op1), "r"(op2), "r"(op3));
+  __ASM volatile("smmla %0, %1, %2, %3" : "=r"(result) : "r"(op1), "r"(op2),
+                 "r"(op3));
   return (result);
 }
 
