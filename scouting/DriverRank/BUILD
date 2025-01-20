@@ -10,7 +10,7 @@ filegroup(
 
 pkg_tar(
     name = "julia_runtime",
-    package_dir = "opt/frc971/julia_runtime",
+    package_dir = "opt/aos/julia_runtime",
     deps = [
         "@julia//:runtime",
     ],
@@ -23,7 +23,7 @@ pkg_tar(
         "Project.toml",
         "activate.jl",
     ],
-    package_dir = "opt/frc971/julia_manifest",
+    package_dir = "opt/aos/julia_manifest",
 )
 
 pkg_tar(
@@ -35,12 +35,12 @@ pkg_tar(
 )
 
 pkg_deb(
-    name = "frc971-scouting-julia",
+    name = "aos-scouting-julia",
     architecture = "amd64",
     data = ":julia_files",
     description = "The Julia files for the FRC971 scouting web server.",
-    maintainer = "frc971@frc971.org",
-    package = "frc971-scouting-julia",
+    maintainer = "gerrit@realtimeroboticsgroup.org",
+    package = "aos-scouting-julia",
     postinst = "postinst",
     version = "1",
 )
@@ -52,10 +52,10 @@ py_binary(
     ],
     args = [
         "--deb",
-        "$(location :frc971-scouting-julia)",
+        "$(location :aos-scouting-julia)",
     ],
     data = [
-        ":frc971-scouting-julia",
+        ":aos-scouting-julia",
     ],
     deps = [
         "//scouting/deploy",

@@ -15,7 +15,7 @@ pkg_tar(
         "//scouting",
     ],
     include_runfiles = True,
-    package_dir = "opt/frc971/scouting_server",
+    package_dir = "opt/aos/scouting_server",
     strip_prefix = ".",
 )
 
@@ -30,16 +30,16 @@ pkg_tar(
 )
 
 pkg_deb(
-    name = "frc971-scouting-server",
+    name = "aos-scouting-server",
     architecture = "amd64",
     data = ":deploy_tar",
     depends = [
-        "frc971-scouting-julia",
+        "aos-scouting-julia",
     ],
-    description = "The FRC971 scouting web server.",
+    description = "The scouting web server.",
     # TODO(phil): What's a good email address for this?
-    maintainer = "frc971@frc971.org",
-    package = "frc971-scouting-server",
+    maintainer = "gerrit@realtimeroboticsgroup.org",
+    package = "aos-scouting-server",
     postinst = "postinst",
     predepends = [
         "systemd",
@@ -55,10 +55,10 @@ py_binary(
     ],
     args = [
         "--deb",
-        "$(location :frc971-scouting-server)",
+        "$(location :aos-scouting-server)",
     ],
     data = [
-        ":frc971-scouting-server",
+        ":aos-scouting-server",
     ],
     visibility = ["//scouting/DriverRank:__pkg__"],
 )

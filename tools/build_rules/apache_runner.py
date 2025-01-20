@@ -28,10 +28,10 @@ DUMMY_CERT_ANSWERS = """\
 US
 California
 Mountain View
-FRC971
+Realtime Robotics Group
 Software
-frc971.org
-dummy@frc971.org
+realtimeroboticsgroup.org
+dummy@realtimeroboticsgroup.org
 """
 
 
