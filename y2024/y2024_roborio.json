@@ -427,7 +427,7 @@
         "roboRIO-8971-FRC",
         "roboRIO-9971-FRC"
       ],
-      "port": 4646
+      "port": 3141
     },
     {
       "name": "imu"

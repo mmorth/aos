@@ -223,7 +223,7 @@
       "name": "pi1",
       "hostname": "localhost",
       "hostnames": ["raspberrypi"],
-      "port": 4646
+      "port": 3141
     },
     {
       "name": "pi2",

@@ -296,17 +296,17 @@
     {
       "name": "pi1",
       "hostname": "raspberrypi",
-      "port": 4646
+      "port": 3141
     },
     {
       "name": "pi2",
       "hostname": "raspberrypi2",
-      "port": 4646
+      "port": 3141
     },
     {
       "name": "pi3",
       "hostname": "raspberrypi3",
-      "port": 4646
+      "port": 3141
     }
   ]
 }

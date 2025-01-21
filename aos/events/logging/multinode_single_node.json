@@ -27,7 +27,7 @@
     {
       "name": "pi1",
       "hostname": "raspberrypi",
-      "port": 4646
+      "port": 3141
     }
   ]
 }
