@@ -394,7 +394,10 @@ class SimulatedFetcher : public RawFetcher {
                             SimulatedChannel *simulated_channel)
       : RawFetcher(event_loop, simulated_channel->channel()),
         simulated_channel_(simulated_channel) {}
-  ~SimulatedFetcher() { simulated_channel_->UnregisterFetcher(this); }
+  ~SimulatedFetcher() {
+    CHECK(!event_loop()->is_running()) << ": Can't make Fetcher while running";
+    simulated_channel_->UnregisterFetcher(this);
+  }
 
   std::pair<bool, monotonic_clock::time_point> DoFetchNext() override {
     return DoFetchNextIf(std::function<bool(const Context &context)>());
@@ -878,6 +881,7 @@ std::unique_ptr<RawSender> SimulatedEventLoop::MakeRawSender(
 
 std::unique_ptr<RawFetcher> SimulatedEventLoop::MakeRawFetcher(
     const Channel *channel) {
+  CHECK(!is_running()) << ": Can't make Fetcher while running";
   ChannelIndex(channel);
 
   if (!configuration::ChannelIsReadableOnNode(channel, node())) {
