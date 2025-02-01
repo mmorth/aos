@@ -1,3 +1,11 @@
+retry:
+  automatic:
+    - exit_status: -1  # Connection to the Agent was lost
+      signal_reason: none
+      limit: 2
+    - signal_reason: agent_stop  # Agent was stopped by the OS (e.g. spot termination)
+      limit: 2
+
 env:
   STARTUP: --max_idle_secs=0
   COMMON: -c opt --stamp=no --curses=yes --symlink_prefix=/ --repo_env=AOS_RUNNING_IN_CI=1 --repository_cache=~/.cache/bazel_repository --experimental_repository_cache_hardlinks=true --google_default_credentials --remote_cache=https://storage.googleapis.com/austin-vpn-bazel-cache
