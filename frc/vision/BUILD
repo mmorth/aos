@@ -352,6 +352,23 @@ cc_library(
 )
 
 aos_config(
+    name = "aos_config",
+    src = "single_node_camera_config.json",
+    flatbuffers = [
+        ":vision_fbs",
+        ":target_map_fbs",
+        "//aos/events:event_loop_fbs",
+        "//aos/logging:log_message_fbs",
+        "//aos/starter:starter_fbs",
+        "//aos/starter:starter_rpc_fbs",
+        "//aos/network:message_bridge_client_fbs",
+        "//aos/network:message_bridge_server_fbs",
+        "//aos/network:timestamp_fbs",
+        "@com_github_foxglove_schemas//:schemas",
+    ],
+)
+
+aos_config(
     name = "converter_config",
     testonly = True,
     src = "converter_test_config.json",
