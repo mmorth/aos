@@ -1,0 +1,13 @@
+{
+  "constants": [
+    {
+      "team": 4646,
+      "data": {
+        "calibration": [
+          {% include 'frc/vision/constants/calibration_orin-4646-0.json' %}
+          /* TODO(austin): Move calibration out to jinja, and validate.*/
+        ]
+      }
+    }
+  ]
+}

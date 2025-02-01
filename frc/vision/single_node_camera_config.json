@@ -155,6 +155,11 @@
     {
       "name": "foxglove_websocket",
       "nodes": ["orin"]
+    },
+    {
+      "name": "vision_constants_sender",
+      "nodes": ["orin"],
+      "autorestart": false
     }
   ],
   "nodes": [

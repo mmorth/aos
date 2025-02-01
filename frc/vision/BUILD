@@ -2,6 +2,7 @@ load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_py_library")
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
+load("//tools/build_rules:template.bzl", "jinja2_template")
 
 cc_binary(
     name = "modify_extrinsics",
@@ -11,10 +12,10 @@ cc_binary(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        ":calibration_fbs",
         "//aos:configuration",
         "//aos:init",
         "//aos/events:event_loop",
-        "//frc/vision:calibration_fbs",
         "//frc/vision:vision_util_lib",
         "@com_google_absl//absl/strings:str_format",
         "@org_tuxfamily_eigen//:eigen",
@@ -357,6 +358,7 @@ aos_config(
     flatbuffers = [
         ":vision_fbs",
         ":target_map_fbs",
+        ":camera_constants_fbs",
         "//aos/events:event_loop_fbs",
         "//aos/logging:log_message_fbs",
         "//aos/starter:starter_fbs",
@@ -545,4 +547,70 @@ cc_binary(
         "//aos/events:shm_event_loop",
         "//third_party:libturbojpeg",
     ],
+)
+
+static_flatbuffer(
+    name = "camera_constants_fbs",
+    srcs = ["camera_constants.fbs"],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calibration_fbs",
+    ],
+)
+
+static_flatbuffer(
+    name = "camera_constants_list_fbs",
+    srcs = ["camera_constants_list.fbs"],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calibration_fbs",
+        ":camera_constants_fbs",
+    ],
+)
+
+cc_binary(
+    name = "apriltag_detector",
+    srcs = [
+        "apriltag_detector.cc",
+    ],
+    features = ["cuda"],
+    target_compatible_with = ["//tools/platforms/gpu:nvidia"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":camera_constants_fbs",
+        "//aos:configuration",
+        "//aos:init",
+        "//aos/events:shm_event_loop",
+        "//frc/orin:gpu_apriltag_lib",
+        "//third_party:cudart",
+        "//third_party/apriltag",
+        "@com_github_nvidia_cccl//:cccl",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
+cc_binary(
+    name = "vision_constants_sender",
+    srcs = [
+        "vision_constants_sender.cc",
+    ],
+    deps = [
+        ":camera_constants_fbs",
+        ":camera_constants_list_fbs",
+        "//aos:init",
+        "//aos/events:shm_event_loop",
+        "//frc/constants:constants_sender_lib",
+    ],
+)
+
+jinja2_template(
+    name = "constants.json",
+    src = "constants.jinja2.json",
+    includes = glob([
+        "constants/*.json",
+    ]),
 )

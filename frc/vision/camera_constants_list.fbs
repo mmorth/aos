@@ -1,0 +1,14 @@
+include "frc/vision/camera_constants.fbs";
+
+namespace frc.vision;
+
+table TeamAndCameraConstants {
+  team:uint32 (id: 0);
+  data:CameraConstants (id: 1);
+}
+
+table CameraConstantsList {
+  constants:[TeamAndCameraConstants] (id: 0);
+}
+
+root_type CameraConstantsList;

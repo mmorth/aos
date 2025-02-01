@@ -1,0 +1,9 @@
+include "frc/vision/calibration.fbs";
+
+namespace frc.vision;
+
+table CameraConstants {
+  calibration:[frc.vision.calibration.CameraCalibration] (id: 0);
+}
+
+root_type CameraConstants;
