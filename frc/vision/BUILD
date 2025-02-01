@@ -2,6 +2,7 @@ load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_py_library")
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
 load("//aos:config.bzl", "aos_config")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
+load("//frc:downloader.bzl", "robot_downloader")
 load("//tools/build_rules:template.bzl", "jinja2_template")
 
 cc_binary(
@@ -535,6 +536,22 @@ cc_library(
         "//third_party:opencv",
         "@org_tuxfamily_eigen//:eigen",
     ],
+)
+
+robot_downloader(
+    binaries = [
+        ":vision_constants_sender",
+        ":turbojpeg_decoder",
+        ":apriltag_detector",
+        "//aos/events:aos_timing_report_streamer",
+        "//aos/util:foxglove_websocket",
+    ],
+    data = [
+        ":aos_config",
+        ":constants.json",
+    ],
+    target_compatible_with = ["@platforms//cpu:arm64"],
+    target_type = "orin",
 )
 
 cc_binary(
