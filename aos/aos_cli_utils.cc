@@ -287,6 +287,8 @@ void PrintMessage(const std::string_view node_name, const aos::Channel *channel,
 
   builder->Reset();
 
+  CHECK(channel->schema() != nullptr)
+      << ": No schema on " << aos::FlatbufferToJson(channel);
   CHECK(flatbuffers::Verify(*channel->schema(),
                             *channel->schema()->root_table(),
                             static_cast<const uint8_t *>(context.data),
