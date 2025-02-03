@@ -3,11 +3,17 @@ namespace frc.vision;
 // Contains the image data from one frame of a camera.
 enum ImageFormat : uint8 {
   // V4L2_PIX_FMT_YUYV.  Y0, U, Y1, V, with 4 bytes for every 2 pixels, row major.
-  YUYV = 0,
+  YUYV422 = 0,
   // JPEGs with headers.
   MJPEG = 1,
-  // 8 bit grayscale image, row major
-  GRAYSCALE = 2,
+  // 8 bit mono image, row major
+  MONO8 = 2,
+  // 16 bit mono image, row major
+  MONO16 = 3,
+  // BGR, 8 bit/pixel, row major
+  BGR8 = 4,
+  // BGRA, 8 bits/pixel, row major.  A is "alpha" here
+  BGRA8 = 5,
 }
 
 table CameraImage {
@@ -20,7 +26,7 @@ table CameraImage {
   // Timestamp when the frame was captured. This is the end-of-frame timestamp.
   monotonic_timestamp_ns:int64 (id: 3);
   // Image format in memory
-  format:ImageFormat = YUYV (id: 4);
+  format:ImageFormat = YUYV422 (id: 4);
 }
 
 root_type CameraImage;

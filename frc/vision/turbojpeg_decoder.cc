@@ -74,7 +74,7 @@ class TurboJpegDecoder {
     camera_image_builder.add_data(data_offset);
     camera_image_builder.add_monotonic_timestamp_ns(
         image.monotonic_timestamp_ns());
-    camera_image_builder.add_format(frc::vision::ImageFormat::GRAYSCALE);
+    camera_image_builder.add_format(frc::vision::ImageFormat::MONO8);
 
     builder.CheckOk(builder.Send(camera_image_builder.Finish()));
 
