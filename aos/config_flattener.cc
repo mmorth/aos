@@ -61,6 +61,11 @@ int Main(int argc, char **argv) {
       << ": Failed to verify flatbuffer. NOTE: Very large flatbuffers could be "
          "exceeding max_tables in flatbuffers::Verifier.";
 
+  for (const Channel *c : *merged_config.message().channels()) {
+    CHECK(c->has_schema()) << ": Channel doesn't have a schema "
+                           << FlatbufferToJson(c);
+  }
+
   const std::string merged_config_json =
       FlatbufferToJson(&merged_config.message(), {.multi_line = true});
 
