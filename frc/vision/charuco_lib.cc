@@ -78,9 +78,10 @@ CameraCalibration::CameraCalibration(
         return result;
       }()) {}
 
-ImageCallback::ImageCallback(
+CameraImageCallback::CameraImageCallback(
     aos::EventLoop *event_loop, std::string_view channel,
-    std::function<void(cv::Mat, monotonic_clock::time_point)> &&handle_image_fn,
+    std::function<void(const CameraImage &, monotonic_clock::time_point)>
+        &&handle_image_fn,
     monotonic_clock::duration max_age)
     : event_loop_(event_loop),
       server_fetcher_(
@@ -150,33 +151,75 @@ ImageCallback::ImageCallback(
       VLOG(2) << "Age: " << age_double << ", getting behind, skipping";
       return;
     }
-    // Create color image:
-    cv::Mat image_color_mat(cv::Size(image.cols(), image.rows()), CV_8UC2,
-                            (void *)image.data()->data());
-    const cv::Size image_size(image.cols(), image.rows());
-    switch (format_) {
-      case Format::GRAYSCALE: {
-        ftrace_.FormatMessage("Starting yuyv->greyscale\n");
-        cv::Mat gray_image(image_size, CV_8UC3);
-        cv::cvtColor(image_color_mat, gray_image, cv::COLOR_YUV2GRAY_YUYV);
-        handle_image_(gray_image, eof);
-      } break;
-      case Format::BGR: {
-        cv::Mat rgb_image(image_size, CV_8UC3);
-        cv::cvtColor(image_color_mat, rgb_image, cv::COLOR_YUV2BGR_YUYV);
-        handle_image_(rgb_image, eof);
-      } break;
-      case Format::YUYV2: {
-        handle_image_(image_color_mat, eof);
-      };
-    }
+
+    ftrace_.FormatMessage("Starting conversion\n");
+    handle_image_(image, eof);
   });
 }
 
-void ImageCallback::DisableTracing() {
+void CameraImageCallback::DisableTracing() {
   disabling_ = false;
   ftrace_.TurnOffOrDie();
 }
+
+ImageCallback::ImageCallback(
+    aos::EventLoop *event_loop, std::string_view channel,
+    std::function<void(cv::Mat, monotonic_clock::time_point)> &&handle_image_fn,
+    monotonic_clock::duration max_age)
+    : handle_image_(std::move(handle_image_fn)),
+      camera_image_callback_(
+          event_loop, channel,
+          [this](const CameraImage &image, monotonic_clock::time_point eof) {
+            switch (image.format()) {
+              case vision::ImageFormat::MONO8: {
+                CHECK(format_ == Format::GRAYSCALE);
+                cv::Mat gray_image(cv::Size(image.cols(), image.rows()),
+                                   CV_8UC1, (void *)image.data()->data());
+                const cv::Size image_size(image.cols(), image.rows());
+                handle_image_(gray_image, eof);
+              } break;
+              case vision::ImageFormat::MONO16:
+                LOG(FATAL) << "Unsupported image format MONO16";
+                break;
+              case vision::ImageFormat::YUYV422: {
+                // Create color image:
+                cv::Mat image_color_mat(cv::Size(image.cols(), image.rows()),
+                                        CV_8UC2, (void *)image.data()->data());
+                const cv::Size image_size(image.cols(), image.rows());
+                switch (format_) {
+                  case Format::GRAYSCALE: {
+                    cv::Mat gray_image(image_size, CV_8UC3);
+                    cv::cvtColor(image_color_mat, gray_image,
+                                 cv::COLOR_YUV2GRAY_YUYV);
+                    handle_image_(gray_image, eof);
+                  } break;
+                  case Format::BGR: {
+                    cv::Mat rgb_image(image_size, CV_8UC3);
+                    cv::cvtColor(image_color_mat, rgb_image,
+                                 cv::COLOR_YUV2BGR_YUYV);
+                    handle_image_(rgb_image, eof);
+                  } break;
+                  case Format::YUYV2: {
+                    handle_image_(image_color_mat, eof);
+                  };
+                }
+              } break;
+              case vision::ImageFormat::BGR8: {
+                CHECK(format_ == Format::BGR);
+                cv::Mat bgr_image(cv::Size(image.cols(), image.rows()), CV_8UC3,
+                                  (void *)image.data()->data());
+                const cv::Size image_size(image.cols(), image.rows());
+                handle_image_(bgr_image, eof);
+              } break;
+              case vision::ImageFormat::BGRA8:
+                LOG(FATAL) << "Unsupported image format MONO16";
+                return;
+              case vision::ImageFormat::MJPEG:
+                LOG(FATAL) << "Unsupported image format MJPEG";
+                return;
+            }
+          },
+          max_age) {}
 
 cv::Ptr<cv::aruco::CharucoBoard> MakeCharucoBoard(
     cv::Size board_size, float square_length, float marker_length,

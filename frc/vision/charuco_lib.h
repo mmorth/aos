@@ -17,6 +17,7 @@
 #include "aos/events/event_loop.h"
 #include "aos/network/message_bridge_server_generated.h"
 #include "frc/vision/calibration_generated.h"
+#include "frc/vision/vision_generated.h"
 
 ABSL_DECLARE_FLAG(bool, visualize);
 
@@ -39,6 +40,34 @@ class CameraCalibration {
   const cv::Mat intrinsics_;
   const Eigen::Matrix3d intrinsics_eigen_;
   const cv::Mat dist_coeffs_;
+};
+
+// Helper class to call a function with a CameraImage flatbuffer and age when an
+// image shows up on the provided channel.  This handles getting behind nicely.
+class CameraImageCallback {
+ public:
+  // `max_age` is the age to start dropping frames at
+  CameraImageCallback(
+      aos::EventLoop *event_loop, std::string_view channel,
+      std::function<void(const CameraImage &image,
+                         aos::monotonic_clock::time_point)> &&handle_image_fn,
+      aos::monotonic_clock::duration max_age = std::chrono::milliseconds(100));
+
+ private:
+  void DisableTracing();
+
+  aos::EventLoop *event_loop_;
+  aos::Fetcher<aos::message_bridge::ServerStatistics> server_fetcher_;
+  const aos::Node *source_node_;
+  std::function<void(const CameraImage &, aos::monotonic_clock::time_point)>
+      handle_image_;
+  aos::TimerHandler *timer_fn_;
+
+  bool disabling_ = false;
+
+  aos::Ftrace ftrace_;
+
+  aos::monotonic_clock::duration max_age_;
 };
 
 // Helper class to call a function with a cv::Mat and age when an image shows up
@@ -64,21 +93,10 @@ class ImageCallback {
   void set_format(Format format) { format_ = format; }
 
  private:
-  void DisableTracing();
-
-  aos::EventLoop *event_loop_;
-  aos::Fetcher<aos::message_bridge::ServerStatistics> server_fetcher_;
-  const aos::Node *source_node_;
   std::function<void(cv::Mat, aos::monotonic_clock::time_point)> handle_image_;
-  aos::TimerHandler *timer_fn_;
 
-  bool disabling_ = false;
-
-  aos::Ftrace ftrace_;
-
+  CameraImageCallback camera_image_callback_;
   Format format_ = Format::BGR;
-
-  aos::monotonic_clock::duration max_age_;
 };
 
 // Types of targets that a CharucoExtractor can detect in images
