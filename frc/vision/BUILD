@@ -458,6 +458,7 @@ cc_test(
         "//y2024/constants/calib_files",
         "@intrinsic_calibration_test_images",
     ],
+    shard_count = 4,
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":intrinsics_calibration",

@@ -25,6 +25,9 @@ ABSL_FLAG(bool, coarse_pattern, true,
           "If true, use coarse arucos; else, use fine");
 ABSL_FLAG(uint32_t, gray_threshold, 0,
           "If > 0, threshold image based on this grayscale value");
+ABSL_FLAG(bool, twenty_inch_large_board, false,
+          "If true, use the large calibration board from "
+          "etsy.com/listing/1820746969/charuco-calibration-target");
 ABSL_FLAG(bool, large_board, true, "If true, use the large calibration board.");
 // Rule of thumb for # of points from paper: https://arxiv.org/pdf/1907.04096
 // is to add 5x constraints for each new unknown.
@@ -202,28 +205,40 @@ void CharucoExtractor::SetupTargetData() {
 #if CV_VERSION_MINOR >= 9
         cv::makePtr<cv::aruco::Dictionary>
 #endif
-        (cv::aruco::getPredefinedDictionary(absl::GetFlag(FLAGS_large_board)
-                                                ? cv::aruco::DICT_5X5_250
-                                                : cv::aruco::DICT_6X6_250));
+        (cv::aruco::getPredefinedDictionary(
+            absl::GetFlag(FLAGS_twenty_inch_large_board)
+                ? cv::aruco::DICT_4X4_250
+                : (absl::GetFlag(FLAGS_large_board)
+                       ? cv::aruco::DICT_5X5_250
+                       : cv::aruco::DICT_6X6_250)));
     if (target_type_ == TargetType::kCharuco) {
       LOG(INFO) << "Using "
-                << (absl::GetFlag(FLAGS_large_board) ? "large" : "small")
+                << (absl::GetFlag(FLAGS_twenty_inch_large_board)
+                        ? "20\" large"
+                        : (absl::GetFlag(FLAGS_large_board) ? "large"
+                                                            : "small"))
                 << " charuco board with "
                 << (absl::GetFlag(FLAGS_coarse_pattern) ? "coarse" : "fine")
                 << " pattern";
-      board_ = (absl::GetFlag(FLAGS_large_board)
-                    ? (absl::GetFlag(FLAGS_coarse_pattern)
-                           ? MakeCharucoBoard(cv::Size(12, 9), 0.06, 0.04666,
-                                              dictionary_)
-                           : MakeCharucoBoard(cv::Size(25, 18), 0.03, 0.0233,
-                                              dictionary_))
-                    : (absl::GetFlag(FLAGS_coarse_pattern)
-                           ? MakeCharucoBoard(cv::Size(7, 5), 0.04, 0.025,
-                                              dictionary_)
-                           // TODO(jim): Need to figure out what
-                           // size is for small board, fine pattern
-                           : MakeCharucoBoard(cv::Size(7, 5), 0.03, 0.0233,
-                                              dictionary_)));
+      if (absl::GetFlag(FLAGS_twenty_inch_large_board)) {
+        board_ = MakeCharucoBoard(cv::Size(15, 15), 0.03, 0.022, dictionary_);
+      } else if (absl::GetFlag(FLAGS_large_board)) {
+        if (absl::GetFlag(FLAGS_coarse_pattern)) {
+          board_ =
+              MakeCharucoBoard(cv::Size(12, 9), 0.06, 0.04666, dictionary_);
+        } else {
+          board_ =
+              MakeCharucoBoard(cv::Size(25, 18), 0.03, 0.0233, dictionary_);
+        }
+      } else {
+        if (absl::GetFlag(FLAGS_coarse_pattern)) {
+          board_ = MakeCharucoBoard(cv::Size(7, 5), 0.04, 0.025, dictionary_);
+        } else {
+          // TODO(jim): Need to figure out what
+          // size is for small board, fine pattern
+          board_ = MakeCharucoBoard(cv::Size(7, 5), 0.03, 0.0233, dictionary_);
+        }
+      }
       if (!absl::GetFlag(FLAGS_board_template_path).empty()) {
         cv::Mat board_image;
 #if CV_VERSION_MINOR >= 9
