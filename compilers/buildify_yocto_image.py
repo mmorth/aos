@@ -16,7 +16,7 @@ REQUIRED_DEPS = ["xfsprogs"]
 
 def do_package(yocto_root, partition):
     tarball = datetime.date.today().strftime(
-        f"{os.getcwd()}/%Y-%m-%d-scarthgap-arm64-nvidia-rootfs.tar")
+        f"{os.getcwd()}/%Y-%m-%d-walnascar-arm64-nvidia-rootfs.tar")
     print(tarball, file=sys.stderr)
 
     subprocess.run([
@@ -99,7 +99,8 @@ def main(argv):
 
     full_image = os.path.join(
         argv[1],
-        "build/demo-image-base-jetson-orin-nano-som.rootfs.tegraflash.tar.zst")
+        "build/demo-image-base-p3768-0000-p3767-0003.rootfs.tegraflash.tar.zst"
+    )
 
     if not check_buildifier():
         print(

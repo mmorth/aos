@@ -326,7 +326,7 @@ llvm_toolchain(
     },
     standard_libraries = {
         "linux-x86_64": "libstdc++-12",
-        "linux-aarch64": "libstdc++-13.3.0",
+        "linux-aarch64": "libstdc++-14.2.0",
     },
     static_libstdcxx = False,
     sysroot = {
@@ -440,8 +440,8 @@ http_archive(
 http_archive(
     name = "arm64_debian_sysroot",
     build_file = "@//:compilers/orin_debian_rootfs.BUILD",
-    sha256 = "de0a08c3d9cf4205055afa2df3badc04cebc13f6dbe2722da44430299a85a060",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-01-19-scarthgap-arm64-nvidia-rootfs.tar.zst",
+    sha256 = "351d97e255874d7739f38dda2747ca3939d68e66094f82ede54f0c69a198e9f5",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-02-02-walnascar-arm64-nvidia-rootfs.tar.zst",
 )
 
 # Sysroot generated using //frc/amd64/build_rootfs.py
