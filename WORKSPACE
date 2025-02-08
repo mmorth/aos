@@ -1550,22 +1550,6 @@ http_file(
 )
 
 http_archive(
-    name = "libedgetpu",
-    build_file = "//third_party:libedgetpu/libedgetpu.BUILD",
-    sha256 = "c900faf2c9ea9599fda60c3d03ac43d0d7b34119659c9e35638b81cd14354b57",
-    strip_prefix = "libedgetpu-bazel",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/libedgetpu-ddfa7bde33c23afd8c2892182faa3e5b4e6ad94e.tar.gz",
-)
-
-http_archive(
-    name = "libtensorflowlite",
-    build_file = "//third_party:libtensorflowlite/libtensorflowlite.BUILD",
-    sha256 = "a073dfddb3cb25113ba7eac6edb5569d0ae7988cad881d3f665e8ca0b8b85108",
-    strip_prefix = "tensorflow-bazel",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/tensorflow-a4dfb8d1a71385bd6d122e4f27f86dcebb96712d.tar.gz",
-)
-
-http_archive(
     name = "julia",
     build_file = "//third_party:julia/julia.BUILD",
     patch_cmds = [
