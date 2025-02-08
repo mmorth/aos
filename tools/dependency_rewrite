@@ -20,6 +20,7 @@ rewrite www.googleapis.com/(.*) realtimeroboticsgroup.org/build-dependencies/www
 rewrite www.johnvansickle.com/(.*) realtimeroboticsgroup.org/build-dependencies/www.johnvansickle.com/$1
 rewrite docs.opencv.org/(.*) realtimeroboticsgroup.org/build-dependencies/docs.opencv.org/$1
 rewrite security.ubuntu.com/(.*) realtimeroboticsgroup.org/build-dependencies/security.ubuntu.com/$1
+rewrite frcmaven.wpi.edu/(.*) realtimeroboticsgroup.org/build-dependencies/frcmaven.wpi.edu/$1
 allow crates.io
 allow golang.org
 allow go.dev
