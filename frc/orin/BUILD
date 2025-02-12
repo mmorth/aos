@@ -92,8 +92,6 @@ cc_test(
         "//frc/vision:vision_fbs",
         "//third_party:opencv",
         "//third_party/apriltag",
-        "//y2023/vision:ThresholdHalide",
-        "//y2023/vision:ToGreyscaleAndDecimateHalide",
     ],
 )
 
@@ -243,4 +241,20 @@ cc_test(
         "//frc/vision:calibration_fbs",
         "//frc/vision:charuco_lib",
     ],
+)
+
+halide_library(
+    name = "ToGreyscaleAndDecimateHalide",
+    src = "april_generator.cc",
+    args = "rows=720 cols=1280",
+    function = "decimate_generator",
+    visibility = ["//visibility:public"],
+)
+
+halide_library(
+    name = "ThresholdHalide",
+    src = "april_generator.cc",
+    args = "rows=360 cols=640",
+    function = "threshold_generator",
+    visibility = ["//visibility:public"],
 )
