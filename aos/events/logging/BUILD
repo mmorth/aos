@@ -923,6 +923,7 @@ cc_test(
     deps = [
         ":log_reader_utils",
         ":multinode_logger_test_lib",
+        "@com_google_absl//absl/log:die_if_null",
     ],
 )
 
