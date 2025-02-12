@@ -1272,6 +1272,15 @@ TEST_F(ConfigurationTest, RemoveChannelsFromConfigMultiNode) {
                               test_channel_type);
 }
 
+// Tests that schema validation fails when we fail to provide schemas for every
+// channel.
+TEST_F(ConfigurationDeathTest, ValidateAllSchemasAvailable) {
+  FlatbufferDetachedBuffer<Configuration> config =
+      ReadConfig(ArtifactPath("aos/testdata/config1.json"));
+  EXPECT_DEATH(MergeConfiguration(config, {}),
+               "Failed to find schema.*.aos.bar");
+}
+
 // Test fixture for testing IsNodeFromConfiguration.
 // Initializes multiple configurations which share the same node names.
 // Use IsNodeFromConfiguration to check if a node is in a configuration.

@@ -1091,7 +1091,13 @@ void ValidateUnmergedConfiguration(const Flatbuffer<Configuration> &config) {
   }
 }
 
-void ValidateConfiguration(const Flatbuffer<Configuration> &config) {
+// Indicates whether ValidateConfiguration should validate that there is a
+// schema available for every channel (some calls to ValidateConfiguration are
+// made before channel schemas are available).
+enum class CheckSchemaExistence { kYes, kNo };
+
+void ValidateConfiguration(const Flatbuffer<Configuration> &config,
+                           const CheckSchemaExistence check_schemas) {
   // No imports should be left.
   CHECK(!config.message().has_imports());
 
@@ -1108,6 +1114,11 @@ void ValidateConfiguration(const Flatbuffer<Configuration> &config) {
             << ": Channels not sorted!";
       }
       last_channel = c;
+
+      if (check_schemas == CheckSchemaExistence::kYes) {
+        CHECK(c->has_schema())
+            << ": Failed to find schema for " << StrippedChannelToString(c);
+      }
     }
   }
 
@@ -1325,7 +1336,7 @@ FlatbufferDetachedBuffer<Configuration> MergeConfiguration(
 
   FlatbufferDetachedBuffer<aos::Configuration> result(fbb.Release());
 
-  ValidateConfiguration(result);
+  ValidateConfiguration(result, CheckSchemaExistence::kNo);
 
   return result;
 }
@@ -1365,7 +1376,7 @@ std::optional<FlatbufferDetachedBuffer<Configuration>> MaybeReadConfig(
   // If we only read one file, and it had a .bfbs extension, it has to be a
   // fully formatted config.  Do a quick verification and return it.
   if (visited_paths.size() == 1 && EndsWith(*visited_paths.begin(), ".bfbs")) {
-    ValidateConfiguration(*read_config);
+    ValidateConfiguration(*read_config, CheckSchemaExistence::kYes);
     return read_config;
   }
 
@@ -1511,8 +1522,10 @@ FlatbufferDetachedBuffer<Configuration> MergeConfiguration(
   fbb.ForceDefaults(true);
 
   fbb.Finish(PackConfiguration(unpacked_config, &fbb));
-
-  return aos::FlatbufferDetachedBuffer<aos::Configuration>(fbb.Release());
+  aos::FlatbufferDetachedBuffer<aos::Configuration> merged_config(
+      fbb.Release());
+  ValidateConfiguration(merged_config, CheckSchemaExistence::kYes);
+  return merged_config;
 }
 
 const Node *GetNodeFromHostname(const Configuration *config,
