@@ -141,7 +141,7 @@ TEST_F(TopTest, QuerySingleProcessWithThreads) {
   std::set<std::string_view> thread_names;
   double thread_cpu_usage = 0.0;
   for (const ThreadInfo *thread_info : *info.message().threads()) {
-    thread_names.insert(thread_info->name()->str());
+    thread_names.insert(thread_info->name()->string_view());
     thread_cpu_usage += thread_info->cpu_usage();
     ASSERT_TRUE(thread_info->has_state());
   }
