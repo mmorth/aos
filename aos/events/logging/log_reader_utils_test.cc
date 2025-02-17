@@ -1,5 +1,7 @@
 #include "aos/events/logging/log_reader_utils.h"
 
+#include "absl/log/die_if_null.h"
+
 #include "aos/events/logging/file_operations.h"
 #include "aos/events/logging/multinode_logger_test_lib.h"
 #include "aos/events/ping_lib.h"
@@ -106,6 +108,7 @@ TEST_P(MultinodeLoggerOneConfigTest, SingleNodeLogReplay) {
   ReplayChannels replay_channels{{"/test", "aos.examples.Ping"}};
   LogReader reader(logger::SortParts(actual_filenames), &config_.message(),
                    &replay_channels);
+
   SimulatedEventLoopFactory log_reader_factory(reader.configuration());
   int ping_count = 0;
   int pong_count = 0;
@@ -113,6 +116,28 @@ TEST_P(MultinodeLoggerOneConfigTest, SingleNodeLogReplay) {
   // This sends out the fetched messages and advances time to the start of the
   // log file.
   reader.Register(&log_reader_factory);
+
+  // Check that Pong Sender was *not* created since it is not present in
+  // ReplayChannels passed to LogReader
+  {
+    const Channel *channel = ABSL_DIE_IF_NULL(
+        aos::configuration::GetChannel(reader.logged_configuration(), "/test",
+                                       "aos.examples.Pong", "", pi2_->node()));
+    size_t pong_index = aos::configuration::ChannelIndex(
+        reader.logged_configuration(), channel);
+    EXPECT_FALSE(HasSender(reader, pong_index));
+  }
+
+  // Check that Ping Sender *was* created since it is present in ReplayChannels
+  // passed to LogReader
+  {
+    const Channel *channel = ABSL_DIE_IF_NULL(
+        aos::configuration::GetChannel(reader.logged_configuration(), "/test",
+                                       "aos.examples.Ping", "", pi2_->node()));
+    size_t ping_index = aos::configuration::ChannelIndex(
+        reader.logged_configuration(), channel);
+    EXPECT_TRUE(HasSender(reader, ping_index));
+  }
 
   const Node *pi1 =
       configuration::GetNode(log_reader_factory.configuration(), "pi1");
