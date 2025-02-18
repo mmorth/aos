@@ -146,6 +146,9 @@ T CheckExpected(const Result<T> &expected) {
 template <>
 void CheckExpected<void>(const Result<void> &expected);
 
+// Convenience method to explicitly construct an "okay" Result<void>.
+inline Result<void> Ok() { return Result<void>{}; }
+
 int ResultExitCode(const Result<void> &expected);
 }  // namespace aos
 #endif  // AOS_UTIL_STATUS_H_
