@@ -117,10 +117,6 @@ load(
     apache2_debs = "files",
 )
 load(
-    "//debian:arm_frc_gnueabi_deps.bzl",
-    arm_frc_gnueabi_deps_debs = "files",
-)
-load(
     "//debian:clang_amd64.bzl",
     clang_amd64_debs = "files",
 )
@@ -144,14 +140,6 @@ load("//debian:packages.bzl", "generate_repositories_for_debs")
 load(
     "//debian:pandoc.bzl",
     pandoc_debs = "files",
-)
-load(
-    "//debian:patch.bzl",
-    patch_debs = "files",
-)
-load(
-    "//debian:patchelf.bzl",
-    patchelf_debs = "files",
 )
 load(
     "//debian:phoenix6.bzl",
@@ -182,17 +170,11 @@ generate_repositories_for_debs(apache2_debs)
 
 generate_repositories_for_debs(postgresql_amd64_debs)
 
-generate_repositories_for_debs(patch_debs)
-
 generate_repositories_for_debs(pandoc_debs)
 
 generate_repositories_for_debs(libusb_debs)
 
 generate_repositories_for_debs(mingw_compiler_debs)
-
-generate_repositories_for_debs(patchelf_debs)
-
-generate_repositories_for_debs(arm_frc_gnueabi_deps_debs)
 
 generate_repositories_for_debs(gtk_runtime_debs)
 
@@ -452,22 +434,6 @@ http_archive(
     url = "https://realtimeroboticsgroup.org/build-dependencies/2025-01-26-bookworm-amd64-nvidia-rootfs.tar.zst",
 )
 
-# For protobuf. Don't use these.
-bind(
-    name = "six",
-    actual = "@pip//six",
-)
-
-bind(
-    name = "gtest",
-    actual = "@com_google_googletest//:gtest",
-)
-
-bind(
-    name = "gtest_main",
-    actual = "@com_google_googletest//:gtest_main",
-)
-
 http_archive(
     name = "april_tag_test_image",
     build_file_content = """
@@ -500,13 +466,6 @@ http_archive(
     build_file = "@//debian:postgresql_amd64.BUILD",
     sha256 = "483e199d0e7feae7cca0df132c649b5c20ddcc1a17760e656c25709f44f57a65",
     url = "https://realtimeroboticsgroup.org/build-dependencies/postgresql_amd64_v2.tar.gz",
-)
-
-http_archive(
-    name = "patch",
-    build_file = "@//debian:patch.BUILD",
-    sha256 = "b5ce139648a2e04f5585948ddad2fdae24dd4ee7976ac5a22d6ae7bd5674631e",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/patch.tar.gz",
 )
 
 http_archive(
@@ -567,20 +526,6 @@ http_archive(
     build_file = "@//debian:mingw_compiler.BUILD",
     sha256 = "45e86a8460f2151a4f0306e7ae7b06761029d2412ee16f63d1e8d2d29354e378",
     url = "https://realtimeroboticsgroup.org/build-dependencies/mingw_compiler.tar.gz",
-)
-
-http_archive(
-    name = "patchelf",
-    build_file = "@//debian:patchelf.BUILD",
-    sha256 = "bf8b709909d7d9e30815dd228eeded7dc282e3ce3919d0589ccbb56ac8632abc",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/patchelf.tar.gz",
-)
-
-http_archive(
-    name = "arm_frc_gnueabi_deps",
-    build_file = "@//debian:arm_frc_gnueabi_deps.BUILD",
-    sha256 = "4b26fe45010817dc136488ee1604ade21bd7c264c29f17d864fc6eba9d7442c4",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/arm_frc_gnueabi_deps.tar.gz",
 )
 
 http_archive(

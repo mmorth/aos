@@ -3,10 +3,6 @@ load(
     apache2_debs = "files",
 )
 load(
-    ":arm_frc_gnueabi_deps.bzl",
-    arm_frc_gnueabi_deps_debs = "files",
-)
-load(
     ":clang_amd64.bzl",
     clang_amd64_debs = "files",
 )
@@ -26,14 +22,6 @@ load(":packages.bzl", "download_packages", "generate_deb_tarball")
 load(
     ":pandoc.bzl",
     pandoc_debs = "files",
-)
-load(
-    ":patch.bzl",
-    patch_debs = "files",
-)
-load(
-    ":patchelf.bzl",
-    patchelf_debs = "files",
 )
 load(
     ":phoenix6.bzl",
@@ -174,14 +162,6 @@ download_packages(
 )
 
 download_packages(
-    name = "download_patch_deps",
-    packages = [
-        "patch",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-download_packages(
     name = "download_pandoc_deps",
     packages = [
         "pandoc",
@@ -208,32 +188,6 @@ download_packages(
     target_compatible_with = ["@platforms//os:linux"],
 )
 
-download_packages(
-    name = "download_patchelf_deps",
-    packages = [
-        "patchelf",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-# This list was obtained by manually looking at the output from:
-# find bazel-out/../../../external/arm_frc_linux_gnueabi_repo/ -executable -type f -exec ldd {} + | sed 's/=>.*//g' | sort -u
-download_packages(
-    name = "download_arm_frc_gnueabi_deps",
-    packages = [
-        "libexpat1",
-        "libgmp10",
-        "libisl10",
-        "liblzma5",
-        "libmpc3",
-        "libmpfr4",
-        "libncurses5",
-        "libtinfo5",
-        "zlib1g",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
 generate_deb_tarball(
     name = "phoenix6",
     files = phoenix6_debs,
@@ -249,12 +203,6 @@ generate_deb_tarball(
 generate_deb_tarball(
     name = "postgresql_amd64",
     files = postgresql_amd64_debs,
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-generate_deb_tarball(
-    name = "patch",
-    files = patch_debs,
     target_compatible_with = ["@platforms//os:linux"],
 )
 
@@ -285,18 +233,6 @@ generate_deb_tarball(
 generate_deb_tarball(
     name = "mingw_compiler",
     files = mingw_compiler_debs,
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-generate_deb_tarball(
-    name = "patchelf",
-    files = patchelf_debs,
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-generate_deb_tarball(
-    name = "arm_frc_gnueabi_deps",
-    files = arm_frc_gnueabi_deps_debs,
     target_compatible_with = ["@platforms//os:linux"],
 )
 
