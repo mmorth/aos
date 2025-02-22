@@ -117,10 +117,6 @@ load(
     apache2_debs = "files",
 )
 load(
-    "//debian:clang_amd64.bzl",
-    clang_amd64_debs = "files",
-)
-load(
     "//debian:gtk_runtime.bzl",
     gtk_runtime_debs = "files",
 )
@@ -178,8 +174,6 @@ generate_repositories_for_debs(
 )
 
 generate_repositories_for_debs(xvfb_amd64_debs)
-
-generate_repositories_for_debs(clang_amd64_debs)
 
 generate_repositories_for_debs(phoenix6_debs)
 
@@ -1275,31 +1269,6 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.4.tar.gz",
     ],
-)
-
-http_archive(
-    name = "clang_amd64_deps",
-    build_file_content = """
-libs = [
-    'lib/x86_64-linux-gnu/libtinfo.so.5',
-    'lib/x86_64-linux-gnu/libtinfo.so.5.9',
-    'usr/lib/x86_64-linux-gnu/libxml2.so.2',
-    'usr/lib/x86_64-linux-gnu/libxml2.so.2.9.14',
-    'usr/lib/x86_64-linux-gnu/libicuuc.so.72',
-    'usr/lib/x86_64-linux-gnu/libicuuc.so.72.1',
-    'usr/lib/x86_64-linux-gnu/libicudata.so.72',
-    'usr/lib/x86_64-linux-gnu/libicudata.so.72.1',
-]
-exports_files(libs, ["//visibility:public"])
-
-filegroup(
-    name = "all",
-    srcs = libs,
-    visibility = ["//visibility:public"],
-)
-""",
-    sha256 = "6ae7cbedd9b1d54da095d460e2832c2a3e2917fbfa2ed22c6787d4b527a5677d",
-    urls = ["https://realtimeroboticsgroup.org/build-dependencies/clang_amd64.tar.gz"],
 )
 
 http_archive(

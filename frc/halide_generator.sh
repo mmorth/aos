@@ -22,14 +22,10 @@ BINARY="$1"
 SOURCE="$2"
 HALIDE="$(rlocation halide_k8)"
 SYSROOT="$(rlocation amd64_debian_sysroot)"
-ZLIB1G_DEV_AMD64_DEB="$(rlocation deb_zlib1g_dev_1_2_11_dfsg_2_amd64_deb_repo/file/zlib1g-dev_1.2.11.dfsg-2_amd64.deb)"
-ZLIB1G_DEV="$(mktemp -d)"
 LLVM_TOOLCHAIN="$(dirname "$(dirname "$(rlocation llvm_k8/bin/clang)")")"
-LLVM_LIBS="$(rlocation clang_amd64_deps)/usr/lib/x86_64-linux-gnu/"
-dpkg-deb -x "${ZLIB1G_DEV_AMD64_DEB}" "${ZLIB1G_DEV}"
 TARGET=x86_64-unknown-linux-gnu
 MULTIARCH=x86_64-linux-gnu
-export LD_LIBRARY_PATH="${SYSROOT}/usr/lib:${SYSROOT}/lib:${ZLIB1G_DEV}/usr/lib/${MULTIARCH}:${LLVM_LIBS}"
+export LD_LIBRARY_PATH="${SYSROOT}/usr/lib:${SYSROOT}/lib:${SYSROOT}/usr/lib/${MULTIARCH}"
 "${LLVM_TOOLCHAIN}/bin/clang++" \
   -fcolor-diagnostics \
   -I"${HALIDE}/include" \
@@ -47,8 +43,8 @@ export LD_LIBRARY_PATH="${SYSROOT}/usr/lib:${SYSROOT}/lib:${ZLIB1G_DEV}/usr/lib/
   -fuse-ld=lld \
   -L"${LLVM_TOOLCHAIN}/lib" \
   -L"${SYSROOT}/usr/lib" \
-  -L"${SYSROOT}/usr/lib/gcc/${MULTIARCH}/7" \
-  -L"${ZLIB1G_DEV}/usr/lib/${MULTIARCH}" \
+  -L"${SYSROOT}/usr/lib/gcc/${MULTIARCH}/12" \
+  -L"${SYSROOT}/usr/lib/${MULTIARCH}" \
   "${HALIDE}/lib/libHalide.a" \
   -lstdc++ -lpthread -ldl -lm -lz \
   -std=gnu++20 \
