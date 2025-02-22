@@ -190,6 +190,14 @@ table Node {
   // any of which will match this node.
   //
   // Don't specify a hostname in multiple nodes in the same configuration.
+
+  // Will be interpretted as a regex when
+  // attempting to match to device hostnames. E.g.,
+  // "hostnames": ["orin-1", "orin-[0-9]*-1"]
+  // will match any of:
+  // "orin-1", "orin-123-1", or "orin-456-1"
+  // but not:
+  // "orin-2", "orin-abc-1", or "orin-[0-9]*-1"
   hostnames:[string] (id: 3);
 
   // An arbitrary list of strings representing properties of each node.  These
