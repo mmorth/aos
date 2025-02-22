@@ -3,10 +3,6 @@ load(
     apache2_debs = "files",
 )
 load(
-    ":clang_amd64.bzl",
-    clang_amd64_debs = "files",
-)
-load(
     ":gtk_runtime.bzl",
     gtk_runtime_debs = "files",
 )
@@ -118,21 +114,6 @@ download_packages(
         "libgtk-3-dev",
         "librsvg2-common",
     ],
-)
-
-download_packages(
-    name = "download_clang_deps",
-    packages = [
-        "libtinfo5",
-        "libxml2",
-    ],
-    target_compatible_with = ["@platforms//os:linux"],
-)
-
-generate_deb_tarball(
-    name = "clang_amd64",
-    files = clang_amd64_debs,
-    target_compatible_with = ["@platforms//os:linux"],
 )
 
 download_packages(
