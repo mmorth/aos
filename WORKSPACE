@@ -129,10 +129,6 @@ load(
     libusb_debs = "files",
 )
 load(
-    "//debian:m4.bzl",
-    m4_debs = "files",
-)
-load(
     "//debian:mingw_compiler.bzl",
     mingw_compiler_debs = "files",
 )
@@ -180,8 +176,6 @@ generate_repositories_for_debs(
     },
     base_url = "https://realtimeroboticsgroup.org/build-dependencies/gstreamer_bullseye_amd64_deps",
 )
-
-generate_repositories_for_debs(m4_debs)
 
 generate_repositories_for_debs(xvfb_amd64_debs)
 
@@ -1573,13 +1567,6 @@ load("@com_github_storypku_bazel_iwyu//bazel:dependencies.bzl", "bazel_iwyu_depe
 bazel_iwyu_dependencies()
 
 http_archive(
-    name = "m4_v1.4.18",
-    build_file = "@//debian:m4.BUILD",
-    sha256 = "ee8dfe664ac8c1d066bab64f71bd076a021875581b3cc47dac4a14a475f50b15",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/m4.tar.gz",
-)
-
-http_archive(
     name = "symengine",
     build_file = "@//debian:symengine.BUILD",
     sha256 = "1b5c3b0bc6a9f187635f93585649f24a18e9c7f2167cebcd885edeaaf211d956",
@@ -1605,3 +1592,15 @@ filegroup(
     sha256 = "0359e5c19117835c6ec336233a3bbfe2b273797afe9460bf224496802b8f4055",
     url = "https://realtimeroboticsgroup.org/build-dependencies/intrinsic_calibration_test_images.tar.gz",
 )
+
+http_archive(
+    name = "rules_m4",
+    # Obtain the package checksum from the release page:
+    # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.4
+    sha256 = "e2ada6a8d6963dc57fa56ef15be1894c37ddd85f6195b21eb290a835b1cef03a",
+    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.4/rules_m4-v0.2.4.tar.zst"],
+)
+
+load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
+
+m4_register_toolchains(version = "1.4.18")

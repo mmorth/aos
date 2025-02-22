@@ -1,3 +1,5 @@
+load("@rules_m4//m4:m4.bzl", "M4_TOOLCHAIN_TYPE", "m4_toolchain")
+
 alternatives = {
     "add_n": ["aors_n"],
     "sub_n": ["aors_n"],
@@ -75,6 +77,7 @@ def mpn_cc_library(
     )
 
 def _m4_mpn_function_impl(ctx):
+    m4 = m4_toolchain(ctx)
     if len(ctx.files.files) == 0:
         out = ctx.actions.declare_file("mpn/" + ctx.attr.operation + ".c")
         ctx.actions.write(out, "")
@@ -97,12 +100,13 @@ def _m4_mpn_function_impl(ctx):
         inputs = [ctx.files.files[0]] + ctx.files.deps,
         outputs = [out],
         progress_message = "Generating " + out.short_path,
-        tools = [ctx.executable._m4] + ctx.attr._m4_lib.files.to_list(),
+        tools = [m4.m4_tool],
+        env = m4.m4_env,
         command = " && ".join([
             "ROOT=$(pwd)",
             "cd ./" + ruledir + "/mpn",
             "echo '#define OPERATION_" + ctx.attr.operation + " 1' > ${ROOT}/" + out.path,
-            "LD_LIBRARY_PATH=${ROOT}/external/m4_v1.4.18/usr/lib/x86_64-linux-gnu/ ${ROOT}/" + ctx.executable._m4.path + " -I ${ROOT}/" + ctx.var["GENDIR"] + "/" + ruledir + "/mpn" +
+            "${ROOT}/" + m4.m4_tool.executable.path + " -I ${ROOT}/" + ctx.var["GENDIR"] + "/" + ruledir + "/mpn" +
             " -DHAVE_CONFIG_H -D__GMP_WITHIN_GMP -DOPERATION_" + ctx.attr.operation +
             " -DPIC ${ROOT}/" + ctx.files.files[0].path + " >> ${ROOT}/" + out.path,
         ]),
@@ -122,17 +126,9 @@ _m4_mpn_function = rule(
         "operation": attr.string(
             mandatory = True,
         ),
-        "_m4": attr.label(
-            default = "@m4_v1.4.18//:bin",
-            cfg = "host",
-            executable = True,
-        ),
-        "_m4_lib": attr.label(
-            default = "@m4_v1.4.18//:lib",
-            cfg = "host",
-        ),
     },
     implementation = _m4_mpn_function_impl,
+    toolchains = [M4_TOOLCHAIN_TYPE],
 )
 
 def mparam_path(architecture_paths):
