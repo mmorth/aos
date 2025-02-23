@@ -698,3 +698,10 @@ camera_constants_json(
     src = ":constants_unvalidated.json",
     out = "constants.json",
 )
+
+static_flatbuffer(
+    name = "field_map_fbs",
+    srcs = ["field_map.fbs"],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+)
