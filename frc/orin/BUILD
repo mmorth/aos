@@ -48,7 +48,9 @@ cc_library(
         "arm64": [
             "neon_threshold.cc",
         ],
-        "else": [],
+        "else": [
+            "fatal_neon_threshold.cc",
+        ],
     }),
     hdrs = [
         "apriltag_types.h",
