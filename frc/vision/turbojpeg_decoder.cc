@@ -55,11 +55,18 @@ class TurboJpegDecoder {
 
     {
       aos::ScopedNotRealtime nrt;
-      CHECK_EQ(tjDecompressHeader3(handle_, image.data()->data(),
-                                   image.data()->size(), &width, &height,
-                                   &subsamp, &colorspace),
-               0)
-          << "Error decompressing header: " << tjGetErrorStr();
+      if (tjDecompressHeader3(handle_, image.data()->data(),
+                              image.data()->size(), &width, &height, &subsamp,
+                              &colorspace) != 0) {
+        ++failed_decodes_;
+        const char *const error = tjGetErrorStr();
+        const size_t truncated_len =
+            strnlen(error, last_error_message_.capacity());
+        last_error_message_.resize(truncated_len);
+        memcpy(last_error_message_.data(), error, truncated_len);
+        VLOG(1) << "Error decompressing image: " << error;
+        return;
+      }
     }
 
     auto builder = camera_output_sender_.MakeBuilder();
