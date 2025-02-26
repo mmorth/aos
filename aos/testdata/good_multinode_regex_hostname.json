@@ -1,0 +1,12 @@
+{
+  "nodes": [
+    {
+      "name": "pi1",
+      "hostnames": ["device-[0-9]*-1"]
+    },
+    {
+      "name": "pi2",
+      "hostnames": ["device-[0-9]*-2"]
+    }
+  ]
+}

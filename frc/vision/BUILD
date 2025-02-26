@@ -147,6 +147,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        ":camera_constants_fbs",
         ":vision_fbs",
         "//aos/events:epoll",
         "//aos/events:event_loop",
@@ -677,6 +678,7 @@ cc_binary(
     deps = [
         "//aos:init",
         "//aos/events:shm_event_loop",
+        "//frc/constants:constants_sender_lib",
         "//frc/vision:v4l2_reader",
     ],
 )

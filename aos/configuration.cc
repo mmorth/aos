@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <regex>
 #include <set>
 #include <string>
 #include <string_view>
@@ -1564,7 +1565,8 @@ const Node *GetNodeFromHostname(const Configuration *config,
     }
     if (node->has_hostnames()) {
       for (const auto &candidate : *node->hostnames()) {
-        if (candidate->string_view() == hostname) {
+        std::regex re(candidate->str());
+        if (std::regex_match(std::string(hostname), re)) {
           return node;
         }
       }
