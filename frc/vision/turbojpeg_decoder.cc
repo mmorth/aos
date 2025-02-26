@@ -118,6 +118,9 @@ class TurboJpegDecoder {
                                             last_error_message_.size()));
     }
     builder.CheckOk(builder.Send());
+    // Reset counters for next status message.
+    successful_decodes_ = 0;
+    failed_decodes_ = 0;
   }
 
   aos::EventLoop *event_loop_;
