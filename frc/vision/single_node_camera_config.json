@@ -222,7 +222,7 @@
     {
       "name": "camera_reader0",
       "executable_name": "camera_reader",
-      "args": ["--ignore_timestamps", "--viddevice=/dev/videoa", "--imagewidth=1600", "--imageheight=1304"],
+      "args": ["--ignore_timestamps", "--viddevice=/dev/videoa"],
       "maps": [{
         "match": {
           "name": "/camera"
@@ -236,7 +236,7 @@
     {
       "name": "camera_reader1",
       "executable_name": "camera_reader",
-      "args": ["--ignore_timestamps", "--viddevice=/dev/videob", "--imagewidth=1600", "--imageheight=1304"],
+      "args": ["--ignore_timestamps", "--viddevice=/dev/videob"],
       "maps": [{
         "match": {
           "name": "/camera"
@@ -250,7 +250,7 @@
     {
       "name": "camera_reader2",
       "executable_name": "camera_reader",
-      "args": ["--ignore_timestamps", "--viddevice=/dev/videoc", "--imagewidth=1600", "--imageheight=1304"],
+      "args": ["--ignore_timestamps", "--viddevice=/dev/videoc"],
       "maps": [{
         "match": {
           "name": "/camera"
@@ -264,7 +264,7 @@
     {
       "name": "camera_reader3",
       "executable_name": "camera_reader",
-      "args": ["--ignore_timestamps", "--viddevice=/dev/videod", "--imagewidth=1600", "--imageheight=1304"],
+      "args": ["--ignore_timestamps", "--viddevice=/dev/videod"],
       "maps": [{
         "match": {
           "name": "/camera"

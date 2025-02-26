@@ -9,7 +9,11 @@
           {% include 'frc/vision/constants/calibration_orin1-4646-1_cam-25-02_2025-02-02_21-25-24.json' %},
           {% include 'frc/vision/constants/calibration_orin1-4646-2_cam-25-03_fake.json' %},
           {% include 'frc/vision/constants/calibration_orin1-4646-3_cam-25-04_fake.json' %}
-        ]
+        ],
+        "default_camera_stream_settings": {
+          "image_width": 1600,
+          "image_height": 1304
+        }
       }
     },
     {
@@ -20,7 +24,16 @@
           {% include 'frc/vision/constants/calibration_orin1-1868-1-fake.json' %},
           {% include 'frc/vision/constants/calibration_orin1-1868-2-fake.json' %},
           {% include 'frc/vision/constants/calibration_orin1-1868-3-fake.json' %}
-        ]
+        ],
+        "default_camera_stream_settings": {
+          "image_width": 1280,
+          "image_height": 800,
+          "exposure_100us": 50,
+          "frame_period": {
+            "numerator": 1,
+            "denominator": 120
+          }
+        }
       }
     }
   ]

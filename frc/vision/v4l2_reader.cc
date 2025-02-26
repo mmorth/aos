@@ -10,19 +10,23 @@
 
 ABSL_FLAG(bool, ignore_timestamps, false,
           "Don't require timestamps on images.  Used to allow webcams");
-ABSL_FLAG(uint32_t, imagewidth, 640,
-          "Image capture resolution width in pixels.");
-ABSL_FLAG(uint32_t, imageheight, 480,
-          "Image capture resolution height in pixels.");
-ABSL_FLAG(
-    int32_t, imagefps, -1,
-    "Image capture framerate, in Hz. If -1, does not set FPS explicitly.");
+ABSL_FLAG(uint32_t, imagewidth, 0,
+          "Image capture resolution width in pixels. If zero, will use the "
+          "settings from the CameraStreamSettings flatbuffer.");
+ABSL_FLAG(uint32_t, imageheight, 0,
+          "Image capture resolution height in pixels. If zero, will use the "
+          "settings from the CameraStreamSettings flatbuffer.");
+ABSL_FLAG(int32_t, imagefps, 0,
+          "Image capture framerate, in Hz. If 0, will use the settings from "
+          "the CameraStreamSettings flatbuffer.");
 namespace frc::vision {
 
 V4L2ReaderBase::V4L2ReaderBase(aos::EventLoop *event_loop,
                                std::string_view device_name,
-                               std::string_view image_channel)
-    : fd_(open(device_name.data(), O_RDWR | O_NONBLOCK)),
+                               std::string_view image_channel,
+                               const CameraStreamSettings *settings)
+    : stream_settings_(settings),
+      fd_(open(device_name.data(), O_RDWR | O_NONBLOCK)),
       event_loop_(event_loop),
       image_channel_(image_channel) {
   PCHECK(fd_.get() != -1) << " Failed to open device " << device_name;
@@ -45,6 +49,18 @@ V4L2ReaderBase::V4L2ReaderBase(aos::EventLoop *event_loop,
 
   // First, clean up after anybody else who left the device streaming.
   StreamOff();
+}
+
+void V4L2ReaderBase::SetExposureFromConfig() {
+  // If specified, set exposure; otherwise explicitly set auto-exposure.
+  // Do this in a separate function from the V4L2ReaderBase constructor since
+  // SetExposure() itself is virtual and should not be called from the base
+  // constructor directly.
+  if (stream_settings_->exposure_100us() > 0) {
+    SetExposure(stream_settings_->exposure_100us());
+  } else {
+    UseAutoExposure();
+  }
 }
 
 namespace {
@@ -353,8 +369,9 @@ void V4L2ReaderBase::StreamOff() {
 }
 
 V4L2Reader::V4L2Reader(aos::EventLoop *event_loop, std::string_view device_name,
-                       std::string_view image_channel)
-    : V4L2ReaderBase(event_loop, device_name, image_channel) {
+                       std::string_view image_channel,
+                       const CameraStreamSettings *settings)
+    : V4L2ReaderBase(event_loop, device_name, image_channel, settings) {
   // Don't know why this magic call to SetExposure is required (before the
   // camera settings are configured) to make things work on boot of the pi, but
   // it seems to be-- without it, the image exposure is wrong (too dark). Note--
@@ -367,19 +384,25 @@ V4L2Reader::V4L2Reader(aos::EventLoop *event_loop, std::string_view device_name,
   format.type = multiplanar() ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE
                               : V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-  const int kWidth = absl::GetFlag(FLAGS_imagewidth);
-  const int kHeight = absl::GetFlag(FLAGS_imageheight);
-  format.fmt.pix.width = kWidth;
-  format.fmt.pix.height = kHeight;
+  const int width = absl::GetFlag(FLAGS_imagewidth) == 0
+                        ? stream_settings_->image_width()
+                        : absl::GetFlag(FLAGS_imagewidth);
+  const int height = absl::GetFlag(FLAGS_imageheight) == 0
+                         ? stream_settings_->image_height()
+                         : absl::GetFlag(FLAGS_imageheight);
+  format.fmt.pix.width = width;
+  format.fmt.pix.height = height;
   format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
   // This means we want to capture from a progressive (non-interlaced)
   // source.
   format.fmt.pix.field = V4L2_FIELD_NONE;
   PCHECK(Ioctl(VIDIOC_S_FMT, &format) == 0);
-  CHECK_EQ(static_cast<int>(format.fmt.pix.width), kWidth);
-  CHECK_EQ(static_cast<int>(format.fmt.pix.height), kHeight);
+  CHECK_EQ(static_cast<int>(format.fmt.pix.width), width);
+  CHECK_EQ(static_cast<int>(format.fmt.pix.height), height);
   CHECK_EQ(static_cast<int>(format.fmt.pix.bytesperline),
-           kWidth * 2 /* bytes per pixel */);
+           width * 2 /* bytes per pixel */);
+
+  SetExposureFromConfig();
 
   StreamOn();
 }
@@ -387,8 +410,10 @@ V4L2Reader::V4L2Reader(aos::EventLoop *event_loop, std::string_view device_name,
 MjpegV4L2Reader::MjpegV4L2Reader(aos::EventLoop *event_loop,
                                  aos::internal::EPoll *epoll,
                                  std::string_view device_name,
-                                 std::string_view image_channel)
-    : V4L2ReaderBase(event_loop, device_name, image_channel), epoll_(epoll) {
+                                 std::string_view image_channel,
+                                 const CameraStreamSettings *settings)
+    : V4L2ReaderBase(event_loop, device_name, image_channel, settings),
+      epoll_(epoll) {
   // Don't know why this magic call to SetExposure is required (before the
   // camera settings are configured) to make things work on boot of the pi, but
   // it seems to be-- without it, the image exposure is wrong (too dark). Note--
@@ -400,32 +425,46 @@ MjpegV4L2Reader::MjpegV4L2Reader(aos::EventLoop *event_loop,
   format.type = multiplanar() ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE
                               : V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-  const int kWidth = absl::GetFlag(FLAGS_imagewidth);
-  const int kHeight = absl::GetFlag(FLAGS_imageheight);
-  format.fmt.pix.width = kWidth;
-  format.fmt.pix.height = kHeight;
+  const int width = absl::GetFlag(FLAGS_imagewidth) == 0
+                        ? stream_settings_->image_width()
+                        : absl::GetFlag(FLAGS_imagewidth);
+  const int height = absl::GetFlag(FLAGS_imageheight) == 0
+                         ? stream_settings_->image_height()
+                         : absl::GetFlag(FLAGS_imageheight);
+  format.fmt.pix.width = width;
+  format.fmt.pix.height = height;
   format.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
   // This means we want to capture from a progressive (non-interlaced)
   // source.
   format.fmt.pix.field = V4L2_FIELD_NONE;
   PCHECK(Ioctl(VIDIOC_S_FMT, &format) == 0);
-  CHECK_EQ(static_cast<int>(format.fmt.pix.width), kWidth);
-  CHECK_EQ(static_cast<int>(format.fmt.pix.height), kHeight);
+  CHECK_EQ(static_cast<int>(format.fmt.pix.width), width);
+  CHECK_EQ(static_cast<int>(format.fmt.pix.height), height);
   CHECK_EQ(static_cast<int>(format.fmt.pix.bytesperline), 0);
 
-  // Set framerate
-  if (absl::GetFlag(FLAGS_imagefps) > 0) {
+  // Set framerate, if we have one to set.
+  if (absl::GetFlag(FLAGS_imagefps) > 0 ||
+      stream_settings_->has_frame_period()) {
     struct v4l2_streamparm setfps;
     memset(&setfps, 0, sizeof(struct v4l2_streamparm));
     setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    setfps.parm.capture.timeperframe.numerator = 1;
-    setfps.parm.capture.timeperframe.denominator =
-        absl::GetFlag(FLAGS_imagefps);
+    if (absl::GetFlag(FLAGS_imagefps) == 0) {
+      setfps.parm.capture.timeperframe.numerator =
+          stream_settings_->frame_period()->numerator();
+      setfps.parm.capture.timeperframe.denominator =
+          stream_settings_->frame_period()->denominator();
+    } else {
+      setfps.parm.capture.timeperframe.numerator = 1;
+      setfps.parm.capture.timeperframe.denominator =
+          absl::GetFlag(FLAGS_imagefps);
+    }
     PCHECK(Ioctl(VIDIOC_S_PARM, &setfps) == 0);
     LOG(INFO) << "framerate ended up at "
               << setfps.parm.capture.timeperframe.numerator << "/"
               << setfps.parm.capture.timeperframe.denominator;
   }
+
+  SetExposureFromConfig();
 
   StreamOn();
   epoll_->OnReadable(fd().get(), [this]() {
@@ -443,12 +482,14 @@ RockchipV4L2Reader::RockchipV4L2Reader(aos::EventLoop *event_loop,
                                        aos::internal::EPoll *epoll,
                                        std::string_view device_name,
                                        std::string_view image_sensor_subdev,
-                                       std::string_view image_channel)
-    : V4L2ReaderBase(event_loop, device_name, image_channel),
+                                       std::string_view image_channel,
+                                       const CameraStreamSettings *settings)
+    : V4L2ReaderBase(event_loop, device_name, image_channel, settings),
       epoll_(epoll),
       image_sensor_fd_(open(image_sensor_subdev.data(), O_RDWR | O_NONBLOCK)),
       buffer_requeuer_([this](int buffer) { EnqueueBuffer(buffer); },
                        kEnqueueFifoPriority) {
+  SetExposureFromConfig();
   PCHECK(image_sensor_fd_.get() != -1)
       << " Failed to open device " << device_name;
   StreamOn();

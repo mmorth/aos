@@ -11,8 +11,12 @@ ABSL_FLAG(std::string, channel, "/camera", "Channel name");
 ABSL_FLAG(std::string, config, "aos_config.json",
           "Path to the config file to use.");
 
-ABSL_FLAG(uint32_t, width, 1600, "Width of the image in pixels.");
-ABSL_FLAG(uint32_t, height, 1304, "Height of the image in pixels.");
+ABSL_FLAG(uint32_t, width, 0,
+          "Width of the image in pixels. Set to zero to use values from the "
+          "constants channel.");
+ABSL_FLAG(uint32_t, height, 0,
+          "Height of the image in pixels. Set to zero to use values from the "
+          "constants channel.");
 
 namespace frc::vision {
 
@@ -51,9 +55,18 @@ void GpuApriltagDetector() {
                             event_loop.node()->name()->string_view(),
                             camera_id);
 
+  CHECK(calibration_data.constants().has_default_camera_stream_settings())
+      << ": Must provide camera stream settings for image width/height.";
+
+  const CameraStreamSettings *const stream_settings =
+      calibration_data.constants().default_camera_stream_settings();
+
   frc::apriltag::ApriltagDetector detector(
       &event_loop, absl::GetFlag(FLAGS_channel), calibration,
-      absl::GetFlag(FLAGS_width), absl::GetFlag(FLAGS_height));
+      absl::GetFlag(FLAGS_width) > 0 ? absl::GetFlag(FLAGS_width)
+                                     : stream_settings->image_width(),
+      absl::GetFlag(FLAGS_height) > 0 ? absl::GetFlag(FLAGS_height)
+                                      : stream_settings->image_height());
 
   detector.PinMemory(&event_loop);
 

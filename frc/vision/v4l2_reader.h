@@ -14,6 +14,7 @@
 #include "aos/realtime.h"
 #include "aos/scoped/scoped_fd.h"
 #include "aos/util/threaded_consumer.h"
+#include "frc/vision/camera_constants_generated.h"
 #include "frc/vision/vision_generated.h"
 
 namespace frc::vision {
@@ -23,8 +24,10 @@ class V4L2ReaderBase {
  public:
   // device_name is the name of the device file (like "/dev/video0").
   // image_channel is the channel to send images on
+  // settings will be used to set the image width/height,
   V4L2ReaderBase(aos::EventLoop *event_loop, std::string_view device_name,
-                 std::string_view image_channel);
+                 std::string_view image_channel,
+                 const CameraStreamSettings *settings);
 
   V4L2ReaderBase(const V4L2ReaderBase &) = delete;
   V4L2ReaderBase &operator=(const V4L2ReaderBase &) = delete;
@@ -91,7 +94,11 @@ class V4L2ReaderBase {
 
   const aos::ScopedFD &fd() { return fd_; };
 
+  void SetExposureFromConfig();
+
   static constexpr int kNumberBuffers = 4;
+
+  const CameraStreamSettings *const stream_settings_;
 
  private:
   struct Buffer {
@@ -171,15 +178,16 @@ class V4L2ReaderBase {
 class V4L2Reader : public V4L2ReaderBase {
  public:
   V4L2Reader(aos::EventLoop *event_loop, std::string_view device_name,
-             std::string_view image_channel = "/camera");
+             std::string_view image_channel,
+             const CameraStreamSettings *settings);
 };
 
 // V4L2 Reader with MJPEG support.
 class MjpegV4L2Reader : public V4L2ReaderBase {
  public:
   MjpegV4L2Reader(aos::EventLoop *event_loop, aos::internal::EPoll *epoll,
-                  std::string_view device_name,
-                  std::string_view image_channel = "/camera");
+                  std::string_view device_name, std::string_view image_channel,
+                  const CameraStreamSettings *settings);
 
   ~MjpegV4L2Reader() override;
 
@@ -194,7 +202,8 @@ class RockchipV4L2Reader : public V4L2ReaderBase {
   RockchipV4L2Reader(aos::EventLoop *event_loop, aos::internal::EPoll *epoll,
                      std::string_view device_name,
                      std::string_view image_sensor_subdev,
-                     std::string_view image_channel = "/camera");
+                     std::string_view image_channel,
+                     const CameraStreamSettings *settings);
 
   ~RockchipV4L2Reader() override;
 
