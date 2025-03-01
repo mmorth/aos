@@ -1,0 +1,35 @@
+namespace frc.networktables;
+
+// See https://github.wpilib.org/allwpilib/docs/release/cpp/structnt_1_1_connection_info.html
+table ConnectionInfo {
+  remote_id:string (id: 0);
+  remote_ip:string (id: 1);
+  remote_port:uint (id: 2);
+  last_update:int64 (id: 3);
+  protocol_version:uint (id: 4);
+}
+
+table TopicProperty {
+  key:string (id: 0);
+  value:string (id: 1);
+}
+
+// See https://github.wpilib.org/allwpilib/docs/release/cpp/structnt_1_1_topic_info.html
+table TopicInfo {
+  name:string (id: 0);
+  type:string (id: 1);
+  properties:[TopicProperty] (id: 2);
+}
+
+// Represents a list of topics that are possible to subscribe to.
+table TopicList {
+  prefix:string (id: 0);
+  topics:[TopicInfo] (id: 1);
+}
+
+table ClientStatus {
+  connections:[ConnectionInfo] (id: 0);
+  connected:bool (id: 1);
+}
+
+root_type ClientStatus;
