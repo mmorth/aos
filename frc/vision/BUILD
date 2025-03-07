@@ -469,14 +469,39 @@ cc_binary(
     ],
 )
 
+aos_config(
+    name = "intrinsics_test_config",
+    src = "intrinsics_test_config_source.json",
+    flatbuffers = [
+        "//aos/network:message_bridge_client_fbs",
+        "//aos/network:message_bridge_server_fbs",
+        "//aos/network:timestamp_fbs",
+        "//aos/network:remote_message_fbs",
+        "//frc/control_loops/drivetrain/localization:localizer_output_fbs",
+        "//frc/orin:hardware_stats_fbs",
+        "//frc/vision:calibration_fbs",
+        "//frc/vision:target_map_fbs",
+        "//frc/vision:vision_fbs",
+        "//aos/util:filesystem_fbs",
+        "@com_github_foxglove_schemas//:schemas",
+    ],
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//aos/events:aos_config",
+        "//frc/control_loops/drivetrain:aos_config",
+        "//frc/input:aos_config",
+    ],
+)
+
 cc_test(
     name = "intrinsics_calibration_test",
     srcs = [
         "intrinsics_calibration_test.cc",
     ],
     data = [
-        "//y2024:aos_config",
-        "//y2024/constants/calib_files",
+        ":intrinsics_test_config",
+        "//frc/vision/test_calib_files",
         "@intrinsic_calibration_test_images",
     ],
     shard_count = 4,
