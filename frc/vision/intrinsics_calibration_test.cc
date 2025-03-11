@@ -62,7 +62,7 @@ void RunIntrinsicFromPoints(std::string calib_filename,
                             cv::Mat dist_coeffs_init = cv::Mat()) {
   absl::SetFlag(&FLAGS_override_hostname, "orin-971-1");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig("y2024/aos_config.stripped.json");
+      aos::configuration::ReadConfig("intrinsics_test_config.stripped.json");
   aos::ShmEventLoop event_loop(&config.message());
   std::unique_ptr<aos::ExitHandle> exit_handle = event_loop.MakeExitHandle();
   IntrinsicsCalibration calibrator(&event_loop, "orin-971-1", "/orin1/camera0",
@@ -250,11 +250,11 @@ TEST(IntrinsicCalculationTest, SamplingProjectedPoints) {
   // to be zero-- otherwise our reprojections don't work near the corners of
   // the image)
   RunIntrinsicFromPoints(std::string(
-      "y2024/constants/calib_files/calibration_orin-971-1_cam-24-00.json"));
+      "frc/vision/test_calib_files/calibration_orin-971-1_cam-24-00.json"));
 
   // Run the new 8 parameter rational model
   RunIntrinsicFromPoints(
-      std::string("y2024/constants/calib_files/"
+      std::string("frc/vision/test_calib_files/"
                   "calibration_orin-971-1_cam-24-00_8parameter.json"));
 
   // Run the 8 parameter model using rough values for the camera matrix and
@@ -267,7 +267,7 @@ TEST(IntrinsicCalculationTest, SamplingProjectedPoints) {
   cv::Mat dist_coeffs_init = cv::Mat::zeros(8, 1, CV_32F);
 
   RunIntrinsicFromPoints(
-      std::string("y2024/constants/calib_files/"
+      std::string("frc/vision/test_calib_files/"
                   "calibration_orin-971-1_cam-24-00_8parameter.json"),
       camera_mat_init, dist_coeffs_init);
 }
@@ -276,7 +276,7 @@ TEST(IntrinsicCalculationTest, SamplingProjectedPoints) {
 TEST(IntrinsicCalculationTest, ImagePlayback) {
   absl::SetFlag(&FLAGS_override_hostname, "orin-971-1");
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig("y2024/aos_config.stripped.json");
+      aos::configuration::ReadConfig("intrinsics_test_config.stripped.json");
   aos::ShmEventLoop event_loop(&config.message());
   std::unique_ptr<aos::ExitHandle> exit_handle = event_loop.MakeExitHandle();
 
@@ -285,7 +285,7 @@ TEST(IntrinsicCalculationTest, ImagePlayback) {
 
   IntrinsicsCalibration calibrator(
       &event_loop, "orin-971-1", "/orin1/camera0", "24-00",
-      "y2024/constants/calib_files/"
+      "frc/vision/test_calib_files/"
       "calibration_orin-971-1_cam-24-00_8parameter.json",
       false, "/tmp", exit_handle.get());
 

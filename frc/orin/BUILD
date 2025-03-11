@@ -299,8 +299,7 @@ cc_test(
         "undistort_test.cc",
     ],
     data = [
-        "//y2024:aos_config",
-        "//y2024/constants/calib_files",
+        "//frc/vision/test_calib_files",
     ],
     features = ["cuda"],
     target_compatible_with = ["@platforms//os:linux"],
