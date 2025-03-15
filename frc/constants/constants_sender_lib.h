@@ -69,14 +69,16 @@ class ConstantSender {
 template <typename ConstantsData, typename ConstantsList>
 class NameConstantSender {
  public:
-  NameConstantSender(aos::EventLoop *event_loop, std::string constants_path,
+  NameConstantSender(aos::EventLoop *event_loop,
+                     std::string_view constants_path,
                      std::string_view robot_name,
                      std::string_view channel_name = "/constants")
       : NameConstantSender<ConstantsData, ConstantsList>(
             event_loop, constants_path, aos::network::GetTeamNumber(),
             robot_name, channel_name) {}
 
-  NameConstantSender(aos::EventLoop *event_loop, std::string constants_path,
+  NameConstantSender(aos::EventLoop *event_loop,
+                     std::string_view constants_path,
                      const uint16_t team_number, std::string_view robot_name,
                      std::string_view channel_name)
       : team_number_(team_number),
