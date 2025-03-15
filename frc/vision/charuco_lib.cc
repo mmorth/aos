@@ -49,6 +49,9 @@ ABSL_FLAG(
 ABSL_FLAG(bool, visualize, false, "Whether to visualize the resulting data.");
 ABSL_DECLARE_FLAG(bool, enable_ftrace);
 
+ABSL_FLAG(bool, poll_images, false,
+          "If true, poll for images instead of watching");
+
 namespace frc::vision {
 namespace chrono = std::chrono;
 using aos::monotonic_clock;
@@ -95,66 +98,84 @@ CameraImageCallback::CameraImageCallback(
       handle_image_(std::move(handle_image_fn)),
       timer_fn_(event_loop->AddTimer([this]() { DisableTracing(); })),
       max_age_(max_age) {
-  event_loop_->MakeWatcher(channel, [this](const CameraImage &image) {
-    const monotonic_clock::time_point eof_source_node =
-        monotonic_clock::time_point(
-            chrono::nanoseconds(image.monotonic_timestamp_ns()));
-    chrono::nanoseconds offset{0};
-    if (source_node_ != event_loop_->node()) {
-      server_fetcher_.Fetch();
-      if (!server_fetcher_.get()) {
-        return;
+  if (absl::GetFlag(FLAGS_poll_images)) {
+    image_fetcher_ = event_loop_->MakeFetcher<CameraImage>(channel);
+    auto tmr = event_loop_->AddTimer([this]() {
+      if (image_fetcher_.Fetch()) {
+        HandleImage(*image_fetcher_.get());
       }
+    });
 
-      // If we are viewing this image from another node, convert to our
-      // monotonic clock.
-      const aos::message_bridge::ServerConnection *server_connection = nullptr;
+    event_loop_->OnRun([this, tmr]() {
+      tmr->Schedule(
+          event_loop_->monotonic_now() + std::chrono::milliseconds(100),
+          std::chrono::milliseconds(100));
+    });
 
-      for (const aos::message_bridge::ServerConnection *connection :
-           *server_fetcher_->connections()) {
-        CHECK(connection->has_node());
-        if (connection->node()->name()->string_view() ==
-            source_node_->name()->string_view()) {
-          server_connection = connection;
-          break;
-        }
-      }
+  } else {
+    event_loop_->MakeWatcher(
+        channel, [this](const CameraImage &image) { HandleImage(image); });
+  }
+}
 
-      CHECK(server_connection != nullptr) << ": Failed to find client";
-      if (!server_connection->has_monotonic_offset()) {
-        VLOG(1) << "No offset yet.";
-        return;
-      }
-      offset = chrono::nanoseconds(server_connection->monotonic_offset());
-    }
-
-    const monotonic_clock::time_point eof = eof_source_node - offset;
-
-    const monotonic_clock::duration age = event_loop_->monotonic_now() - eof;
-    const double age_double =
-        std::chrono::duration_cast<std::chrono::duration<double>>(age).count();
-    if (age > max_age_) {
-      if (absl::GetFlag(FLAGS_enable_ftrace)) {
-        ftrace_.FormatMessage("Too late receiving image, age: %f\n",
-                              age_double);
-        if (absl::GetFlag(FLAGS_disable_delay) > 0) {
-          if (!disabling_) {
-            timer_fn_->Schedule(
-                event_loop_->monotonic_now() +
-                chrono::milliseconds(absl::GetFlag(FLAGS_disable_delay)));
-            disabling_ = true;
-          }
-        } else {
-          DisableTracing();
-        }
-      }
-      VLOG(2) << "Age: " << age_double << ", getting behind, skipping";
+void CameraImageCallback::HandleImage(const CameraImage &image) {
+  const monotonic_clock::time_point eof_source_node =
+      monotonic_clock::time_point(
+          chrono::nanoseconds(image.monotonic_timestamp_ns()));
+  chrono::nanoseconds offset{0};
+  if (source_node_ != event_loop_->node()) {
+    server_fetcher_.Fetch();
+    if (!server_fetcher_.get()) {
       return;
     }
 
-    ftrace_.FormatMessage("Starting conversion\n");
-    handle_image_(image, eof);
-  });
+    // If we are viewing this image from another node, convert to our
+    // monotonic clock.
+    const aos::message_bridge::ServerConnection *server_connection = nullptr;
+
+    for (const aos::message_bridge::ServerConnection *connection :
+         *server_fetcher_->connections()) {
+      CHECK(connection->has_node());
+      if (connection->node()->name()->string_view() ==
+          source_node_->name()->string_view()) {
+        server_connection = connection;
+        break;
+      }
+    }
+
+    CHECK(server_connection != nullptr) << ": Failed to find client";
+    if (!server_connection->has_monotonic_offset()) {
+      VLOG(1) << "No offset yet.";
+      return;
+    }
+    offset = chrono::nanoseconds(server_connection->monotonic_offset());
+  }
+
+  const monotonic_clock::time_point eof = eof_source_node - offset;
+
+  const monotonic_clock::duration age = event_loop_->monotonic_now() - eof;
+  const double age_double =
+      std::chrono::duration_cast<std::chrono::duration<double>>(age).count();
+  if (age > max_age_) {
+    if (absl::GetFlag(FLAGS_enable_ftrace)) {
+      ftrace_.FormatMessage("Too late receiving image, age: %f\n", age_double);
+      if (absl::GetFlag(FLAGS_disable_delay) > 0) {
+        if (!disabling_) {
+          timer_fn_->Schedule(
+              event_loop_->monotonic_now() +
+              chrono::milliseconds(absl::GetFlag(FLAGS_disable_delay)));
+          disabling_ = true;
+        }
+      } else {
+        DisableTracing();
+      }
+    }
+    VLOG(2) << "Age: " << age_double << ", getting behind, skipping";
+    return;
+  }
+
+  ftrace_.FormatMessage("Starting conversion\n");
+  handle_image_(image, eof);
 }
 
 void CameraImageCallback::DisableTracing() {

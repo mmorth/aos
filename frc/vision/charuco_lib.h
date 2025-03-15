@@ -54,6 +54,8 @@ class CameraImageCallback {
       aos::monotonic_clock::duration max_age = std::chrono::milliseconds(100));
 
  private:
+  void HandleImage(const CameraImage &image);
+
   void DisableTracing();
 
   aos::EventLoop *event_loop_;
@@ -62,6 +64,7 @@ class CameraImageCallback {
   std::function<void(const CameraImage &, aos::monotonic_clock::time_point)>
       handle_image_;
   aos::TimerHandler *timer_fn_;
+  aos::Fetcher<CameraImage> image_fetcher_;
 
   bool disabling_ = false;
 
