@@ -800,6 +800,7 @@ cc_binary(
     deps = [
         "//aos:init",
         "@com_github_wpilibsuite_allwpilib//ntcore:ntcore.static",
+        "@com_github_wpilibsuite_allwpilib//wpimath:wpimath.static",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log:die_if_null",
     ],
