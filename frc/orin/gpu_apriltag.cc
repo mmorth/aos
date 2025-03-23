@@ -41,12 +41,13 @@ ABSL_FLAG(uint32_t, min_white_black_diff, 5,
 ABSL_FLAG(uint32_t, min_cluster_pixels, 25,
           "Minimum number of pixels in a cluster.");
 
-namespace frc::apriltag {
-
 // Set max age on image for processing at 20 ms.  For 60Hz, we should be
 // processing at least every 16.7ms
-constexpr aos::monotonic_clock::duration kMaxImageAge =
-    std::chrono::milliseconds(50);
+ABSL_FLAG(uint32_t, max_image_age_ms, 50,
+          "Max age of an image to process.  For 60hz, we should be processing "
+          "an image every 16.7ms, plus ISP/transport delay.");
+
+namespace frc::apriltag {
 
 namespace chrono = std::chrono;
 
@@ -86,7 +87,7 @@ ApriltagDetector::ApriltagDetector(
                  const aos::monotonic_clock::time_point eof) {
             HandleImage(image, eof);
           },
-          kMaxImageAge),
+          std::chrono::milliseconds(absl::GetFlag(FLAGS_max_image_age_ms))),
       target_map_sender_(
           event_loop->MakeSender<frc::vision::TargetMap>(channel_name)),
       image_annotations_sender_(
