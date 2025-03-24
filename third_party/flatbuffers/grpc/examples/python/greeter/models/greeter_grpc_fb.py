@@ -4,38 +4,38 @@ import grpc
 
 class GreeterStub(object):
   """ Interface exported by the server. """  
-  
+
   def __init__(self, channel):
     """ Constructor. 
-    
+
     Args: 
     channel: A grpc.Channel. 
     """
-    
+
     self.SayHello = channel.unary_unary(
       "/models.Greeter/SayHello"
       )
-    
+
     self.SayManyHellos = channel.unary_stream(
       "/models.Greeter/SayManyHellos"
       )
-    
+
 
 class GreeterServicer(object):
   """ Interface exported by the server. """  
-  
+
   def SayHello(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
-  
-  
+
+
   def SayManyHellos(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
-  
-  
+
+
 
 def add_GreeterServicer_to_server(servicer, server):
   rpc_method_handlers = {

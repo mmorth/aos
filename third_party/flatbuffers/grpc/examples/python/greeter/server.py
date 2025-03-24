@@ -41,7 +41,7 @@ class GreeterServicer(greeter_grpc_fb.GreeterServicer):
         for greeting in self.greetings:
             print(type(reply))
             yield build_reply(greeting + " " + reply.decode('UTF-8'))
-        
+
 
 def serve():
     args = parser.parse_args()

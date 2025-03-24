@@ -55,7 +55,7 @@ if __name__ == "__main__":
             else:
                 # Generate Lockfile
                 proc = run_subprocess([cargo, "generate-lockfile", "--manifest-path", str(manifest)])
-            
+
                 if not lockfile.exists():
                     print("Faield to generate lockfile")
                     print("Args:", proc.args, file=sys.stderr)

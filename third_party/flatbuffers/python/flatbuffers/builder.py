@@ -395,7 +395,7 @@ class Builder(object):
         ## @cond FLATBUFFERS_INTERNAL
         self.nested = False
         ## @endcond
-               
+
         if numElems:
             warnings.warn("numElems is deprecated.", 
                           DeprecationWarning, stacklevel=2)
