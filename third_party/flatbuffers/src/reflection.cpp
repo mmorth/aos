@@ -748,6 +748,9 @@ Offset<const Table *> CopyTable(FlatBufferBuilder &fbb,
 bool Verify(const reflection::Schema &schema, const reflection::Object &root,
             const uint8_t *const buf, const size_t length,
             const uoffset_t max_depth, const uoffset_t max_tables) {
+  // If the buffer is to small to even contain the root offset, it is not a
+  // valid flatbuffer.
+  if (length < sizeof(uoffset_t)) { return false; }
   Verifier v(buf, length, max_depth, max_tables);
   return VerifyObject(v, schema, root, flatbuffers::GetAnyRoot(buf),
                       /*required=*/true);
@@ -757,6 +760,9 @@ bool VerifySizePrefixed(const reflection::Schema &schema,
                         const reflection::Object &root,
                         const uint8_t *const buf, const size_t length,
                         const uoffset_t max_depth, const uoffset_t max_tables) {
+  // If the buffer is to small to even contain the size + root offset, it is not
+  // a valid flatbuffer.
+  if (length < 2 * sizeof(uoffset_t)) { return false; }
   Verifier v(buf, length, max_depth, max_tables);
   return VerifyObject(v, schema, root, flatbuffers::GetAnySizePrefixedRoot(buf),
                       /*required=*/true);
