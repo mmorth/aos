@@ -1271,8 +1271,8 @@ http_archive(
 http_file(
     name = "com_github_foxglove_mcap_mcap",
     executable = True,
-    sha256 = "ae745dd09cf4c9570c1c038a72630c07b073f0ed4b05983d64108ff748a40d3f",
-    urls = ["https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.22/mcap-linux-amd64"],
+    sha256 = "e87895e9af36db629ad01c554258ec03d07b604bc61a0a421449c85223357c71",
+    urls = ["https://github.com/foxglove/mcap/releases/download/releases%2Fmcap-cli%2Fv0.0.51/mcap-linux-amd64"],
 )
 
 http_archive(

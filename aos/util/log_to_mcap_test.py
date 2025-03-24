@@ -31,6 +31,19 @@ def generate_argument_permutations():
     return permutations
 
 
+def filter_stdout(stdout: str) -> str:
+    """Filters currently-unhandled messages from the mcap CLI.
+
+    We should probably fix these messages, but that can be a future effort.
+    """
+    lines = stdout.splitlines()
+    # Ignore these kinds of messages for now:
+    # Message.log_time X on "/test aos.examples.Pong" is less than the latest log time Y
+    filtered_lines = filter(
+        lambda line: "is less than the latest log time" not in line, lines)
+    return "\n".join(filtered_lines)
+
+
 def main(argv: Sequence[Text]):
     parser = argparse.ArgumentParser()
     parser.add_argument("--log_to_mcap",
@@ -62,15 +75,17 @@ def main(argv: Sequence[Text]):
                                            stdout=subprocess.PIPE,
                                            stderr=subprocess.PIPE,
                                            encoding='utf-8')
-            print(doctor_result.stdout)
-            print(doctor_result.stderr)
+            print("STDOUT:", doctor_result.stdout)
+            print("STDERR:", doctor_result.stderr)
             # mcap doctor doesn't actually return a non-zero exit code on certain failures...
             # See https://github.com/foxglove/mcap/issues/356
             if len(doctor_result.stderr) != 0:
                 print("Didn't expect any stderr output.")
                 return 1
-            if doctor_result.stdout != f"Examining {mcap_name}\nHeader.profile field \"x-aos\" is not a well-known profile.\n":
-                print("Only expected two lines of stdout.")
+            filtered_stdout = filter_stdout(doctor_result.stdout)
+            if filtered_stdout != "Header.profile field \"x-aos\" is not a well-known profile.":
+                print("Only expected one line of stdout. Got: ",
+                      filtered_stdout)
                 return 1
             doctor_result.check_returncode()
     return 0
