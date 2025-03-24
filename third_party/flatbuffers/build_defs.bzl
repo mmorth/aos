@@ -6,6 +6,7 @@ Rules for building C++ flatbuffers with Bazel.
 """
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
@@ -353,7 +354,7 @@ def flatbuffer_py_library(
         target_compatible_with = target_compatible_with,
         visibility = ["//visibility:private"],
     )
-    native.py_library(
+    py_library(
         name = name,
         srcs = [srcs_lib],
         visibility = visibility,
