@@ -66,10 +66,6 @@ typedef union {
 #if HAS_SCTP_AUTH
 // Returns true if SCTP authentication is available and enabled.
 bool SctpAuthIsEnabled() {
-  // TODO(james): Users of this method should probably just cache it rather than
-  // calling non-realtime code in realtime sections.
-  aos::ScopedNotRealtime not_realtime;
-
   struct stat current_stat;
   if (stat("/proc/sys/net/sctp/auth_enable", &current_stat) != -1) {
     int value = std::stoi(
@@ -771,10 +767,6 @@ void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
   LOG(FATAL) << "SCTP Authentication key requested, but authentication isn't "
                 "available... You may need a newer kernel";
 #else
-  LOG_IF(FATAL, !SctpAuthIsEnabled())
-      << "SCTP Authentication key requested, but authentication isn't "
-         "enabled... Use `sysctl -w net.sctp.auth_enable=1` to enable";
-
   // Set up the key with id `1`.
   // NOTE: `sctp_authkey` is a variable-sized struct since it holds a variable
   // sized key. We limit the key size to 32 bytes (256 bits) here. Regardless,
