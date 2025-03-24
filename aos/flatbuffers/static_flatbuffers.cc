@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cinttypes>
 #include <map>
 #include <optional>
 #include <ostream>
@@ -55,6 +56,9 @@ struct FieldData {
   size_t vtable_offset = 0u;
   // Size of the elements in the vector, if this is a vector.
   size_t element_size = 0u;
+  // Optional default value expression. If not set, the field does not have a
+  // default.
+  std::optional<std::string> default_value_expression = std::nullopt;
 };
 
 const reflection::Object *GetObject(const reflection::Schema *schema,
@@ -155,13 +159,248 @@ std::string ScalarOrEnumType(const reflection::Schema *schema,
                            schema->enums()->Get(index)->name()->string_view());
 }
 
+// These structs and helper functions describe and handle Flatbuffer field
+// types. They generate C++ expressions for default values and set FieldData
+// metadata (e.g., is_inline, is_repeated, etc.) based on the Flatbuffers
+// reflection.
+
+struct IntegerTypeInfo {
+  bool is_signed;
+  const char *cast_type;  // e.g. "int8_t", "uint16_t", etc.
+};
+
+// Map Flatbuffers BaseType -> details needed to generate default value
+// expressions.
+static const std::map<reflection::BaseType, IntegerTypeInfo> kIntegerTypeMap = {
+    {reflection::BaseType::Byte, {true, "int8_t"}},
+    {reflection::BaseType::UByte, {false, "uint8_t"}},
+    {reflection::BaseType::Short, {true, "int16_t"}},
+    {reflection::BaseType::UShort, {false, "uint16_t"}},
+    {reflection::BaseType::Int, {true, "int32_t"}},
+    {reflection::BaseType::UInt, {false, "uint32_t"}},
+    {reflection::BaseType::Long, {true, "int64_t"}},
+    {reflection::BaseType::ULong, {false, "uint64_t"}},
+};
+
+// Generates the default-value expression string for integer or enum fields.
+static std::string IntegerDefaultValueExpression(
+    const reflection::Field *field_fbs, reflection::BaseType base_type,
+    const std::string &full_type, bool is_enum) {
+  // Reflection always gives us int64_t for default_integer().
+  const int64_t default_val = field_fbs->default_integer();
+  const auto &info = kIntegerTypeMap.at(base_type);
+
+  // Instead of StrFormat, just convert to string directly.
+  // If it's signed, we keep it as int64_t; otherwise cast to uint64_t.
+  std::string value_string;
+  if (info.is_signed) {
+    value_string = std::to_string(default_val);
+  } else {
+    uint64_t uval = static_cast<uint64_t>(default_val);
+    value_string = std::to_string(uval);
+  }
+
+  // If it's an enum, we do something like: static_cast<MyEnum>(123)
+  // Otherwise, e.g.: static_cast<int8_t>(123)
+  if (is_enum) {
+    return absl::StrCat("static_cast<", full_type, ">(", value_string, ")");
+  } else {
+    return absl::StrCat("static_cast<", info.cast_type, ">(", value_string,
+                        ")");
+  }
+}
+
+// Generates the default-value expression for bool or bool-based enums.
+static std::string BoolDefaultValueExpression(
+    const reflection::Field *field_fbs, const std::string &full_type,
+    bool is_enum) {
+  const bool bool_default = (field_fbs->default_integer() != 0);
+  if (is_enum) {
+    // E.g.: static_cast<MyEnum>(1)
+    return absl::StrCat("static_cast<", full_type, ">(",
+                        bool_default ? "1" : "0", ")");
+  } else {
+    // E.g.: "true" or "false"
+    return bool_default ? "true" : "false";
+  }
+}
+
+// Generates the default-value expression for float or double (including
+// float/double enums).
+static std::string FloatOrDoubleDefaultValueExpression(
+    const reflection::Field *field_fbs, reflection::BaseType base_type,
+    const std::string &full_type, bool is_enum) {
+  const double val = field_fbs->default_real();
+  const bool is_float = (base_type == reflection::BaseType::Float);
+
+  if (std::isinf(val)) {
+    return is_float ? "std::numeric_limits<float>::infinity()"
+                    : "std::numeric_limits<double>::infinity()";
+  }
+  if (std::isnan(val)) {
+    return is_float ? "std::numeric_limits<float>::quiet_NaN()"
+                    : "std::numeric_limits<double>::quiet_NaN()";
+  }
+
+  // Convert numeric value to string.
+  // For an enum, do static_cast<MyEnum>(1.234).
+  // For a float field, do static_cast<float>(1.234).
+  // For a double field, just 1.234.
+  std::string val_str =
+      absl::StrCat(val);  // absl::StrCat can handle double → string
+
+  if (is_enum) {
+    return absl::StrCat("static_cast<", full_type, ">(", val_str, ")");
+  } else if (is_float) {
+    return absl::StrCat("static_cast<float>(", val_str, ")");
+  }
+
+  return val_str;
+}
+
+// Populates FieldData for a scalar or enum (e.g., bool, int, float, etc.).
+static void PopulateTypeDataForScalarOrEnum(const reflection::Schema *schema,
+                                            const reflection::Field *field_fbs,
+                                            FieldData *field) {
+  const reflection::Type *type = field_fbs->type();
+  field->is_inline = true;
+  field->elements_are_inline = true;
+  field->is_struct = false;
+  field->is_repeated = false;
+
+  field->full_type = ScalarOrEnumType(schema, type->base_type(), type->index());
+  const bool is_enum = (type->index() >= 0);
+
+  switch (type->base_type()) {
+    case reflection::BaseType::Bool:
+      field->default_value_expression =
+          BoolDefaultValueExpression(field_fbs, field->full_type, is_enum);
+      break;
+
+    case reflection::BaseType::Byte:
+    case reflection::BaseType::UByte:
+    case reflection::BaseType::Short:
+    case reflection::BaseType::UShort:
+    case reflection::BaseType::Int:
+    case reflection::BaseType::UInt:
+    case reflection::BaseType::Long:
+    case reflection::BaseType::ULong:
+      field->default_value_expression = IntegerDefaultValueExpression(
+          field_fbs, type->base_type(), field->full_type, is_enum);
+      break;
+
+    case reflection::BaseType::Float:
+    case reflection::BaseType::Double:
+      field->default_value_expression = FloatOrDoubleDefaultValueExpression(
+          field_fbs, type->base_type(), field->full_type, is_enum);
+      break;
+
+    default:
+      LOG(FATAL) << "Invalid type for this function: "
+                 << reflection::EnumNameBaseType(type->base_type());
+      break;
+  }
+}
+
+// Populates FieldData for a string field.
+static void PopulateTypeDataForString(const reflection::Field *field_fbs,
+                                      FieldData *field) {
+  field->is_inline = false;
+  field->elements_are_inline = true;
+  field->is_struct = false;
+  field->is_repeated = true;
+  field->full_type =
+      absl::StrFormat("::aos::fbs::String<%d>",
+                      GetLengthAttributeOrZero(field_fbs, "static_length"));
+}
+
+// Populates FieldData for a vector field (scalar, enum, object, or string
+// elements).
+static void PopulateTypeDataForVector(const reflection::Schema *schema,
+                                      const reflection::Field *field_fbs,
+                                      FieldData *field) {
+  const reflection::Type *type = field_fbs->type();
+  // Cast each side to int so Abseil won't try to stream reflection::BaseType.
+  CHECK_EQ(static_cast<int>(type->base_type()),
+           static_cast<int>(reflection::BaseType::Vector));
+
+  field->is_repeated = true;
+  field->is_inline = false;
+
+  std::string element_type;
+  bool elements_are_inline = true;
+
+  switch (type->element()) {
+    case reflection::BaseType::Obj: {
+      const reflection::Object *elem_obj = GetObject(schema, type->index());
+      element_type = FlatbufferNameToCppName(elem_obj->name()->string_view());
+      elements_are_inline = elem_obj->is_struct();
+      if (!elements_are_inline) {
+        element_type = AosNameForRawFlatbuffer(element_type);
+        field->fbs_type = elem_obj->name()->string_view();
+      }
+      break;
+    }
+    case reflection::BaseType::String:
+      element_type = absl::StrFormat(
+          "::aos::fbs::String<%d>",
+          GetLengthAttributeOrZero(field_fbs, "static_vector_string_length"));
+      elements_are_inline = false;
+      break;
+    case reflection::BaseType::Vector:
+      LOG(FATAL) << "Vectors of vectors are not allowed.";
+      break;
+    default:
+      element_type = ScalarOrEnumType(schema, type->element(), type->index());
+      break;
+  }
+
+  field->elements_are_inline = elements_are_inline;
+  field->is_struct = false;
+
+  field->full_type =
+      absl::StrFormat("::aos::fbs::Vector<%s, %d, %s, %s>", element_type,
+                      GetLengthAttributeOrZero(field_fbs, "static_length"),
+                      elements_are_inline ? "true" : "false",
+                      GetAttribute(field_fbs, "force_align").value_or("0"));
+}
+
+// Populates FieldData for an object field (struct or table).
+static void PopulateTypeDataForObject(const reflection::Schema *schema,
+                                      const reflection::Field *field_fbs,
+                                      FieldData *field) {
+  const reflection::Type *type = field_fbs->type();
+  const reflection::Object *object = GetObject(schema, type->index());
+
+  field->is_inline = object->is_struct();
+  field->elements_are_inline = field->is_inline;
+  field->is_struct = object->is_struct();
+  field->is_repeated = false;
+
+  const std::string flatbuffer_name =
+      FlatbufferNameToCppName(object->name()->string_view());
+
+  if (field->is_inline) {
+    field->full_type = flatbuffer_name;
+    field->inline_size = object->bytesize();
+    field->inline_alignment = object->minalign();
+  } else {
+    field->fbs_type = object->name()->string_view();
+    field->full_type = AosNameForRawFlatbuffer(flatbuffer_name);
+  }
+}
+
+// Main entry point: Populates 'field' according to the Flatbuffers reflection
+// metadata.
 void PopulateTypeData(const reflection::Schema *schema,
                       const reflection::Field *field_fbs, FieldData *field) {
   VLOG(1) << aos::FlatbufferToJson(field_fbs);
+
   const reflection::Type *type = field_fbs->type();
   field->inline_size = type->base_size();
   field->inline_alignment = type->base_size();
   field->element_size = type->element_size();
+
   switch (type->base_type()) {
     case reflection::BaseType::Bool:
     case reflection::BaseType::Byte:
@@ -174,86 +413,21 @@ void PopulateTypeData(const reflection::Schema *schema,
     case reflection::BaseType::ULong:
     case reflection::BaseType::Float:
     case reflection::BaseType::Double:
-      // We have a scalar field, so things are relatively
-      // straightforwards.
-      field->is_inline = true;
-      field->elements_are_inline = true;
-      field->is_struct = false;
-      field->is_repeated = false;
-      field->full_type =
-          ScalarOrEnumType(schema, type->base_type(), type->index());
+      PopulateTypeDataForScalarOrEnum(schema, field_fbs, field);
       return;
-    case reflection::BaseType::String: {
-      field->is_inline = false;
-      field->elements_are_inline = true;
-      field->is_struct = false;
-      field->is_repeated = true;
-      field->full_type =
-          absl::StrFormat("::aos::fbs::String<%d>",
-                          GetLengthAttributeOrZero(field_fbs, "static_length"));
+
+    case reflection::BaseType::String:
+      PopulateTypeDataForString(field_fbs, field);
       return;
-    }
-    case reflection::BaseType::Vector: {
-      // We need to extract the name of the elements of the vector.
-      std::string element_type;
-      bool elements_are_inline = true;
-      field->is_repeated = true;
-      if (type->base_type() == reflection::BaseType::Vector) {
-        switch (type->element()) {
-          case reflection::BaseType::Obj: {
-            const reflection::Object *element_object =
-                GetObject(schema, type->index());
-            element_type =
-                FlatbufferNameToCppName(element_object->name()->string_view());
-            elements_are_inline = element_object->is_struct();
-            if (!element_object->is_struct()) {
-              element_type = AosNameForRawFlatbuffer(element_type);
-              field->fbs_type = element_object->name()->string_view();
-            }
-            break;
-          }
-          case reflection::BaseType::String:
-            element_type =
-                absl::StrFormat("::aos::fbs::String<%d>",
-                                GetLengthAttributeOrZero(
-                                    field_fbs, "static_vector_string_length"));
-            elements_are_inline = false;
-            break;
-          case reflection::BaseType::Vector:
-            LOG(FATAL) << "Vectors of vectors do not exist in flatbuffers.";
-          default:
-            element_type =
-                ScalarOrEnumType(schema, type->element(), type->index());
-        };
-      }
-      field->is_inline = false;
-      field->elements_are_inline = elements_are_inline;
-      field->is_struct = false;
-      field->full_type =
-          absl::StrFormat("::aos::fbs::Vector<%s, %d, %s, %s>", element_type,
-                          GetLengthAttributeOrZero(field_fbs, "static_length"),
-                          elements_are_inline ? "true" : "false",
-                          GetAttribute(field_fbs, "force_align").value_or("0"));
+
+    case reflection::BaseType::Vector:
+      PopulateTypeDataForVector(schema, field_fbs, field);
       return;
-    }
-    case reflection::BaseType::Obj: {
-      const reflection::Object *object = GetObject(schema, type->index());
-      field->is_inline = object->is_struct();
-      field->elements_are_inline = field->is_inline;
-      field->is_struct = object->is_struct();
-      field->is_repeated = false;
-      const std::string flatbuffer_name =
-          FlatbufferNameToCppName(object->name()->string_view());
-      if (field->is_inline) {
-        field->full_type = flatbuffer_name;
-        field->inline_size = object->bytesize();
-        field->inline_alignment = object->minalign();
-      } else {
-        field->fbs_type = object->name()->string_view();
-        field->full_type = AosNameForRawFlatbuffer(flatbuffer_name);
-      }
+
+    case reflection::BaseType::Obj:
+      PopulateTypeDataForObject(schema, field_fbs, field);
       return;
-    }
+
     case reflection::BaseType::None:
     case reflection::BaseType::UType:
     case reflection::BaseType::Union:
@@ -261,7 +435,7 @@ void PopulateTypeData(const reflection::Schema *schema,
     case reflection::BaseType::MaxBaseType:
       LOG(FATAL) << ": Type " << reflection::EnumNameBaseType(type->base_type())
                  << " not supported currently.";
-  };
+  }
 }
 
 std::string MakeMoveConstructor(std::string_view type_name) {
@@ -384,7 +558,29 @@ std::string MakeInlineAccessors(const FieldData &field,
       InlineAbsoluteOffsetName(field), field.name, field.full_type, field.name,
       field.name, field.full_type, InlineAbsoluteOffsetName(field));
   const std::string clearer = MakeClearer(field);
-  return setter + getters + clearer + MakeHaser(field);
+
+  const std::string haser = MakeHaser(field);
+
+  // Finally, add `_or_default()` if the field has a default.
+  std::string or_default;
+  if (field.default_value_expression.has_value()) {
+    or_default = absl::StrFormat(
+        R"code(
+  // Returns the %s field if set, or its schema default otherwise.
+  %s %s_or_default() const {
+    return has_%s() ? *%s() : kDefault_%s;
+  }
+)code",
+        field.name,       // e.g. "stopping_distance"
+        field.full_type,  // e.g. "float"
+        field.name,       // => stopping_distance_or_default
+        field.name,       // => has_stopping_distance()
+        field.name,       // => stopping_distance()
+        field.name        // => kDefault_stopping_distance
+    );
+  }
+
+  return setter + getters + clearer + haser + or_default;
 }
 
 // Generates the accessors for fields which are not inline fields and have an
@@ -466,7 +662,27 @@ std::string MakeOffsetDataAccessors(const FieldData &field) {
       field.full_type,   // $1
       MemberName(field)  // $2
   );
-  return setter + getters + MakeClearer(field) + MakeHaser(field);
+
+  // If the field has a default, generate `_or_default()`:
+  std::string or_default;
+  if (field.default_value_expression.has_value()) {
+    // For example:
+    or_default =
+        absl::StrFormat(R"code(
+    // Returns the value of %s if set; otherwise returns the schema default.
+    %s %s_or_default() const {
+          return has_%s() ? *%s() : kDefault_%s;
+        }
+      )code",
+                        field.name,  // e.g. float
+                        field.full_type,
+                        field.name,  // e.g. stopping_distance_or_default
+                        field.name,  // for has_stopping_distance()
+                        field.name,  // for optional getter .stopping_distance()
+                        field.name);  // kDefault_stopping_distance
+  }
+
+  return setter + getters + MakeClearer(field) + MakeHaser(field) + or_default;
 }
 
 std::string MakeAccessors(const FieldData &field,
@@ -479,12 +695,22 @@ std::string MakeMembers(const FieldData &field,
                         std::string_view offset_data_absolute_offset,
                         size_t inline_absolute_offset) {
   if (field.is_inline) {
-    return absl::StrFormat(
+    std::string code_str = absl::StrFormat(
         R"code(
     // Offset from the start of the buffer to the inline data for the %s field.
     static constexpr size_t %s = %d;
-    )code",
+        )code",
         field.name, InlineAbsoluteOffsetName(field), inline_absolute_offset);
+
+    if (field.default_value_expression.has_value()) {
+      code_str += absl::StrFormat(R"code(
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr %s kDefault_%s = %s;
+        )code",
+                                  field.full_type, field.name,
+                                  field.default_value_expression.value());
+    }
+    return code_str;
   } else {
     return absl::StrFormat(
         R"code(

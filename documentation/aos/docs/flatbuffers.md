@@ -131,7 +131,7 @@ attribute "static_length";
 attribute "static_vector_string_length";
 
 table TestTable {
-  scalar:int (id: 0);
+  scalar:int = 99 (id: 0);
   vector_of_scalars:[int] (id: 1, static_length: 3);
   string:string (id: 2, static_length: 20);
   vector_of_strings:[string] (id: 3, static_length: 3, static_vector_string_length: 10);
@@ -310,6 +310,19 @@ TEST_F(StaticFlatbuffersTest, PopulateMethodConversionExample) {
 }
 ```
 
+### Default Value Accessors
+
+For scalar fields with default values specified in the schema, an additional 
+`_or_default()` method is generated. This method returns the current value if 
+the field is set, or the schema-defined default if the field is unset or 
+cleared. These accessors are only created for scalar fields with explicit 
+default values in the .fbs file.
+
+Example:
+```cpp
+int32_t scalar_or_default() const;
+```
+
 ### Scalar Fields
 
 Scalar fields have an API which is reasonably close to that of the base
@@ -340,6 +353,10 @@ void clear_scalar();
 
 // Returns true if the scalar field is populated.
 bool has_scalar() const;
+
+// Returns the value of scalar if has_scalar() is true, 
+// otherwise return the default value from the fbs file.
+int32_t scalar_or_default() const;
 ```
 
 ### Enum fields

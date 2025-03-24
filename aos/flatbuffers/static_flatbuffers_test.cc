@@ -1210,4 +1210,23 @@ TEST_F(StaticFlatbuffersTest, BuilderMoveConstructor) {
   TestMemory(builder.buffer());
 }
 
+TEST_F(StaticFlatbuffersTest, OrDefaultFunctions) {
+  aos::fbs::AlignedVectorAllocator allocator;
+  Builder<TestTableStatic> builder(&allocator);
+  TestTableStatic *object = builder.get();
+
+  // Test scalar_or_default.
+  // 99 is the default value defined in the FBS file.
+  EXPECT_EQ(object->scalar_or_default(), 99);
+  object->set_scalar(42);
+  EXPECT_EQ(object->scalar_or_default(), 42);
+
+  // Test that the field can be cleared and returns to default.
+  object->clear_scalar();
+  // 99 is the default value defined in the FBS file.
+  EXPECT_EQ(object->scalar_or_default(), 99);
+
+  ASSERT_TRUE(builder.AsFlatbufferSpan().Verify());
+}
+
 }  // namespace aos::fbs::testing

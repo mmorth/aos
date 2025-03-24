@@ -118,6 +118,11 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // Returns true if the field field is set and can be accessed.
   bool has_field() const { return AsFlatbuffer().has_field(); }
 
+  // Returns the field field if set, or its schema default otherwise.
+  uint8_t field_or_default() const {
+    return has_field() ? *field() : kDefault_field;
+  }
+
   // Clears every field of the table, removing any existing state.
   void Clear() { clear_field(); }
 
@@ -170,6 +175,9 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
 
   // Offset from the start of the buffer to the inline data for the field field.
   static constexpr size_t kInlineAbsoluteOffset_field = 4;
+
+  // This is an inline scalar/enum with a default, define kDefault_<name>.
+  static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
 
   // This object has no non-inline subobjects, so we don't have to do anything
   // special.
@@ -299,6 +307,9 @@ class SubTableStatic : public ::aos::fbs::Table {
   // Returns true if the baz field is set and can be accessed.
   bool has_baz() const { return AsFlatbuffer().has_baz(); }
 
+  // Returns the baz field if set, or its schema default otherwise.
+  float baz_or_default() const { return has_baz() ? *baz() : kDefault_baz; }
+
   // Sets the foo field, causing it to be populated if it is not already.
   // This will populate the field even if the specified value is the default.
   void set_foo(const int16_t &value) {
@@ -323,6 +334,9 @@ class SubTableStatic : public ::aos::fbs::Table {
 
   // Returns true if the foo field is set and can be accessed.
   bool has_foo() const { return AsFlatbuffer().has_foo(); }
+
+  // Returns the foo field if set, or its schema default otherwise.
+  int16_t foo_or_default() const { return has_foo() ? *foo() : kDefault_foo; }
 
   // Clears every field of the table, removing any existing state.
   void Clear() {
@@ -386,8 +400,14 @@ class SubTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the inline data for the baz field.
   static constexpr size_t kInlineAbsoluteOffset_baz = 4;
 
+  // This is an inline scalar/enum with a default, define kDefault_<name>.
+  static constexpr float kDefault_baz = static_cast<float>(0);
+
   // Offset from the start of the buffer to the inline data for the foo field.
   static constexpr size_t kInlineAbsoluteOffset_foo = 8;
+
+  // This is an inline scalar/enum with a default, define kDefault_<name>.
+  static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
 
   // This object has no non-inline subobjects, so we don't have to do anything
   // special.
@@ -1435,6 +1455,11 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Returns true if the scalar field is set and can be accessed.
   bool has_scalar() const { return AsFlatbuffer().has_scalar(); }
 
+  // Returns the scalar field if set, or its schema default otherwise.
+  int32_t scalar_or_default() const {
+    return has_scalar() ? *scalar() : kDefault_scalar;
+  }
+
   // Clears every field of the table, removing any existing state.
   void Clear() {
     clear_substruct();
@@ -2068,6 +2093,9 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the inline data for the scalar
   // field.
   static constexpr size_t kInlineAbsoluteOffset_scalar = 64;
+
+  // This is an inline scalar/enum with a default, define kDefault_<name>.
+  static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
 
   size_t NumberOfSubObjects() const final { return 11; }
   using ::aos::fbs::ResizeableObject::SubObject;
