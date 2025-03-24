@@ -22,6 +22,7 @@
 #include "flatbuffers/string.h"
 #include "flatbuffers/vector.h"
 
+#include "aos/flatbuffers/attributes.h"
 #include "aos/flatbuffers/base.h"
 #include "aos/json_to_flatbuffer.h"
 
@@ -59,20 +60,6 @@ struct FieldData {
 const reflection::Object *GetObject(const reflection::Schema *schema,
                                     const int index) {
   return (index == -1) ? schema->root_table() : schema->objects()->Get(index);
-}
-
-// Returns the flatbuffer field attribute with the specified name, if available.
-std::optional<std::string_view> GetAttribute(const reflection::Field *field,
-                                             std::string_view attribute) {
-  if (!field->has_attributes()) {
-    return std::nullopt;
-  }
-  const reflection::KeyValue *kv =
-      field->attributes()->LookupByKey(attribute.data());
-  if (kv == nullptr) {
-    return std::nullopt;
-  }
-  return kv->value()->string_view();
 }
 
 // Returns the implied value of an attribute that specifies a length (i.e., 0 if

@@ -7,6 +7,7 @@ cc_library(
     srcs = ["static_flatbuffers.cc"],
     hdrs = ["static_flatbuffers.h"],
     deps = [
+        ":attributes",
         ":static_table",
         ":static_vector",
         "//aos:json_to_flatbuffer",
@@ -177,4 +178,13 @@ filegroup(
     name = "test_static_file",
     srcs = ["test_static.h"],
     visibility = [":__subpackages__"],
+)
+
+cc_library(
+    name = "attributes",
+    hdrs = ["attributes.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_google_flatbuffers//:flatbuffers",
+    ],
 )
