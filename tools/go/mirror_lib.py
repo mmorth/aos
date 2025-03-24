@@ -5,7 +5,7 @@ import subprocess
 from typing import List, Dict
 import unittest.mock
 
-from bazel_tools.tools.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 
 def read_file(filepath: str) -> str:

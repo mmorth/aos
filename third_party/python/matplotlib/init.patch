@@ -13,7 +13,7 @@ index ba9cd6c..083ef5b 100644
  from packaging.version import parse as parse_version
  
 +
-+from bazel_tools.tools.python.runfiles import runfiles
++from python.runfiles import runfiles
 +
 +def _hermeticity_fixup():
 +    _runfiles = runfiles.Create()

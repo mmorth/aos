@@ -18,7 +18,7 @@ def bazel_name_fix(filename, year):
     """Quick fix to naming games that happen with bazel"""
     ret_name = filename
     try:
-        from bazel_tools.tools.python.runfiles import runfiles
+        from python.runfiles import runfiles
         r = runfiles.Create()
         ret_name = r.Rlocation('aos/y%s/vision/%s' % (year, filename))
     except:

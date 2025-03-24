@@ -131,9 +131,9 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":calibration_fbs_python",
-        "@bazel_tools//tools/python/runfiles",
         "@pip//glog",
         "@pip//opencv_python",
+        "@rules_python//python/runfiles",
     ],
 )
 

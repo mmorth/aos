@@ -11,7 +11,7 @@ py_library(
     ],
     target_compatible_with = ["@platforms//cpu:x86_64"],
     deps = [
-        "@bazel_tools//tools/python/runfiles",
+        "@rules_python//python/runfiles",
     ],
 )
 
