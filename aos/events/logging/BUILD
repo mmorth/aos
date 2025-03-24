@@ -550,6 +550,22 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "node_printer",
+    srcs = [
+        "node_printer.cc",
+    ],
+    hdrs = [
+        "node_printer.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//aos:aos_cli_utils",
+        "//aos/events:event_loop",
+        "//aos/events:simulated_event_loop",
+    ],
+)
+
 cc_binary(
     name = "log_cat",
     srcs = [
@@ -559,6 +575,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":log_reader",
+        ":node_printer",
         "//aos:aos_cli_utils",
         "//aos:configuration",
         "//aos:init",
