@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -75,9 +76,12 @@ class McapLogger {
     kNone,
     kLz4,
   };
+  // Channels whose corresponding MCAP topic matches one of the regular
+  // expressions in `dropped_channels` will not be added to the MCAP.
   McapLogger(EventLoop *event_loop, const std::string &output_path,
              Serialization serialization,
-             CanonicalChannelNames canonical_channels, Compression compression);
+             CanonicalChannelNames canonical_channels, Compression compression,
+             const std::vector<std::string> &dropped_channels = {});
   ~McapLogger();
 
  private:
@@ -239,6 +243,10 @@ class McapLogger {
   // Metadata associated with the log conversion from AOS to MCAP.
   std::unique_ptr<InjectedChannel<LogConversionMetadata>>
       injected_conversion_metadata_;
+
+  // A list of regexes that dictate which channels to drop from the MCAP. The
+  // regexes are matched against the MCAP topic names.
+  std::vector<std::regex> dropped_channels_;
 
   // Memory buffer to use for compressing data.
   std::vector<uint8_t> compression_buffer_;

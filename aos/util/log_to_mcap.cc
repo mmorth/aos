@@ -39,6 +39,9 @@ ABSL_FLAG(bool, fetch, false,
           "can be used to see additional data, but given that data may be "
           "incomplete prior to the start of the log, you should be careful "
           "about interpretting data flow when using this flag.");
+ABSL_FLAG(std::vector<std::string>, drop_channels, {},
+          "A comma-separated list of MCAP topic names to drop. This looks like "
+          "so: --drop_channels='/0/foo a.b.Msg1,/0/bar a.c.Msg2'.");
 
 // Converts an AOS log to an MCAP log that can be fed into Foxglove. To try this
 // out, run:
@@ -126,7 +129,8 @@ int main(int argc, char *argv[]) {
             ? aos::McapLogger::CanonicalChannelNames::kCanonical
             : aos::McapLogger::CanonicalChannelNames::kShortened,
         absl::GetFlag(FLAGS_compress) ? aos::McapLogger::Compression::kLz4
-                                      : aos::McapLogger::Compression::kNone);
+                                      : aos::McapLogger::Compression::kNone,
+        absl::GetFlag(FLAGS_drop_channels));
     if (absl::GetFlag(FLAGS_include_clocks)) {
       clock_event_loop =
           reader.event_loop_factory()->MakeEventLoop("clock", node);

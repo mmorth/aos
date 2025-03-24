@@ -3,6 +3,8 @@
 # a valid MCAP file. To do so, it first generates an AOS log, then converts it to MCAP, and
 # then runs the "mcap doctor" tool on it to confirm compliance with the standard.
 import argparse
+import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -25,7 +27,8 @@ def generate_argument_permutations():
                 ["--mode=flatbuffer", "--mode=json"],
                 ["--canonical_channel_names", "--nocanonical_channel_names"],
                 ["--mcap_chunk_size=1000", "--mcap_chunk_size=10000000"],
-                ["--fetch", "--nofetch"]]
+                ["--fetch", "--nofetch"],
+                ["--drop_channels=", "--drop_channels=.*aos.examples.Pong"]]
     permutations = make_permutations(arg_sets)
     print(permutations)
     return permutations
@@ -88,6 +91,26 @@ def main(argv: Sequence[Text]):
                       filtered_stdout)
                 return 1
             doctor_result.check_returncode()
+
+            # Validate that we dropped the messages appropriately.
+            info = subprocess.check_output(
+                [args.mcap, "info", mcap_name],
+                env=os.environ.copy() | {
+                    # For some reason `mcap info` requires HOME.
+                    "HOME": "/nonexistent"
+                }).decode("utf-8")
+            if not (match := re.search(r"channels: (\d+)", info)):
+                print("Couldn't find the number of channels in:")
+                print(info)
+                return 1
+            num_channels = int(match.group(1))
+            # We expect one fewer channels when we drop the Pong channel.
+            expected_num_channels = 10 if "--drop_channels=" in log_to_mcap_args else 9
+            if num_channels != expected_num_channels:
+                print(
+                    f"Expected {expected_num_channels} channels, but found {num_channels} instead."
+                )
+                return 1
     return 0
 
 

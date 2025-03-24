@@ -4,6 +4,8 @@
 #include <chrono>
 #include <numeric>
 #include <ostream>
+#include <ranges>
+#include <regex>
 #include <set>
 
 #include "absl/flags/flag.h"
@@ -124,6 +126,17 @@ std::string_view CompressionName(McapLogger::Compression compression) {
   LOG(FATAL) << "Unreachable.";
 }
 
+bool ChannelShouldBeDropped(const std::vector<std::regex> &dropped_channels,
+                            const aos::Channel *channel) {
+  const std::string topic_name = absl::StrCat(
+      channel->name()->string_view(), " ", channel->type()->string_view());
+  const auto topic_matches =
+      [topic_name = std::move(topic_name)](const std::regex &regex) {
+        return std::regex_match(topic_name, regex);
+      };
+  return std::ranges::any_of(dropped_channels, topic_matches);
+}
+
 }  // namespace
 
 template <typename T>
@@ -190,7 +203,8 @@ class McapLogger::InjectedChannel {
 McapLogger::McapLogger(EventLoop *event_loop, const std::string &output_path,
                        Serialization serialization,
                        CanonicalChannelNames canonical_channels,
-                       Compression compression)
+                       Compression compression,
+                       const std::vector<std::string> &dropped_channels)
     : event_loop_(event_loop),
       output_(output_path),
       serialization_(serialization),
@@ -200,7 +214,12 @@ McapLogger::McapLogger(EventLoop *event_loop, const std::string &output_path,
           this, "configuration", ConfigurationSchema)),
       injected_conversion_metadata_(
           std::make_unique<InjectedChannel<LogConversionMetadata>>(
-              this, "log_conversion_metadata", LogConversionMetadataSchema)) {
+              this, "log_conversion_metadata", LogConversionMetadataSchema)),
+      dropped_channels_([&dropped_channels] {
+        // Convert the strings to regex objects.
+        return std::vector<std::regex>{dropped_channels.begin(),
+                                       dropped_channels.end()};
+      }()) {
   event_loop->SkipTimingReport();
   event_loop->SkipAosLog();
   CHECK(output_);
@@ -275,6 +294,9 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
   for (const Channel *channel : *event_loop_->configuration()->channels()) {
     ++id;
     if (!configuration::ChannelIsReadableOnNode(channel, event_loop_->node())) {
+      continue;
+    }
+    if (ChannelShouldBeDropped(dropped_channels_, channel)) {
       continue;
     }
     channels[id] = channel;
