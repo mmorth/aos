@@ -120,7 +120,8 @@ class LogReader {
   // Registers all the callbacks to send the log file data out to an event loop
   // factory.  This does not start replaying or change the current distributed
   // time of the factory.  It does change the monotonic clocks to be right.
-  void RegisterWithoutStarting(SimulatedEventLoopFactory *event_loop_factory);
+  virtual void RegisterWithoutStarting(
+      SimulatedEventLoopFactory *event_loop_factory);
   // Identical to RegisterWithoutStarting(), except that certain classes of
   // errors will result in an error value being returned rather than resulting
   // in a LOG(FATAL). If this returns an error, log reading has failed and the
