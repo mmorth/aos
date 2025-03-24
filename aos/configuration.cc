@@ -393,8 +393,11 @@ void UnpackConfiguration(const Configuration *configuration,
 
       UnpackChannel(channel, &unpacked_channel);
       if (channel->has_schema()) {
-        result->schemas.emplace(channel->type()->string_view(),
-                                channel->schema());
+        // Make sure to overwrite any existing schemas; schemas that appear in
+        // later channels should override those specified earlier.
+        // This is mostly used for log-replay scenarios where we need to upgrade
+        // the reflection schemas present in a log.
+        result->schemas[channel->type()->string_view()] = channel->schema();
       }
     }
   }
@@ -1547,9 +1550,13 @@ FlatbufferDetachedBuffer<Configuration> MergeConfiguration(
   for (const aos::FlatbufferVector<reflection::Schema> &schema : schemas) {
     CHECK(schema.message().has_root_table());
     CHECK(schema.message().root_table()->has_name());
-    unpacked_config.schemas.emplace(
-        schema.message().root_table()->name()->string_view(),
-        &schema.message());
+    // Make sure to overwrite any existing schemas; schemas that appear in
+    // later channels should override those specified earlier.
+    // This is mostly used for log-replay scenarios where we need to upgrade
+    // the reflection schemas present in a log.
+    unpacked_config
+        .schemas[schema.message().root_table()->name()->string_view()] =
+        &schema.message();
   }
 
   flatbuffers::FlatBufferBuilder fbb;

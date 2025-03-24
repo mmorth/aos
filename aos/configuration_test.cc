@@ -170,11 +170,113 @@ TEST_F(ConfigurationTest, MergeWithConfig) {
             FlatbufferToJson(updated_config, {.multi_line = true}));
 }
 
+// Tests that MergeConfiguration uses the latest Schema provided on any given
+// channel type.
+TEST_F(ConfigurationTest, MergeConfigurationKeepsNewestSchema) {
+  FlatbufferDetachedBuffer<Configuration> updated_config =
+      MergeConfiguration(aos::FlatbufferDetachedBuffer<Configuration>(
+          aos::JsonToFlatbuffer<Configuration>(R"json({
+  "channels": [
+    {
+      "name": "/foo",
+      "type": ".aos.bar",
+      "max_size": 100,
+      "schema": {
+        "root_table": { "name": ".aos.bar" },
+        "file_ident": "Old"
+      }
+    },
+    {
+      "name": "/bar",
+      "type": ".aos.bar",
+      "max_size": 100,
+      "schema": {
+        "root_table": { "name": ".aos.bar" },
+        "file_ident": "New"
+      }
+    }
+  ]
+})json")));
+
+  EXPECT_EQ(
+      R"json({
+ "channels": [
+  {
+   "name": "/bar",
+   "type": ".aos.bar",
+   "max_size": 100,
+   "schema": {
+    "file_ident": "New",
+    "root_table": {
+     "name": ".aos.bar"
+    }
+   }
+  },
+  {
+   "name": "/foo",
+   "type": ".aos.bar",
+   "max_size": 100,
+   "schema": {
+    "file_ident": "New",
+    "root_table": {
+     "name": ".aos.bar"
+    }
+   }
+  }
+ ]
+})json",
+      FlatbufferToJson(updated_config, {.multi_line = true}));
+}
+
+// Tests that when we add schemas to a configuration that they override the
+// existing schemas.
+TEST_F(ConfigurationTest, AddSchemasKeepsNewestSchema) {
+  FlatbufferDetachedBuffer<Configuration> updated_config = MergeConfiguration(
+      aos::FlatbufferDetachedBuffer<Configuration>(
+          aos::JsonToFlatbuffer<Configuration>(R"json({
+  "channels": [
+    {
+      "name": "/foo",
+      "type": ".aos.bar",
+      "max_size": 100,
+      "schema": {
+        "root_table": { "name": ".aos.bar" },
+        "file_ident": "Old"
+      }
+    }
+  ]
+})json")),
+      {aos::FlatbufferVector<reflection::Schema>(
+          aos::FlatbufferDetachedBuffer<reflection::Schema>(
+              aos::JsonToFlatbuffer<reflection::Schema>(R"json({
+  "root_table": { "name": ".aos.bar" },
+  "file_ident": "New"
+})json")))});
+
+  EXPECT_EQ(
+      R"json({
+ "channels": [
+  {
+   "name": "/foo",
+   "type": ".aos.bar",
+   "max_size": 100,
+   "schema": {
+    "file_ident": "New",
+    "root_table": {
+     "name": ".aos.bar"
+    }
+   }
+  }
+ ]
+})json",
+      FlatbufferToJson(updated_config, {.multi_line = true}));
+}
+
 // Tests that we can modify a config with a static flatbuffer.
 TEST_F(ConfigurationTest, MergeWithConfigFromStatic) {
   FlatbufferDetachedBuffer<Configuration> config =
       ReadConfig(ArtifactPath("aos/testdata/config1.json"));
-  LOG(INFO) << "Read: " << FlatbufferToJson(config, {.multi_line = true});
+  VLOG(1) << "Read: " << FlatbufferToJson(config, {.multi_line = true});
 
   fbs::Builder<ConfigurationStatic> config_addition_builder;
   ConfigurationStatic *config_addition = config_addition_builder.get();
@@ -1608,9 +1710,9 @@ void TestGetPartialConfiguration(const Configuration &base_config,
           [test_channel_name, test_channel_type](const Channel &channel) {
             if (channel.name()->string_view() == test_channel_name &&
                 channel.type()->string_view() == test_channel_type) {
-              LOG(INFO) << "Omitting channel from save_log, channel: "
-                        << channel.name()->string_view() << ", "
-                        << channel.type()->string_view();
+              VLOG(1) << "Omitting channel from save_log, channel: "
+                      << channel.name()->string_view() << ", "
+                      << channel.type()->string_view();
               return false;
             }
             return true;
