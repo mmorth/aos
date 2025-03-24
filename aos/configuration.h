@@ -47,11 +47,17 @@ FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
 FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
     const Configuration *config, const Flatbuffer<Configuration> &addition);
 
-// Adds the list of schemas to the provide aos_config.json.  This should mostly
+// Adds the list of schemas to the provided aos_config.json.  This should mostly
 // be used for testing and in conjunction with MergeWithConfig.
 FlatbufferDetachedBuffer<aos::Configuration> AddSchema(
     std::string_view json,
     const std::vector<FlatbufferVector<reflection::Schema>> &schemas);
+
+// Removes the schemas from the provided configuration. This is useful for
+// shrinking the size of the message significantly without affecting most use
+// cases.
+FlatbufferDetachedBuffer<Configuration> StripConfiguration(
+    const Configuration *config);
 
 // Returns the resolved Channel for a name, type, and application name. Returns
 // nullptr if none is found.

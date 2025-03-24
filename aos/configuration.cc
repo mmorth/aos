@@ -1707,6 +1707,15 @@ aos::FlatbufferDetachedBuffer<aos::Configuration> AddSchema(
   return MergeConfiguration(addition, schemas);
 }
 
+FlatbufferDetachedBuffer<Configuration> StripConfiguration(
+    const Configuration *config) {
+  FlatbufferDetachedBuffer<Configuration> mutable_copy = CopyFlatBuffer(config);
+  for (Channel *channel : *mutable_copy.mutable_message()->mutable_channels()) {
+    channel->clear_schema();
+  }
+  return RecursiveCopyFlatBuffer(&mutable_copy.message());
+}
+
 int GetNodeIndex(const Configuration *config, const Node *node) {
   if (!MultiNode(config)) {
     return 0;

@@ -169,6 +169,23 @@ TEST_F(ConfigurationTest, MergeWithConfig) {
             FlatbufferToJson(updated_config, {.multi_line = true}));
 }
 
+// Tests that we can properly strip the schemas from the channels.
+TEST_F(ConfigurationTest, StripConfiguration) {
+  FlatbufferDetachedBuffer<Configuration> original_config =
+      ReadConfig(ArtifactPath("aos/events/pingpong_config.json"));
+  ASSERT_TRUE(original_config.message().has_channels());
+  for (const Channel *channel : *original_config.message().channels()) {
+    EXPECT_TRUE(channel->has_schema());
+  }
+
+  FlatbufferDetachedBuffer<Configuration> stripped_config =
+      StripConfiguration(&original_config.message());
+  ASSERT_TRUE(stripped_config.message().has_channels());
+  for (const Channel *channel : *stripped_config.message().channels()) {
+    EXPECT_FALSE(channel->has_schema());
+  }
+}
+
 // Tests that we can lookup a location, complete with maps, from a merged
 // config.
 TEST_F(ConfigurationTest, GetChannel) {
