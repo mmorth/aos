@@ -1422,7 +1422,12 @@ FlatbufferDetachedBuffer<Configuration> ReadConfig(
 
 FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
     const Configuration *config, const Flatbuffer<Configuration> &addition) {
-  return MergeConfiguration(MergeFlatBuffers(config, &addition.message()));
+  return MergeWithConfig(config, addition.message());
+}
+
+FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
+    const Configuration *config, const Configuration &addition) {
+  return MergeConfiguration(MergeFlatBuffers(config, &addition));
 }
 
 FlatbufferDetachedBuffer<Configuration> MergeWithConfig(

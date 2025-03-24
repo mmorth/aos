@@ -46,6 +46,8 @@ FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
     const Configuration *config, std::string_view json);
 FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
     const Configuration *config, const Flatbuffer<Configuration> &addition);
+FlatbufferDetachedBuffer<Configuration> MergeWithConfig(
+    const Configuration *config, const Configuration &addition);
 
 // Adds the list of schemas to the provided aos_config.json.  This should mostly
 // be used for testing and in conjunction with MergeWithConfig.

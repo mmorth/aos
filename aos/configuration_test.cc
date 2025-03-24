@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "aos/configuration_static.h"
 #include "aos/events/ping_generated.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/testing/flatbuffer_eq.h"
@@ -162,6 +163,44 @@ TEST_F(ConfigurationTest, MergeWithConfig) {
     }
   ]
 })channel");
+
+  EXPECT_EQ(absl::StripSuffix(util::ReadFileToStringOrDie(ArtifactPath(
+                                  "aos/testdata/expected_merge_with.json")),
+                              "\n"),
+            FlatbufferToJson(updated_config, {.multi_line = true}));
+}
+
+// Tests that we can modify a config with a static flatbuffer.
+TEST_F(ConfigurationTest, MergeWithConfigFromStatic) {
+  FlatbufferDetachedBuffer<Configuration> config =
+      ReadConfig(ArtifactPath("aos/testdata/config1.json"));
+  LOG(INFO) << "Read: " << FlatbufferToJson(config, {.multi_line = true});
+
+  fbs::Builder<ConfigurationStatic> config_addition_builder;
+  ConfigurationStatic *config_addition = config_addition_builder.get();
+  {
+    fbs::Vector<aos::ChannelStatic, 0, false> *channels_addition =
+        config_addition->add_channels();
+    ASSERT_TRUE(channels_addition != nullptr);
+    ASSERT_TRUE(channels_addition->reserve(1));
+    ChannelStatic *channel_override = channels_addition->emplace_back();
+    ASSERT_TRUE(channel_override != nullptr);
+
+    fbs::String<0> *name = channel_override->add_name();
+    ASSERT_TRUE(name != nullptr);
+    ASSERT_TRUE(name->reserve(10));
+    name->SetString("/foo");
+
+    fbs::String<0> *type = channel_override->add_type();
+    ASSERT_TRUE(type != nullptr);
+    ASSERT_TRUE(type->reserve(10));
+    type->SetString(".aos.bar");
+
+    channel_override->set_max_size(100);
+  }
+
+  FlatbufferDetachedBuffer<Configuration> updated_config =
+      MergeWithConfig(&config.message(), config_addition->AsFlatbuffer());
 
   EXPECT_EQ(absl::StripSuffix(util::ReadFileToStringOrDie(ArtifactPath(
                                   "aos/testdata/expected_merge_with.json")),
