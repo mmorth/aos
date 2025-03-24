@@ -90,7 +90,7 @@ void SetSoftRLimit(
 
     PCHECK(setrlimit64(resource, &rlim) == 0)
         << ": changing limit for " << resource << " to " << rlim.rlim_cur
-        << " with max of " << rlim.rlim_max << help_string;
+        << " with max of " << rlim.rlim_max << " (" << help_string << ")";
   }
 }
 
