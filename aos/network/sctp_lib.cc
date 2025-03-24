@@ -431,6 +431,7 @@ bool SctpReadWrite::SendMessage(
 }
 
 void SctpReadWrite::FreeMessage(aos::unique_c_ptr<Message> &&message) {
+  message->must_be_returned_to_pool = false;
   if (use_pool_) {
     free_messages_.emplace_back(std::move(message));
   }
@@ -454,11 +455,13 @@ aos::unique_c_ptr<Message> SctpReadWrite::AcquireMessage() {
         kMessageAlign;
     aos::unique_c_ptr<Message> result(reinterpret_cast<Message *>(
         aligned_alloc(kMessageAlign, max_message_size)));
+    result->must_be_returned_to_pool = false;
     return result;
   } else {
     CHECK_GT(free_messages_.size(), 0u);
     aos::unique_c_ptr<Message> result = std::move(free_messages_.back());
     free_messages_.pop_back();
+    result->must_be_returned_to_pool = true;
     return result;
   }
 }
@@ -493,7 +496,9 @@ aos::unique_c_ptr<Message> SctpReadWrite::ReadMessage() {
     const ssize_t size = recvmsg(fd_, &inmessage, MSG_DONTWAIT);
     if (size == -1) {
       if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK) {
-        // These are all non-fatal failures indicating we should retry later.
+        FreeMessage(std::move(result));
+        // These are all non-fatal failures indicating we should retry
+        // later.
         return nullptr;
       }
       PLOG(FATAL) << "recvmsg on sctp socket " << fd_ << " failed";
@@ -548,6 +553,7 @@ aos::unique_c_ptr<Message> SctpReadWrite::ReadMessage() {
       CHECK(inmessage.msg_flags & MSG_EOR)
           << ": Notifications should never be big enough to fragment";
       if (ProcessNotification(result.get())) {
+        FreeMessage(std::move(result));
         // We handled this notification internally, so don't pass it on.
         return nullptr;
       }
@@ -592,14 +598,14 @@ aos::unique_c_ptr<Message> SctpReadWrite::ReadMessage() {
               << result->header.rcvinfo.rcv_ssn << ","
               << result->header.rcvinfo.rcv_assoc_id;
       partial_message->size += result->size;
-      result.reset();
+      FreeMessage(std::move(result));
     }
 
     if (inmessage.msg_flags & MSG_EOR) {
       // This is the last fragment, so we have something to return.
       if (partial_message_iterator != partial_messages_.end()) {
-        // It was already merged into the message in the list, so now we pull
-        // that out of the list and return it.
+        // It was already merged into the message in the list, so now we
+        // pull that out of the list and return it.
         CHECK(!result);
         result = std::move(*partial_message_iterator);
         partial_messages_.erase(partial_message_iterator);
@@ -618,7 +624,15 @@ aos::unique_c_ptr<Message> SctpReadWrite::ReadMessage() {
               << result->header.rcvinfo.rcv_assoc_id;
       // Need to record this as the first fragment.
       partial_messages_.emplace_back(std::move(result));
+      if (use_pool_) {
+        CHECK(!free_messages_.empty())
+            << ": Insufficient free messages in pool to ever be able to "
+               "complete incoming partial SCTP message; something may be "
+               "misconfigured.";
+      }
     }
+    CHECK(!result) << ": Failed to do anything with result object before "
+                      "continuing while loop.";
   }
 }
 

@@ -77,6 +77,23 @@ struct Message {
 
   uint32_t partial_deliveries = 0;
 
+  // Whenever a Message object that is using the internal message pool in the
+  // SctpReadWrite class, but is currently owned by the user, it wil have this
+  // flag set (must_be_returned_to_pool will get set back to false when it is
+  // actually in the pool).
+  // Note: We can't just do the actual returning-to-the-pool in the
+  // Message::~Message() destructor because at that point the memory is already
+  // committed to being free'd; if we separated out the allocation of just the
+  // actual_data[] member from the allocation of the struct as a whole we could
+  // perhaps do this differently.
+  bool must_be_returned_to_pool = false;
+
+  ~Message() {
+    CHECK(!must_be_returned_to_pool)
+        << ": Did you attempt to destroy a Message without "
+           "using FreeMessage()?";
+  }
+
   // Returns a human readable peer IP address.
   std::string PeerAddress() const;
 
@@ -186,6 +203,11 @@ class SctpReadWrite {
   size_t max_read_size_ = 1000;
   size_t max_write_size_ = 1000;
 
+  // TODO(james): It is not clear to me that we really need to be doing this
+  // aos::unique_c_ptr thing here; the memory in Message does not need to be
+  // contiguous (it's just that the internal data buffer needs to have a certain
+  // alignment); it may make sense to move the unique_c_ptr down to inside of
+  // the Message object instead.
   std::vector<aos::unique_c_ptr<Message>> partial_messages_;
 
   bool use_pool_ = false;

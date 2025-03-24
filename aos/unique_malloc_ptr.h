@@ -19,6 +19,7 @@ class const_wrap {
 // automatically convert T* to void* like C).
 template <typename T>
 void free_type(T *ptr) {
+  ptr->~T();
   ::free(reinterpret_cast<void *>(ptr));
 }
 
@@ -26,6 +27,7 @@ void free_type(T *ptr) {
 
 // A std::unique_ptr that should get freed with a C-style free function
 // (free(2) by default).
+// The destructor of the object will still be called.
 template <typename T, void (*function)(T *) = internal::free_type<T>>
 class unique_c_ptr
     : public std::unique_ptr<T, internal::const_wrap<T, function>> {
