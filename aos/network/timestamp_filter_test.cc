@@ -396,6 +396,33 @@ TEST_F(NoncausalTimestampFilterTest, PointRemoval) {
   ASSERT_EQ(filter.timestamps_size(), 2u);
 }
 
+TEST_F(NoncausalTimestampFilterTest, PopWithEmptyFilter) {
+  TestingNoncausalTimestampFilter filter(node_a, node_b);
+
+  // Declare two BootTimestamp values with boot 0.
+  // This will give us something to sample and pop.
+  const BootTimestamp t0a{
+      0, monotonic_clock::time_point(std::chrono::milliseconds(0))};
+
+  const BootTimestamp t0b{
+      0, monotonic_clock::time_point(std::chrono::milliseconds(1))};
+
+  // Declare another BootTimestamp with a different boot. Don't sample it.
+  const BootTimestamp t1a{
+      1, monotonic_clock::time_point(std::chrono::milliseconds(0))};
+
+  filter.Sample(t0a, {0, chrono::microseconds(1)});
+  filter.Debug();
+  filter.Sample(t0b, {0, chrono::microseconds(2)});
+  filter.Debug();
+
+  // Cause a filter to be created, but don't add samples to it.
+  filter.FreezeUntil(t0a, t1a);
+
+  // Pop all timestamps from the first filter
+  filter.Pop(t0b);
+}
+
 // Tests that inserting duplicate points causes the duplicates to get ignored.
 TEST_F(NoncausalTimestampFilterTest, DuplicatePoints) {
   const BootTimestamp ta{0,

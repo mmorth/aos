@@ -445,6 +445,7 @@ class NoncausalTimestampFilter {
   void FreezeUntil(logger::BootTimestamp node_monotonic_now,
                    logger::BootTimestamp remote_monotonic_now) {
     // TODO(austin): CHECK that all older boots are fully frozen.
+    // This will create a BootFilter if it doesn't exist.
     filter(node_monotonic_now.boot, remote_monotonic_now.boot)
         ->filter.FreezeUntil(node_monotonic_now.time);
     filter(node_monotonic_now.boot, remote_monotonic_now.boot)

@@ -4597,6 +4597,163 @@ TEST_P(MultinodeLoggerTest, OneDirectionTimeDrift) {
   ConfirmReadable(filenames);
 }
 
+// Test the that we can handle a log which has an asymetric record (between
+// VPUs) of a particular boot combination. The only trace of boot index 1 on the
+// remote node is a message that exists in the fetcher queue. This can occur
+// when the remote node sends a message and then reboots, since there is no
+// reply expected from the local node.
+TEST(MultinodeLoggerLoopTest, PopWithEmptyFilter) {
+  util::UnlinkRecursive(aos::testing::TestTmpDir() + "/logs");
+  std::filesystem::create_directory(aos::testing::TestTmpDir() + "/logs");
+
+  const std::string kLogfile1_1 =
+      aos::testing::TestTmpDir() + "/logs/multi_logfile1/";
+
+  std::vector<std::string> filenames;
+
+  // Manually assign boot UUIDs so we can later check that the reboots occurred
+  // as expected.
+  const UUID pi1_boot0 = UUID::Random();
+  const UUID pi2_boot0 = UUID::Random();
+  const UUID pi2_boot1 = UUID::Random();
+  const UUID pi2_boot2 = UUID::Random();
+
+  // Build a log file that contains three boot indexes for a remote node, 0,
+  // 1, 2. The only record of the 2nd boot in the log is a message that exists
+  // in the fetcher queue. The fetcher queue stores the last message that was
+  // sent on each channel.
+  {
+    const aos::FlatbufferDetachedBuffer<aos::Configuration> config =
+        aos::configuration::ReadConfig(ArtifactPath(
+            "aos/events/logging/multinode_pingpong_reboot_ooo_config.json"));
+
+    constexpr int kPi1Index = 0;
+    constexpr int kPi2Index = 1;
+
+    message_bridge::TestingTimeConverter time_converter(
+        configuration::NodesCount(&config.message()));
+
+    const chrono::nanoseconds boot_duration1 = chrono::milliseconds(1000);
+    const chrono::nanoseconds boot_duration2 = chrono::milliseconds(1000);
+    const chrono::nanoseconds boot_duration3 = chrono::milliseconds(1000);
+
+    // Configure the timestamps so that the local node has no reboots, and the
+    // remote node reboots twice.
+    {
+      time_converter.set_boot_uuid(kPi1Index, 0, pi1_boot0);
+      time_converter.set_boot_uuid(kPi2Index, 0, pi2_boot0);
+      time_converter.set_boot_uuid(kPi2Index, 1, pi2_boot1);
+      time_converter.set_boot_uuid(kPi2Index, 2, pi2_boot2);
+
+      time_converter.AddNextTimestamp(
+          distributed_clock::epoch(),
+          {BootTimestamp::epoch(), BootTimestamp::epoch()});
+
+      time_converter.AddNextTimestamp(
+          distributed_clock::epoch() + boot_duration1,
+          {BootTimestamp{.boot = 0,
+                         .time = monotonic_clock::epoch() + boot_duration1},
+           BootTimestamp{.boot = 1, .time = monotonic_clock::epoch()}});
+
+      time_converter.AddNextTimestamp(
+          distributed_clock::epoch() + boot_duration1 + boot_duration2,
+          {BootTimestamp{.boot = 0,
+                         .time = monotonic_clock::epoch() + boot_duration1 +
+                                 boot_duration2},
+           BootTimestamp{.boot = 2, .time = monotonic_clock::epoch()}});
+    }
+
+    // Construct an event loop factory using our time_converter.
+    SimulatedEventLoopFactory event_loop_factory(&config.message());
+    event_loop_factory.SetTimeConverter(&time_converter);
+
+    NodeEventLoopFactory *const pi1 =
+        event_loop_factory.GetNodeEventLoopFactory("pi1");
+    NodeEventLoopFactory *const pi2 =
+        event_loop_factory.GetNodeEventLoopFactory("pi2");
+
+    CHECK_EQ(kPi1Index, configuration::GetNodeIndex(
+                            event_loop_factory.configuration(), pi1->node()));
+    CHECK_EQ(kPi2Index, configuration::GetNodeIndex(
+                            event_loop_factory.configuration(), pi2->node()));
+
+    // Verify the pi2 node has rebooted.
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi1")->boot_uuid(),
+              pi1_boot0);
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi2")->boot_uuid(),
+              pi2_boot0);
+
+    // Send a message from the remote node on channel name atest1.
+    {
+      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
+      aos::Sender<examples::Pong> pong_sender =
+          pi2_event_loop->MakeSender<examples::Pong>("/atest1");
+
+      aos::Sender<examples::Pong>::Builder builder = pong_sender.MakeBuilder();
+      examples::Pong::Builder pong_builder =
+          builder.MakeBuilder<examples::Pong>();
+      CHECK_EQ(builder.Send(pong_builder.Finish()), RawSender::Error::kOk);
+    }
+
+    // Run the event loop long enough to get entirely through the remote's 1st
+    // boot duration. Add some padding to ensure that all at least one message
+    // has been sent on all periodic channels channels, e.g. Timestamp messages.
+    // The time padding only needs to be applied the first time here and will
+    // automatically offset the start time of each other time we call
+    // SimulatedEventLoopFactory::RunFor.
+    event_loop_factory.RunFor(boot_duration1 + chrono::milliseconds(100));
+
+    // Verify the pi2 node has rebooted.
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi1")->boot_uuid(),
+              pi1_boot0);
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi2")->boot_uuid(),
+              pi2_boot1);
+
+    // Send a message from the remote node on channel name atest2.
+    {
+      std::unique_ptr<EventLoop> pi2_event_loop = pi2->MakeEventLoop("pong");
+      aos::Sender<examples::Pong> pong_sender =
+          pi2_event_loop->MakeSender<examples::Pong>("/atest2");
+
+      aos::Sender<examples::Pong>::Builder builder = pong_sender.MakeBuilder();
+      examples::Pong::Builder pong_builder =
+          builder.MakeBuilder<examples::Pong>();
+      CHECK_EQ(builder.Send(pong_builder.Finish()), RawSender::Error::kOk);
+    }
+
+    // Run the event loop long enough to get entirely through the remote's 2st
+    // boot duration.
+    event_loop_factory.RunFor(boot_duration2);
+
+    // Verify the pi2 node has rebooted.
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi1")->boot_uuid(),
+              pi1_boot0);
+    EXPECT_EQ(event_loop_factory.GetNodeEventLoopFactory("pi2")->boot_uuid(),
+              pi2_boot2);
+
+    // Create a logger. Note that the boot indexes are persistent before the
+    // logger starts.
+    LoggerState pi1_logger = MakeLoggerState(
+        pi1, &event_loop_factory, SupportedCompressionAlgorithms()[0],
+        FileStrategy::kKeepSeparate);
+    pi1_logger.StartLogger(kLogfile1_1);
+
+    // Run the event loop long enough to get entirely through the remote's 3rd
+    // boot duration.
+    event_loop_factory.RunFor(boot_duration3);
+
+    // Save the log file name.
+    pi1_logger.AppendAllFilenames(&filenames);
+  }
+
+  // Verify we can read the log without errors.
+  const std::vector<LogFile> sorted_parts = SortParts(filenames);
+  EXPECT_TRUE(AllRebootPartsMatchOutOfOrderDuration(sorted_parts, "pi2"));
+  auto result = ConfirmReadable(filenames);
+
+  LOG(INFO) << "Log saved to " << kLogfile1_1;
+}
+
 // Tests that we can replay a logfile that has timestamps such that at least
 // one node's epoch is at a positive distributed_clock (and thus will have to
 // be booted after the other node(s)).

@@ -1653,42 +1653,62 @@ bool NoncausalTimestampFilter::Pop(BootTimestamp time) {
 
   VLOG(1) << NodeNames() << " Pop(" << time << ")";
   bool removed = false;
-  while (true) {
-    CHECK_LT(pop_filter_, filters_.size());
+
+  // Declare a variable to store the index of latest filter we should modify.
+  size_t max_pop_filter = pop_filter_;
+
+  // Find the latest BootTimestamp that is earlier or equal to `time`,
+  // then use that to set max_pop_filter.
+  for (size_t i = pop_filter_; i < filters_.size(); ++i) {
+    BootFilter *boot_filter = filters_[i].get();
+    if (boot_filter->filter.timestamps_empty()) {
+      // If the time stamps are empty, ignore this filter. This means we won't
+      // modify it until we have a later filter which does meet our criteria.
+      continue;
+    }
+    BootTimestamp filter_time{
+        .boot = static_cast<size_t>(boot_filter->boot.first),
+        // The timestamp(0) is always oldest.
+        .time = std::get<0>(boot_filter->filter.timestamp(0))};
+    if (time < filter_time) {
+      // filter_time is later than `time`, so don't modify this BootFilter.
+      break;
+    }
+    // `time` is later than filter_time, so set this as the latest filter we can
+    // modify.
+    max_pop_filter = i;
+  }
+
+  // Pop elements of `filters_` until we reach the highest index allowed by
+  // max_pop_filter, or until we find a timestamp that is later than `time`.
+  while (pop_filter_ <= max_pop_filter) {
     BootFilter *boot_filter = filters_[pop_filter_].get();
     CHECK(boot_filter != nullptr);
     size_t timestamps_size = 0;
+
+    // Keep at least 2 timestamps in the filter because it's the minimum number
+    // of points needed to calculate slope.
     while ((timestamps_size = boot_filter->filter.timestamps_size()) > 2) {
       // When the timestamp which is the end of the line is popped, we want to
-      // drop it off the list.  Hence the <
+      // drop it off the list. Hence the <
       if (time < BootTimestamp{
                      .boot = static_cast<size_t>(boot_filter->boot.first),
                      .time = std::get<0>(boot_filter->filter.timestamp(1))}) {
+        // We reached a timestamp that is later than `time`, so return.
         return removed;
       }
       boot_filter->filter.PopFront();
       removed = true;
     }
 
-    if (timestamps_size <= 2) {
-      if (pop_filter_ + 1u >= filters_.size()) {
-        return removed;
-      }
+    if (pop_filter_ == max_pop_filter) {
+      // We reached the max index we can process.
+      break;
+    }
 
-      if (time <
-          BootTimestamp{.boot = static_cast<size_t>(
-                            filters_[pop_filter_ + 1]->boot.first),
-                        .time = std::get<0>(
-                            filters_[pop_filter_ + 1]->filter.timestamp(0))}) {
-        return removed;
-      }
-    }
-    VLOG(1) << NodeNames() << " Incrementing pop filter";
     ++pop_filter_;
-    if (pop_filter_ == filters_.size()) {
-      return removed;
-    }
   }
+  return removed;
 }
 
 void NoncausalTimestampFilter::SingleFilter::Debug() const {
