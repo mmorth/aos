@@ -22,6 +22,7 @@
 #include "aos/flatbuffer_utils.h"
 #include "aos/flatbuffers.h"
 #include "aos/time/time.h"
+#include "aos/util/log_conversion_metadata_generated.h"
 
 namespace aos {
 
@@ -175,6 +176,7 @@ class McapLogger {
   // the first actual message is written so that we can have a reasonable
   // monotonic clock time.
   void WriteConfigurationMessage();
+  void WriteLogConversionMetadataMessage();
 
   // The helpers for writing records which appear in the Summary section will
   // return SummaryOffset's so that they can be referenced in the SummaryOffset
@@ -233,6 +235,10 @@ class McapLogger {
   // name/type of a channel).
   std::unique_ptr<InjectedChannel<Configuration>> injected_configuration_;
   bool wrote_configuration_ = false;
+
+  // Metadata associated with the log conversion from AOS to MCAP.
+  std::unique_ptr<InjectedChannel<LogConversionMetadata>>
+      injected_conversion_metadata_;
 
   // Memory buffer to use for compressing data.
   std::vector<uint8_t> compression_buffer_;

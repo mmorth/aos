@@ -102,12 +102,25 @@ cc_library(
     ],
 )
 
+static_flatbuffer(
+    name = "log_conversion_metadata_fbs",
+    srcs = ["log_conversion_metadata.fbs"],
+)
+
+cc_static_flatbuffer(
+    name = "log_conversion_metadata_schema",
+    function = "aos::LogConversionMetadataSchema",
+    target = ":log_conversion_metadata_fbs_reflection_out",
+)
+
 cc_library(
     name = "mcap_logger",
     srcs = ["mcap_logger.cc"],
     hdrs = ["mcap_logger.h"],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        ":log_conversion_metadata_fbs",
+        ":log_conversion_metadata_schema",
         "//aos:configuration_fbs",
         "//aos:configuration_schema",
         "//aos:fast_string_builder",

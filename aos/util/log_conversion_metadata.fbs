@@ -1,0 +1,13 @@
+namespace aos;
+
+// This table contains metadata from the AOS->MCAP log conversion process.
+table LogConversionMetadata {
+  // The node from whose point of view the log was replayed on during the
+  // conversion. This is useful for doing channel mappings with both canonical
+  // and non-canonical channel names.
+  //
+  // If this field is not set, then this is a single-node log.
+  replay_node:string (id: 0);
+}
+
+root_type LogConversionMetadata;

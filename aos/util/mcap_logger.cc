@@ -25,6 +25,7 @@
 #include "aos/configuration_schema.h"
 #include "aos/flatbuffer_merge.h"
 #include "aos/json_to_flatbuffer.h"
+#include "aos/util/log_conversion_metadata_schema.h"
 
 ABSL_FLAG(uint64_t, mcap_chunk_size, 10'000'000,
           "Size, in bytes, of individual MCAP chunks");
@@ -122,6 +123,7 @@ std::string_view CompressionName(McapLogger::Compression compression) {
   }
   LOG(FATAL) << "Unreachable.";
 }
+
 }  // namespace
 
 template <typename T>
@@ -195,7 +197,10 @@ McapLogger::McapLogger(EventLoop *event_loop, const std::string &output_path,
       canonical_channels_(canonical_channels),
       compression_(compression),
       injected_configuration_(std::make_unique<InjectedChannel<Configuration>>(
-          this, "configuration", ConfigurationSchema)) {
+          this, "configuration", ConfigurationSchema)),
+      injected_conversion_metadata_(
+          std::make_unique<InjectedChannel<LogConversionMetadata>>(
+              this, "log_conversion_metadata", LogConversionMetadataSchema)) {
   event_loop->SkipTimingReport();
   event_loop->SkipAosLog();
   CHECK(output_);
@@ -291,6 +296,7 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
   // Manually add in a special /configuration channel.
   if (register_handlers == RegisterHandlers::kYes) {
     injected_configuration_->SetId(++id);
+    injected_conversion_metadata_->SetId(++id);
   }
 
   std::vector<SummaryOffset> offsets;
@@ -301,6 +307,7 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
     WriteSchema(id, channel);
   }
   injected_configuration_->WriteSchema();
+  injected_conversion_metadata_->WriteSchema();
 
   const uint64_t channel_offset = output_.tellp();
 
@@ -314,6 +321,7 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
     WriteChannel(id, id, channel);
   }
   injected_configuration_->WriteChannel();
+  injected_conversion_metadata_->WriteChannel();
 
   offsets.push_back({OpCode::kChannel, channel_offset,
                      static_cast<uint64_t>(output_.tellp()) - channel_offset});
@@ -326,6 +334,24 @@ void McapLogger::WriteConfigurationMessage() {
 
   injected_configuration_->WriteMessage(
       CopyFlatBuffer(event_loop_->configuration()).span());
+}
+
+void McapLogger::WriteLogConversionMetadataMessage() {
+  CHECK(wrote_configuration_) << ": Call only after WriteConfigurationMessage";
+  injected_conversion_metadata_->WriteMessage(
+      [this]() -> aos::FlatbufferDetachedBuffer<LogConversionMetadata> {
+        flatbuffers::FlatBufferBuilder fbb;
+        flatbuffers::Offset<flatbuffers::String> replay_node_offset;
+        if (const aos::Node *node = event_loop_->node(); node != nullptr) {
+          replay_node_offset =
+              fbb.CreateString(event_loop_->node()->name()->string_view());
+        }
+        LogConversionMetadata::Builder log_conversion_metadata(fbb);
+        log_conversion_metadata.add_replay_node(replay_node_offset);
+        fbb.Finish(log_conversion_metadata.Finish());
+        return fbb.Release();
+      }()
+                      .span());
 }
 
 void McapLogger::WriteMagic() { output_ << "\x89MCAP0\r\n"; }
@@ -438,6 +464,7 @@ void McapLogger::WriteMessage(uint16_t channel_id, const Channel *channel,
                               const Context &context, ChunkStatus *chunk) {
   if (!wrote_configuration_) {
     WriteConfigurationMessage();
+    WriteLogConversionMetadataMessage();
   }
   CHECK(context.data != nullptr);
 
