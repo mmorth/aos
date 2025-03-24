@@ -1,4 +1,5 @@
 load("@rules_pkg//:pkg.bzl", "pkg_deb", "pkg_tar")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 filegroup(
     name = "driver_rank_script",

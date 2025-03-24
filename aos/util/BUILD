@@ -1,4 +1,5 @@
 load("@com_github_google_flatbuffers//:typescript.bzl", "flatbuffer_ts_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("config_validator_macro.bzl", "config_validator_test")

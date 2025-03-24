@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@io_bazel_rules_go//go:def.bzl", "go_sdk", "go_toolchain")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
     name = "mirror_lib",

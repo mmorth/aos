@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
 sh_binary(
     name = "quiet_success",
     srcs = ["quiet_success.sh"],

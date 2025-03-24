@@ -1,5 +1,6 @@
 load("@aspect_rules_js//js:defs.bzl", "js_binary")
 load("@npm//:create-foxglove-extension/package_json.bzl", "bin")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 bin.create_foxglove_extension_binary(
     name = "create_foxglove_extension",

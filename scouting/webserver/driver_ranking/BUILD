@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 go_library(
     name = "driver_ranking",

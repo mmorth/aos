@@ -2,6 +2,7 @@ load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_go_library",
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 load("//tools/build_rules:apache.bzl", "apache_wrapper")
 load("//tools/build_rules:autocxx.bzl", "autocxx_library")
