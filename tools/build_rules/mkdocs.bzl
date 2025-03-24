@@ -1,3 +1,4 @@
+load("@rules_python//python:defs.bzl", "py_binary")
 load("//tools/build_rules:clean_dep.bzl", "clean_dep")
 
 def _mkdocs_impl(ctx):
@@ -53,7 +54,7 @@ def mkdocs(name, srcs, config, **kwargs):
         at foo/docs/*.md).
     """
     _mkdocs(name = name, srcs = srcs, config = config, **kwargs)
-    native.py_binary(
+    py_binary(
         name = name + ".serve",
         srcs = [clean_dep("//documentation:mkdocs_bin.py")],
         main = "mkdocs_bin.py",
