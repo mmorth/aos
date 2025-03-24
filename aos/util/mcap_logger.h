@@ -153,6 +153,11 @@ class McapLogger {
         message_indices;
   };
   enum class RegisterHandlers { kYes, kNo };
+
+  // Injects a custom channel into the MCAP.
+  template <typename T>
+  class InjectedChannel;
+
   // Helpers to write each type of relevant record.
   void WriteMagic();
   void WriteHeader();
@@ -222,14 +227,19 @@ class McapLogger {
 
   // Metadata associated with the fake "configuration" channel that we create in
   // order to ensure that foxglove extensions/users have access to the full
-  // configuration.
-  uint16_t configuration_id_ = 0;
-  FlatbufferDetachedBuffer<Channel> configuration_channel_;
-  FlatbufferDetachedBuffer<Configuration> configuration_;
+  // configuration. The name is just "configuration" because it is guaranteed
+  // not to conflict with existing channels under our current naming scheme
+  // (since our current scheme will, at a minimum, put a space between the
+  // name/type of a channel).
+  std::unique_ptr<InjectedChannel<Configuration>> injected_configuration_;
   bool wrote_configuration_ = false;
 
   // Memory buffer to use for compressing data.
   std::vector<uint8_t> compression_buffer_;
+
+  template <typename T>
+  friend class InjectedChannel;
 };
+
 }  // namespace aos
 #endif  // AOS_UTIL_MCAP_LOGGER_H_

@@ -124,6 +124,67 @@ std::string_view CompressionName(McapLogger::Compression compression) {
 }
 }  // namespace
 
+template <typename T>
+class McapLogger::InjectedChannel {
+ public:
+  InjectedChannel(McapLogger *mcap_logger, std::string name,
+                  std::function<absl::Span<const uint8_t>()> schema)
+      : mcap_logger_(mcap_logger),
+        channel_name_(std::move(name)),
+        channel_([&schema] {
+          // Assemble the minimal necessary channel definition for this
+          // flatbuffer.
+          flatbuffers::FlatBufferBuilder fbb;
+          flatbuffers::Offset<flatbuffers::String> name_offset =
+              fbb.CreateString("");
+          flatbuffers::Offset<flatbuffers::String> type_offset =
+              fbb.CreateString(T::GetFullyQualifiedName());
+          flatbuffers::Offset<reflection::Schema> schema_offset =
+              aos::CopyFlatBuffer(
+                  aos::FlatbufferSpan<reflection::Schema>(schema()), &fbb);
+          Channel::Builder channel(fbb);
+          channel.add_name(name_offset);
+          channel.add_type(type_offset);
+          channel.add_schema(schema_offset);
+          fbb.Finish(channel.Finish());
+          return fbb.Release();
+        }()) {}
+
+  // Sets the channel ID to the specified value. If this doesn't get called, the
+  // ID is assumed to be zero.
+  void SetId(int id) { channel_id_ = id; }
+
+  // The following functions run the corresponding function on the McapLogger.
+  void WriteSchema() {
+    mcap_logger_->WriteSchema(channel_id_, &channel_.message());
+  }
+  void WriteChannel() {
+    mcap_logger_->WriteChannel(channel_id_, channel_id_, &channel_.message(),
+                               channel_name_);
+  }
+  void WriteMessage(absl::Span<const uint8_t> data) {
+    Context context;
+    context.monotonic_event_time = mcap_logger_->event_loop_->monotonic_now();
+    context.queue_index = queue_index_++;
+    context.size = data.size();
+    context.data = data.data();
+    mcap_logger_->WriteMessage(channel_id_, &channel_.message(), context,
+                               &mcap_logger_->current_chunks_[channel_id_]);
+  }
+
+ private:
+  // The McapLogger instance for writing.
+  McapLogger *mcap_logger_;
+  // The name of the channel in the MCAP file.
+  std::string channel_name_;
+  // The channel ID in the MCAP file.
+  uint16_t channel_id_ = 0;
+  // The message index on this injected channel.
+  uint64_t queue_index_ = 0;
+  // The minimal definition for the injected channel.
+  FlatbufferDetachedBuffer<Channel> channel_;
+};
+
 McapLogger::McapLogger(EventLoop *event_loop, const std::string &output_path,
                        Serialization serialization,
                        CanonicalChannelNames canonical_channels,
@@ -133,28 +194,8 @@ McapLogger::McapLogger(EventLoop *event_loop, const std::string &output_path,
       serialization_(serialization),
       canonical_channels_(canonical_channels),
       compression_(compression),
-      configuration_channel_([]() {
-        // Set up a fake Channel for providing the configuration in the MCAP
-        // file. This is included for convenience so that consumers of the MCAP
-        // file can actually dereference things like the channel indices in AOS
-        // timing reports.
-        flatbuffers::FlatBufferBuilder fbb;
-        flatbuffers::Offset<flatbuffers::String> name_offset =
-            fbb.CreateString("");
-        flatbuffers::Offset<flatbuffers::String> type_offset =
-            fbb.CreateString("aos.Configuration");
-        flatbuffers::Offset<reflection::Schema> schema_offset =
-            aos::CopyFlatBuffer(
-                aos::FlatbufferSpan<reflection::Schema>(ConfigurationSchema()),
-                &fbb);
-        Channel::Builder channel(fbb);
-        channel.add_name(name_offset);
-        channel.add_type(type_offset);
-        channel.add_schema(schema_offset);
-        fbb.Finish(channel.Finish());
-        return fbb.Release();
-      }()),
-      configuration_(CopyFlatBuffer(event_loop_->configuration())) {
+      injected_configuration_(std::make_unique<InjectedChannel<Configuration>>(
+          this, "configuration", ConfigurationSchema)) {
   event_loop->SkipTimingReport();
   event_loop->SkipAosLog();
   CHECK(output_);
@@ -249,37 +290,30 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
 
   // Manually add in a special /configuration channel.
   if (register_handlers == RegisterHandlers::kYes) {
-    configuration_id_ = ++id;
+    injected_configuration_->SetId(++id);
   }
 
   std::vector<SummaryOffset> offsets;
 
   const uint64_t schema_offset = output_.tellp();
 
-  for (const auto &pair : channels) {
-    WriteSchema(pair.first, pair.second);
+  for (const auto &[id, channel] : channels) {
+    WriteSchema(id, channel);
   }
-
-  WriteSchema(configuration_id_, &configuration_channel_.message());
+  injected_configuration_->WriteSchema();
 
   const uint64_t channel_offset = output_.tellp();
 
   offsets.push_back(
       {OpCode::kSchema, schema_offset, channel_offset - schema_offset});
 
-  for (const auto &pair : channels) {
+  for (const auto &[id, channel] : channels) {
     // Write out the channel entry that uses the schema (we just re-use
     // the schema ID for the channel ID, since we aren't deduplicating
     // schemas for channels that are of the same type).
-    WriteChannel(pair.first, pair.first, pair.second);
+    WriteChannel(id, id, channel);
   }
-
-  // Provide the configuration message on a special channel that is just named
-  // "configuration", which is guaranteed not to conflict with existing under
-  // our current naming scheme (since our current scheme will, at a minimum, put
-  // a space between the name/type of a channel).
-  WriteChannel(configuration_id_, configuration_id_,
-               &configuration_channel_.message(), "configuration");
+  injected_configuration_->WriteChannel();
 
   offsets.push_back({OpCode::kChannel, channel_offset,
                      static_cast<uint64_t>(output_.tellp()) - channel_offset});
@@ -287,15 +321,11 @@ std::vector<McapLogger::SummaryOffset> McapLogger::WriteSchemasAndChannels(
 }
 
 void McapLogger::WriteConfigurationMessage() {
-  Context config_context;
-  config_context.monotonic_event_time = event_loop_->monotonic_now();
-  config_context.queue_index = 0;
-  config_context.size = configuration_.span().size();
-  config_context.data = configuration_.span().data();
-  // Avoid infinite recursion...
+  // Avoid infinite recursion.
   wrote_configuration_ = true;
-  WriteMessage(configuration_id_, &configuration_channel_.message(),
-               config_context, &current_chunks_[configuration_id_]);
+
+  injected_configuration_->WriteMessage(
+      CopyFlatBuffer(event_loop_->configuration()).span());
 }
 
 void McapLogger::WriteMagic() { output_ << "\x89MCAP0\r\n"; }
