@@ -37,6 +37,7 @@ ABSL_FLAG(double, monotonic_end_time, 0.0,
           "after epoch.");
 ABSL_FLAG(bool, hex, false,
           "Are integers in the messages printed in hex notation.");
+ABSL_FLAG(bool, flush, false, "If set, flushes stdout after every line.");
 
 namespace aos::logging {
 
@@ -52,7 +53,7 @@ aos::Printer MakePrinter() {
           .distributed_clock = absl::GetFlag(FLAGS_distributed_clock),
           .hex = absl::GetFlag(FLAGS_hex),
       },
-      false);
+      absl::GetFlag(FLAGS_flush));
 }
 
 NodePrinter::NodePrinter(aos::EventLoop *event_loop,
