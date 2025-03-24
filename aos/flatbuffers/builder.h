@@ -78,8 +78,11 @@ class Builder final : public ResizeableObject {
   // Returns the actual object for you to operate on and construct the
   // flatbuffer. Unlike AsFlatbufferSpan(), this will be stable.
   T *get() { return &flatbuffer_.t; }
+  const T *get() const { return &flatbuffer_.t; }
   T &operator*() { return *get(); }
+  const T &operator*() const { return *get(); }
   T *operator->() { return get(); }
+  const T *operator->() const { return get(); }
 
  private:
   template <typename AllocatorType>
