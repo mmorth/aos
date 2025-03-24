@@ -20,6 +20,7 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 
+#include "aos/realtime.h"
 #include "aos/util/file.h"
 
 // The casts required to read datastructures from sockets trip - Wcast - align.
@@ -65,6 +66,10 @@ typedef union {
 #if HAS_SCTP_AUTH
 // Returns true if SCTP authentication is available and enabled.
 bool SctpAuthIsEnabled() {
+  // TODO(james): Users of this method should probably just cache it rather than
+  // calling non-realtime code in realtime sections.
+  aos::ScopedNotRealtime not_realtime;
+
   struct stat current_stat;
   if (stat("/proc/sys/net/sctp/auth_enable", &current_stat) != -1) {
     int value = std::stoi(
@@ -757,6 +762,7 @@ void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
   if (auth_key == current_key_) {
     return;
   }
+
 #if !(HAS_SCTP_AUTH)
   LOG(FATAL) << "SCTP Authentication key requested, but authentication isn't "
                 "available... You may need a newer kernel";
@@ -764,6 +770,10 @@ void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
   LOG_IF(FATAL, !SctpAuthIsEnabled())
       << "SCTP Authentication key requested, but authentication isn't "
          "enabled... Use `sysctl -w net.sctp.auth_enable=1` to enable";
+
+  // This section performs some dynamic memory allocation.
+  // TODO(james): Allow a real-time version of this.
+  aos::ScopedNotRealtime not_realtime;
   // Set up the key with id `1`.
   // NOTE: `sctp_authkey` is a variable-sized struct which is why it needs
   // to be heap allocated. Regardless, this object doesn't have to persist past

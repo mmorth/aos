@@ -203,6 +203,7 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        "//aos:realtime",
         "//aos:unique_malloc_ptr",
         "//aos/util:file",
         "@com_google_absl//absl/flags:flag",
