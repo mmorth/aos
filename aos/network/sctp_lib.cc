@@ -765,9 +765,11 @@ void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
   if (setsockopt(fd(), IPPROTO_SCTP, SCTP_AUTH_KEY, authkey.get(),
                  sizeof(sctp_authkey) + auth_key.size()) != 0) {
     if (errno == EACCES) {
-      // TODO(adam.snaider): Figure out why this fails when expected nodes are
-      // not connected.
-      PLOG_EVERY_N(ERROR, 100) << "Setting authentication key failed";
+      if (VLOG_IS_ON(1)) {
+        // TODO(adam.snaider): Figure out why this fails when expected nodes are
+        // not connected.
+        PLOG_EVERY_N(ERROR, 100) << "Setting authentication key failed";
+      }
       return;
     } else {
       PLOG(FATAL) << "Setting authentication key failed";
