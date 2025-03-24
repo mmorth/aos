@@ -160,7 +160,6 @@ cc_library(
         ":snappy_encoder",
     ] + select({
         "//tools:cpu_k8": [
-            ":lzma_encoder",
             ":s3_fetcher",
             ":s3_file_operations",
         ],
