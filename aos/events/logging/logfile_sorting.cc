@@ -16,6 +16,7 @@
 
 #include "aos/containers/error_list.h"
 #include "aos/events/logging/file_operations.h"
+#include "aos/events/logging/logfile_decoder_options.h"
 #include "aos/events/logging/logfile_utils.h"
 #include "aos/flatbuffer_merge.h"
 #include "aos/flatbuffers.h"
@@ -23,32 +24,12 @@
 #include "aos/time/time.h"
 #include "sys/stat.h"
 
-#if ENABLE_S3
-#include "aos/events/logging/s3_file_operations.h"
-#endif
-
 ABSL_FLAG(bool, quiet_sorting, false,
           "If true, sort with minimal messages about truncated files.");
 
 namespace aos::logger {
 namespace {
 namespace chrono = std::chrono;
-
-std::unique_ptr<internal::FileOperations> MakeFileOperations(
-    std::string_view filename) {
-  static constexpr std::string_view kS3 = "s3:";
-  if (filename.substr(0, kS3.size()) == kS3) {
-#if ENABLE_S3
-    return std::make_unique<internal::S3FileOperations>(filename);
-#else
-    LOG(FATAL) << "Reading files from S3 not supported on this platform";
-#endif
-  }
-  if (filename.find("://") != filename.npos) {
-    LOG(FATAL) << "This looks like a URL of an unknown type: " << filename;
-  }
-  return std::make_unique<internal::LocalFileOperations>(filename);
-}
 
 bool ConfigOnly(const LogFileHeader *header) {
   CHECK_EQ(LogFileHeader::MiniReflectTypeTable()->num_elems, 37u);
@@ -120,7 +101,7 @@ std::string ConcatenateParts(
 
 void FindLogs(std::vector<internal::FileOperations::File> *files,
               std::string filename) {
-  MakeFileOperations(filename)->FindLogs(files);
+  internal::MakeFileOperations(filename)->FindLogs(files);
 }
 
 std::vector<internal::FileOperations::File> FindLogs(std::string filename) {
@@ -133,7 +114,7 @@ namespace {
 
 void AddLogfiles(std::string_view filename,
                  std::vector<internal::FileOperations::File> *found_logfiles) {
-  const auto file_operations = MakeFileOperations(filename);
+  const auto file_operations = internal::MakeFileOperations(filename);
   if (file_operations->Exists()) {
     file_operations->FindLogs(found_logfiles);
   } else {

@@ -11,6 +11,7 @@
 #include "absl/strings/str_cat.h"
 
 #include "aos/events/logging/file_operations.h"
+#include "aos/events/logging/logfile_decoder_options.h"
 #include "aos/util/file.h"
 
 ABSL_FLAG(
@@ -390,7 +391,7 @@ std::unique_ptr<DataDecoder> FileBackend::GetDecoder(
     const std::string_view id) const {
   const std::string filename = absl::StrCat(base_name_, separator_, id);
   CHECK(std::filesystem::exists(filename));
-  return std::make_unique<DummyDecoder>(filename);
+  return internal::ResolveDecoder(filename, /*quiet=*/true);
 }
 
 RenamableFileBackend::RenamableFileBackend(std::string_view base_name,

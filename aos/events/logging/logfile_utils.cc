@@ -16,24 +16,10 @@
 #include "flatbuffers/flatbuffers.h"
 
 #include "aos/configuration.h"
+#include "aos/events/logging/logfile_decoder_options.h"
 #include "aos/events/logging/snappy_encoder.h"
 #include "aos/flatbuffer_merge.h"
 #include "aos/util/file.h"
-
-#if defined(__x86_64__)
-#define ENABLE_LZMA (!__has_feature(memory_sanitizer))
-#elif defined(__aarch64__)
-#define ENABLE_LZMA (!__has_feature(memory_sanitizer))
-#else
-#define ENABLE_LZMA 0
-#endif
-
-#if ENABLE_LZMA
-#include "aos/events/logging/lzma_encoder.h"
-#endif
-#if ENABLE_S3
-#include "aos/events/logging/s3_fetcher.h"
-#endif
 
 ABSL_FLAG(int32_t, flush_size, 128 * 1024,
           "Number of outstanding bytes to allow before flushing to disk.");
@@ -71,37 +57,6 @@ ABSL_DECLARE_FLAG(bool, quiet_sorting);
 namespace aos::logger {
 namespace {
 namespace chrono = std::chrono;
-
-std::unique_ptr<DataDecoder> ResolveDecoder(std::string_view filename,
-                                            bool quiet) {
-  static constexpr std::string_view kS3 = "s3:";
-
-  std::unique_ptr<DataDecoder> decoder;
-
-  if (filename.substr(0, kS3.size()) == kS3) {
-#if ENABLE_S3
-    decoder = std::make_unique<S3Fetcher>(filename);
-#else
-    LOG(FATAL) << "Reading files from S3 not supported on this platform";
-#endif
-  } else {
-    decoder = std::make_unique<DummyDecoder>(filename);
-  }
-
-  static constexpr std::string_view kXz = ".xz";
-  static constexpr std::string_view kSnappy = SnappyDecoder::kExtension;
-  if (filename.substr(filename.size() - kXz.size()) == kXz) {
-#if ENABLE_LZMA
-    decoder = std::make_unique<ThreadedLzmaDecoder>(std::move(decoder), quiet);
-#else
-    (void)quiet;
-    LOG(FATAL) << "Reading xz-compressed files not supported on this platform";
-#endif
-  } else if (filename.substr(filename.size() - kSnappy.size()) == kSnappy) {
-    decoder = std::make_unique<SnappyDecoder>(std::move(decoder));
-  }
-  return decoder;
-}
 
 template <typename T>
 void PrintOptionalOrNull(std::ostream *os, const std::optional<T> &t) {
@@ -1044,7 +999,7 @@ size_t PackMessageInline(uint8_t *buffer, const Context &context,
 }
 
 SpanReader::SpanReader(std::string_view filename, bool quiet)
-    : SpanReader(filename, ResolveDecoder(filename, quiet)) {}
+    : SpanReader(filename, internal::ResolveDecoder(filename, quiet)) {}
 
 SpanReader::SpanReader(std::string_view filename,
                        std::unique_ptr<DataDecoder> decoder)

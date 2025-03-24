@@ -108,3 +108,11 @@ config_setting(
         "@io_bazel_rules_go//go/config:msan": "false",
     },
 )
+
+config_setting(
+    name = "cpu_arm64_no_msan",
+    constraint_values = ["@platforms//cpu:arm64"],
+    flag_values = {
+        "@io_bazel_rules_go//go/config:msan": "false",
+    },
+)

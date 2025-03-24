@@ -107,7 +107,7 @@ cc_library(
     srcs = ["s3_file_operations.cc"],
     hdrs = ["s3_file_operations.h"],
     deps = [
-        ":log_backend",
+        ":file_operations",
         ":s3_fetcher",
     ],
 )
@@ -121,6 +121,7 @@ cc_library(
     deps = [
         ":buffer_encoder",
         ":file_operations",
+        ":logfile_decoder_options",
         "//aos/time",
         "//aos/util:file",
         "@com_google_absl//absl/flags:flag",
@@ -144,6 +145,36 @@ cc_test(
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
     ],
+)
+
+cc_library(
+    name = "logfile_decoder_options",
+    srcs = ["logfile_decoder_options.cc"],
+    hdrs = ["logfile_decoder_options.h"],
+    copts = select({
+        "//tools:cpu_k8": ["-DENABLE_S3=1"],
+        "//conditions:default": ["-DENABLE_S3=0"],
+    }),
+    deps = [
+        ":file_operations",
+        ":snappy_encoder",
+    ] + select({
+        "//tools:cpu_k8": [
+            ":lzma_encoder",
+            ":s3_fetcher",
+            ":s3_file_operations",
+        ],
+        "//tools:cpu_k8_no_msan": [
+            ":lzma_encoder",
+            ":s3_fetcher",
+            ":s3_file_operations",
+        ],
+        "//tools:cpu_arm64_no_msan": [
+            ":lzma_encoder",
+        ],
+        "//tools:cpu_arm64": [":lzma_encoder"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(
@@ -179,10 +210,6 @@ cc_library(
         "logfile_sorting.h",
         "logfile_utils.h",
     ],
-    copts = select({
-        "//tools:cpu_k8": ["-DENABLE_S3=1"],
-        "//conditions:default": ["-DENABLE_S3=0"],
-    }),
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
@@ -190,6 +217,7 @@ cc_library(
         ":buffer_encoder",
         ":file_operations",
         ":log_backend",
+        ":logfile_decoder_options",
         ":logger_fbs",
         ":snappy_encoder",
         "//aos:configuration",
