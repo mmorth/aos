@@ -22,6 +22,7 @@ DEFAULT_FLATC_ARGS = [
     "--gen-compare",
     "--keep-prefix",
     "--bfbs-builtins",
+    "--bfbs-comments",
     "--cpp-std",
     "c++17",
     "--require-explicit-ids",
