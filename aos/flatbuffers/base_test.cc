@@ -334,6 +334,14 @@ TEST_F(AlignedVectorAllocatorDeathTest, ResizeBufferFailsInRealtimeMode) {
   const size_t initial_size = AlignedVectorAllocatorTest::kInitialSize;
   AllocateInitialBuffer(initial_size);
 
+// Malloc hooks don't work with asan/msan.
+#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+
+  {  // Verify we can enable DieOnMalloc.
+    aos::ScopedRealtime realtime;
+    CHECK(aos::IsDieOnMallocEnabled());
+  }
+
   EXPECT_DEATH(
       {
         aos::ScopedRealtime realtime;
@@ -341,6 +349,7 @@ TEST_F(AlignedVectorAllocatorDeathTest, ResizeBufferFailsInRealtimeMode) {
       },
       "Cannot resize the AlignedVectorAllocator when aos realtime mode is "
       "enabled");
+#endif
 }
 
 TEST_F(AlignedVectorAllocatorTest, ResizeBufferSucceedsInNonRealtimeMode) {
@@ -404,6 +413,14 @@ TEST_F(StaticFlatbufferDeathTest, FromFlatbufferFailsInRealtimeMode) {
   // Create a flatbuffer with a vector larger than the static_length (4).
   CreateTestTable(4);
 
+// Malloc hooks don't work with asan/msan.
+#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+
+  {  // Verify we can enable DieOnMalloc.
+    aos::ScopedRealtime realtime;
+    CHECK(aos::IsDieOnMallocEnabled());
+  }
+
   EXPECT_DEATH(
       {
         aos::ScopedRealtime realtime;
@@ -412,6 +429,7 @@ TEST_F(StaticFlatbufferDeathTest, FromFlatbufferFailsInRealtimeMode) {
       },
       "Cannot resize the AlignedVectorAllocator when aos realtime mode is "
       "enabled");
+#endif
 }
 
 }  // namespace aos::fbs::testing
