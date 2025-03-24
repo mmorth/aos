@@ -101,6 +101,10 @@ void CheckNotRealtime();
 // used instead.
 bool MarkRealtime(bool realtime);
 
+// Returns true if we are running on the realtime scheduler and the malloc hooks
+// are active. If this returns true, no memory allocations or frees are allowed.
+bool IsDieOnMallocEnabled();
+
 // Class which restores the current RT state when destructed.
 class ScopedRealtimeRestorer {
  public:

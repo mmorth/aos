@@ -23,6 +23,10 @@
 
 namespace aos::fbs {
 
+namespace testing {
+class AlignedVectorAllocatorTest;
+}
+
 using ::flatbuffers::soffset_t;
 using ::flatbuffers::uoffset_t;
 using ::flatbuffers::voffset_t;
@@ -270,6 +274,10 @@ class AlignedVectorAllocator : public fbs::Allocator {
   AlignedVectorAllocator() {}
   ~AlignedVectorAllocator();
 
+  // Returns the current size of the buffer. This is the number of bytes that
+  // have been allocated.
+  size_t BufferCapacity() const { return buffer_.size(); }
+
   std::optional<std::span<uint8_t>> Allocate(size_t size, size_t alignment,
                                              fbs::SetZero set_zero) override;
 
@@ -286,6 +294,9 @@ class AlignedVectorAllocator : public fbs::Allocator {
   aos::SharedSpan Release();
 
  private:
+  // Resizes the buffer to the requested size.
+  void ResizeBuffer(size_t size);
+
   struct SharedSpanHolder {
     aos::AllocatorResizeableBuffer<aos::AlignedReallocator<kAlignment>> buffer;
     absl::Span<const uint8_t> span;
@@ -301,6 +312,8 @@ class AlignedVectorAllocator : public fbs::Allocator {
   // anymore.  This enables Deallocate to properly handle the case when the user
   // releases the memory, but the Builder still needs to clean up.
   bool released_ = false;
+
+  friend class aos::fbs::testing::AlignedVectorAllocatorTest;
 };
 
 // Allocates and owns a fixed-size memory buffer on the stack.

@@ -4,7 +4,17 @@
 
 #include <algorithm>
 
+#include "absl/flags/declare.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/reflection.h"
+#include "flatbuffers/flatbuffer_builder.h"
 #include "gtest/gtest.h"
+
+#include "aos/flatbuffers/builder.h"
+#include "aos/flatbuffers/test_static.h"
+#include "aos/realtime.h"
+
+ABSL_DECLARE_FLAG(bool, die_on_malloc);
 
 namespace aos::fbs::testing {
 // Tests that AlignOffset() behaves as expected.
@@ -283,6 +293,125 @@ TEST_F(ResizeableObjectTest, ResizeNested) {
   EXPECT_EQ(0, *object_.GetSubObject(1).inline_entry);
   EXPECT_EQ(kAbsoluteOffset + 64, object_.GetObject(0).absolute_offset);
   EXPECT_EQ(kAbsoluteOffset + 64, object_.GetObject(1).absolute_offset);
+}
+
+// A test fixture for AlignedVectorAllocator that enables malloc hooks and
+// provides access to the ResizeBuffer method.
+class AlignedVectorAllocatorTest : public ::testing::Test {
+ protected:
+  static constexpr size_t kInitialSize = 128;
+  AlignedVectorAllocatorTest() : flag_saver_() {}
+
+  void SetUp() override {
+    absl::SetFlag(&FLAGS_die_on_malloc, true);
+    RegisterMallocHook();
+  }
+
+  void AllocateInitialBuffer(size_t size) {
+    span_ = allocator_.Allocate(size, 4, SetZero::kYes).value();
+    ASSERT_EQ(size, span_.size());
+  }
+
+  void TearDown() override {
+    if (!span_.empty()) {
+      allocator_.Deallocate(span_);
+    }
+  }
+
+  // Expose the private method that we have access to because of class
+  // friendship.
+  void ResizeBuffer(size_t size) { allocator_.ResizeBuffer(size); }
+
+  absl::FlagSaver flag_saver_;
+  AlignedVectorAllocator allocator_;
+  std::span<uint8_t> span_;
+};
+
+// Tests that we get a descriptive error message when we try to resize the
+// AlignedVectorAllocator when aos realtime mode is enabled.
+using AlignedVectorAllocatorDeathTest = AlignedVectorAllocatorTest;
+TEST_F(AlignedVectorAllocatorDeathTest, ResizeBufferFailsInRealtimeMode) {
+  const size_t initial_size = AlignedVectorAllocatorTest::kInitialSize;
+  AllocateInitialBuffer(initial_size);
+
+  EXPECT_DEATH(
+      {
+        aos::ScopedRealtime realtime;
+        ResizeBuffer(initial_size * 2);
+      },
+      "Cannot resize the AlignedVectorAllocator when aos realtime mode is "
+      "enabled");
+}
+
+TEST_F(AlignedVectorAllocatorTest, ResizeBufferSucceedsInNonRealtimeMode) {
+  const size_t initial_size = AlignedVectorAllocatorTest::kInitialSize;
+  AllocateInitialBuffer(initial_size);
+
+  // This should succeed without entering realtime mode.
+  EXPECT_NO_THROW({ ResizeBuffer(initial_size * 4); });
+
+  // Verify that the buffer was actually resized.
+  EXPECT_EQ(allocator_.BufferCapacity(), initial_size * 4);
+}
+
+// A test fixture for the static flatbuffer test. It can create a TestTable and
+// a TestTableStatic.
+class StaticFlatbufferTest : public ::testing::Test {
+ protected:
+  StaticFlatbufferTest()
+      : flag_saver_() {}  // Constructor initializes flag_saver
+
+  void SetUp() override {
+    absl::SetFlag(&FLAGS_die_on_malloc, true);
+    RegisterMallocHook();
+  }
+
+  void CreateTestTable(size_t vector_size) {
+    flatbuffers::FlatBufferBuilder fbb;
+    std::vector<int32_t> vector(vector_size, 0);
+    auto vec = fbb.CreateVector(vector);
+    TestTableBuilder builder(fbb);
+    builder.add_vector_of_scalars(vec);
+    fbb.Finish(builder.Finish());
+
+    buffer_ = std::make_unique<uint8_t[]>(fbb.GetSize());
+    std::memcpy(buffer_.get(), fbb.GetBufferPointer(), fbb.GetSize());
+    test_table_ = GetTestTable(buffer_.get());
+  }
+
+  absl::FlagSaver
+      flag_saver_;  // Member variable to ensure flags are reset after each test
+  std::unique_ptr<uint8_t[]> buffer_;
+  const TestTable *test_table_ = nullptr;
+  aos::fbs::Builder<TestTableStatic> test_table_static_;
+};
+
+// Tests that we get a descriptive error message when we try to FromFlatbuffer a
+// TestTable flatbuffer when it contains a field equal to the length of
+// static_length.
+TEST_F(StaticFlatbufferTest, FromFlatbufferPassesInRealtimeMode) {
+  // Create a flatbuffer with a vector equal to the static_length (3).
+  CreateTestTable(3);
+
+  aos::ScopedRealtime realtime;
+  EXPECT_TRUE(test_table_static_->FromFlatbuffer(test_table_));
+}
+
+using StaticFlatbufferDeathTest = StaticFlatbufferTest;
+// Tests that we get a descriptive error message when we try to FromFlatbuffer a
+// TestTable flatbuffer when it contains a vector larger than the static_length.
+TEST_F(StaticFlatbufferDeathTest, FromFlatbufferFailsInRealtimeMode) {
+  // Create a flatbuffer with a vector larger than the static_length (4).
+  CreateTestTable(4);
+
+  EXPECT_DEATH(
+      {
+        aos::ScopedRealtime realtime;
+        [[maybe_unused]] bool result =
+            test_table_static_->FromFlatbuffer(test_table_);
+      },
+      "Cannot resize the AlignedVectorAllocator when aos realtime mode is "
+      "enabled");
 }
 
 }  // namespace aos::fbs::testing

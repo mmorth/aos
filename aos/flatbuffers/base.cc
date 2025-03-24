@@ -7,6 +7,8 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 
+#include "aos/realtime.h"
+
 namespace aos::fbs {
 
 namespace {
@@ -194,10 +196,24 @@ AlignedVectorAllocator::~AlignedVectorAllocator() {
       << ": Must deallocate before destroying the AlignedVectorAllocator.";
 }
 
+void AlignedVectorAllocator::ResizeBuffer(size_t size) {
+  const size_t new_buffer_size =
+      ((size + kAlignment - 1) / kAlignment) * kAlignment;
+  if (new_buffer_size > buffer_.capacity()) {
+    CHECK(!aos::IsDieOnMallocEnabled())
+        << ": Cannot resize the AlignedVectorAllocator when aos realtime mode "
+           "is enabled. Verify you have allocated enough space before aos "
+           "realtime mode is enabled.";
+  }
+  buffer_.resize(new_buffer_size);
+}
+
 std::optional<std::span<uint8_t>> AlignedVectorAllocator::Allocate(
     size_t size, size_t /*alignment*/, fbs::SetZero set_zero) {
   CHECK(buffer_.empty()) << ": Must deallocate before calling Allocate().";
-  buffer_.resize(((size + kAlignment - 1) / kAlignment) * kAlignment);
+
+  ResizeBuffer(size);
+
   allocated_size_ = size;
   if (set_zero == fbs::SetZero::kYes) {
     memset(buffer_.data(), 0, buffer_.size());
@@ -220,8 +236,7 @@ std::optional<std::span<uint8_t>> AlignedVectorAllocator::InsertBytes(
       reinterpret_cast<const uint8_t *>(insertion_point) - buffer_.data();
   const size_t previous_size = buffer_.size();
 
-  buffer_.resize(((allocated_size_ + bytes + kAlignment - 1) / kAlignment) *
-                 kAlignment);
+  ResizeBuffer(allocated_size_ + bytes);
 
   // Now, we've got space both before and after the block of data.  Move the
   // data after to the end, and the data before to the start.
@@ -268,6 +283,7 @@ void AlignedVectorAllocator::Deallocate(std::span<uint8_t>) {
         << ": Called Deallocate() without a prior allocation.";
   }
   released_ = false;
+  CHECK(!aos::IsDieOnMallocEnabled());
   buffer_.resize(0);
 }
 

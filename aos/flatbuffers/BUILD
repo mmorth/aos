@@ -33,6 +33,7 @@ cc_library(
         "//aos:shared_span",
         "//aos/containers:resizeable_buffer",
         "//aos/ipc_lib:data_alignment",
+        "@aos//aos:realtime",
         "@com_github_google_flatbuffers//:flatbuffers",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/log",
@@ -46,7 +47,10 @@ cc_test(
     srcs = ["base_test.cc"],
     deps = [
         ":base",
+        ":static_flatbuffers",
+        ":test_fbs",
         "//aos/testing:googletest",
+        "@aos//aos:realtime",
     ],
 )
 

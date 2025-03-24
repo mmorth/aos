@@ -251,6 +251,11 @@ bool MarkRealtime(bool realtime) {
   return prior;
 }
 
+bool IsDieOnMallocEnabled() {
+  return absl::GetFlag(FLAGS_die_on_malloc) && aos::is_realtime &&
+         has_malloc_hook;
+}
+
 void CheckRealtime() { CHECK(is_realtime); }
 
 void CheckNotRealtime() { CHECK(!is_realtime); }
