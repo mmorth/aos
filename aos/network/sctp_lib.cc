@@ -753,6 +753,10 @@ bool SctpReadWrite::ProcessNotification(const Message *message) {
   return false;
 }
 
+struct alignas(sctp_authkey) AuthKeyBufferByte {
+  uint8_t byte;
+};
+
 void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
   PCHECK(fd_ != -1);
   if (auth_key.empty()) {
@@ -771,23 +775,29 @@ void SctpReadWrite::SetAuthKey(absl::Span<const uint8_t> auth_key) {
       << "SCTP Authentication key requested, but authentication isn't "
          "enabled... Use `sysctl -w net.sctp.auth_enable=1` to enable";
 
-  // This section performs some dynamic memory allocation.
-  // TODO(james): Allow a real-time version of this.
-  aos::ScopedNotRealtime not_realtime;
   // Set up the key with id `1`.
-  // NOTE: `sctp_authkey` is a variable-sized struct which is why it needs
-  // to be heap allocated. Regardless, this object doesn't have to persist past
-  // the `setsockopt` call below.
-  std::unique_ptr<sctp_authkey> authkey(static_cast<sctp_authkey *>(
-      ::operator new(sizeof(sctp_authkey) + auth_key.size())));
+  // NOTE: `sctp_authkey` is a variable-sized struct since it holds a variable
+  // sized key. We limit the key size to 32 bytes (256 bits) here. Regardless,
+  // this object doesn't have to persist past the `setsockopt` call below.
+  constexpr size_t MAX_KEY_LENGTH = 32;
+
+  if (auth_key.size() > MAX_KEY_LENGTH) {
+    LOG(FATAL)
+        << "Unexpected SCTP key size: " << auth_key.size()
+        << ". Maximum allowed key size is currently set to: " << MAX_KEY_LENGTH
+        << ". If the SCTP key has changed, make sure to update the maximum "
+           "allowed length as well";
+  }
+  AuthKeyBufferByte auth_key_buffer[sizeof(sctp_authkey) + MAX_KEY_LENGTH] = {};
+  sctp_authkey *authkey = reinterpret_cast<sctp_authkey *>(auth_key_buffer);
 
   authkey->sca_keynumber = 1;
   authkey->sca_keylength = auth_key.size();
   authkey->sca_assoc_id = SCTP_ALL_ASSOC;
   memcpy(&authkey->sca_key, auth_key.data(), auth_key.size());
 
-  if (setsockopt(fd(), IPPROTO_SCTP, SCTP_AUTH_KEY, authkey.get(),
-                 sizeof(sctp_authkey) + auth_key.size()) != 0) {
+  if (setsockopt(fd(), IPPROTO_SCTP, SCTP_AUTH_KEY, authkey,
+                 sizeof(auth_key_buffer)) != 0) {
     if (errno == EACCES) {
       if (VLOG_IS_ON(1)) {
         // TODO(adam.snaider): Figure out why this fails when expected nodes are
