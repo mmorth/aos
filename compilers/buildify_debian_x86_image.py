@@ -53,6 +53,7 @@ def main(argv):
             filesystem.packages['libturbojpeg0-dev'],
             filesystem.packages['nvidia-cuda-dev'],
             filesystem.packages['ssh'],
+            filesystem.packages['nvidia-cudnn'],
             filesystem.packages['rsync'],
             filesystem.packages['libgstreamer-plugins-bad1.0-dev'],
             filesystem.packages['libgstreamer-plugins-base1.0-dev'],

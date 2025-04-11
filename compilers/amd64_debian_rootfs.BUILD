@@ -16143,6 +16143,16 @@ cc_library(
 )
 
 cc_library(
+    name = "nvidia-cudnn-headers",
+    hdrs = [
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":debconf-headers",
+    ],
+)
+
+cc_library(
     name = "nvidia-support-headers",
     hdrs = [
     ],
@@ -24624,7 +24634,6 @@ cc_library(
     srcs = ["lib/x86_64-linux-gnu/librabbitmq.so.4"],
     deps = [
         ":usr_lib_x86_64-linux-gnu_libcrypto.so.3-lib",
-        ":usr_lib_x86_64-linux-gnu_libpthread.so.0-lib",
         ":usr_lib_x86_64-linux-gnu_libssl.so.3-lib",
     ],
 )
@@ -44362,7 +44371,6 @@ filegroup(
     srcs = [
         "usr/lib/x86_64-linux-gnu/librabbitmq.so.4",
         "usr/lib/x86_64-linux-gnu/librabbitmq.so.4.5.0",
-        "usr/share/doc/librabbitmq4/changelog.Debian.amd64.gz",
         "usr/share/doc/librabbitmq4/changelog.Debian.gz",
         "usr/share/doc/librabbitmq4/changelog.gz",
         "usr/share/doc/librabbitmq4/copyright",
@@ -52159,6 +52167,17 @@ filegroup(
         ":libnvtoolsext1-filegroup",
         ":libnvvm4-filegroup",
         ":libthrust-dev-filegroup",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvidia-cudnn-filegroup",
+    srcs = [
+        "usr/sbin/update-nvidia-cudnn",
+        "usr/share/doc/nvidia-cudnn/changelog.gz",
+        "usr/share/doc/nvidia-cudnn/copyright",
+        ":debconf-filegroup",
     ],
     visibility = ["//visibility:public"],
 )

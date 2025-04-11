@@ -375,16 +375,26 @@ http_archive(
 http_archive(
     name = "arm64_debian_sysroot",
     build_file = "@//:compilers/orin_debian_rootfs.BUILD",
-    sha256 = "351d97e255874d7739f38dda2747ca3939d68e66094f82ede54f0c69a198e9f5",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-02-02-walnascar-arm64-nvidia-rootfs.tar.zst",
+    sha256 = "d1eeb1224a726cc9a8bb0eb55171872edea90bb0564f639b5c310b97d5cc7001",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-06-walnascar-arm64-nvidia-rootfs.tar.zst",
 )
 
 # Sysroot generated using //frc/amd64/build_rootfs.py
 http_archive(
     name = "amd64_debian_sysroot",
     build_file = "@//:compilers/amd64_debian_rootfs.BUILD",
-    sha256 = "70c4d31acb5e4ff4849f2c2c3aeb897b6b266f931d075cbb882c684230d128e9",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-02-22-bookworm-amd64-nvidia-rootfs.tar.zst",
+    sha256 = "e94dec03e19d88cd428964f1e4a430e6bc4a2dd2f4f7342f56b75efa9c75a761",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-20-bookworm-amd64-nvidia-rootfs.tar.zst",
+)
+
+# Originally from: https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.gz
+# Recompressed for faster extraction.
+http_archive(
+    name = "amd64_tensorrt",
+    build_file = "@//:compilers/tensorrt.BUILD",
+    sha256 = "5b5b828be725077d13a23d296a5ae56ce42f785ad8258dc79d34f326b34cc783",
+    strip_prefix = "TensorRT-10.9.0.34",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.zst",
 )
 
 http_archive(

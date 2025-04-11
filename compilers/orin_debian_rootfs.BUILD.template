@@ -57,4 +57,13 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "tensorrt",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":tensorrt-core-dev-headers",
+        ":usr_lib_libnvinfer.so.10.3.0-lib",
+    ],
+)
+
 {{ RULES }}

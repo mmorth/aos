@@ -108,9 +108,9 @@ def main():
                        check=True)
 
     if not os.path.exists(
-            f"{ROOTFS_FOLDER}/etc/apt/sources.list.d/bullseye-backports.list"):
+            f"{ROOTFS_FOLDER}/etc/apt/sources.list.d/debian-backports.list"):
         copyfile("root.root", "644",
-                 "etc/apt/sources.list.d/bullseye-backports.list")
+                 "etc/apt/sources.list.d/debian-backports.list")
         target(["apt-get", "update"])
 
     with scoped_bind_mount("/dev") as _:
@@ -147,9 +147,12 @@ def main():
                 "libstdc++-12-dev",
                 "nvidia-cuda-dev",
                 "nvidia-cuda-toolkit",
+                "nvidia-cudnn",
                 "libgstreamer-plugins-base1.0-dev",
                 "libgstreamer-plugins-bad1.0-dev",
                 "libturbojpeg0-dev",
+                "postgresql",
+                "apache2",
                 "ssh",
                 "rsync",
                 "xvfb",
