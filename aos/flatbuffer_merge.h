@@ -136,6 +136,10 @@ inline flatbuffers::Offset<T> BlindCopyFlatBuffer(
                                                           t.span(), fbb);
 }
 
+// Copies a vector of tables to the specified builder.
+//
+// NOTE: This helper allocates memory dynamically and should not be called from
+// a realtime context.
 template <class T>
 inline flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<T>>>
 RecursiveCopyVectorTable(const flatbuffers::Vector<flatbuffers::Offset<T>> *t1,
@@ -150,6 +154,10 @@ RecursiveCopyVectorTable(const flatbuffers::Vector<flatbuffers::Offset<T>> *t1,
   return fbb->CreateVector(v);
 }
 
+// Copies a vector of strings to the specified builder.
+//
+// NOTE: This helper allocates memory dynamically and should not be called from
+// a realtime context.
 inline flatbuffers::Offset<
     flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
 CopyVectorSharedString(
