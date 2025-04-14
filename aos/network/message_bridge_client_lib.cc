@@ -404,6 +404,8 @@ void SctpClientConnection::HandleData(const Message *message) {
         }
         VLOG(1) << this << " Queued timestamp " << timestamp.channel_index
                 << " " << timestamp.queue_index;
+        // TODO: Track timestamps that get overwritten in the
+        // statistics message we send out.
         timestamp_buffer_.Push(timestamp);
       }
     }
