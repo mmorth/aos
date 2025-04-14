@@ -142,6 +142,12 @@ bool Tokenizer::ConsumeString(::std::string *s) {
             data_ = original;
             return false;
           }
+        } else if (Char() == 'x') {
+          if (!ConsumeStringHexByte(s)) {
+            fprintf(stderr, "Invalid hex byte on line %d\n", linenumber_);
+            data_ = original;
+            return false;
+          }
         }
       }
       // And skip the escaped character.
@@ -150,6 +156,29 @@ bool Tokenizer::ConsumeString(::std::string *s) {
 
     ConsumeChar();
   }
+}
+
+bool Tokenizer::ConsumeStringHexByte(::std::string *s) {
+  char target[3];
+  target[2] = '\0';
+
+  for (int count = 0; count < 2; count++) {
+    ConsumeChar();
+
+    // If there is no data or data is an invalid char, return false
+    if (AtEnd()) {
+      return false;
+    }
+
+    if (!isxdigit(Char())) {
+      return false;
+    }
+
+    target[count] = Char();
+  }
+  s->push_back(flatbuffers::StringToUInt(target, 16));
+
+  return true;
 }
 
 bool Tokenizer::ConsumeUnicode(::std::string *s) {

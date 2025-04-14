@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "flatbuffers/util.h"
+
 namespace aos::util {
 
 std::string FormatFloat(double value, int precision) {
@@ -28,6 +30,17 @@ std::string FormatFloat(double value, int precision) {
 
   // The string length is 1 greater than index of the last included character.
   return formatted_str.substr(0, last_included_character + 1);
+}
+
+bool ValidateUtf8(const std::string_view string) {
+  const char *ptr = string.data();
+  const char *const string_end = ptr + string.length();
+  while (ptr < string_end) {
+    if (flatbuffers::FromUTF8(&ptr) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace aos::util

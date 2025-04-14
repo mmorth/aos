@@ -59,32 +59,47 @@ void IntToString(int64_t val, reflection::BaseType type, FastStringBuilder *out,
   }
 }
 
-void FloatToString(double val, reflection::BaseType type,
-                   FastStringBuilder *out, JsonOptions json_options) {
+namespace {
+// Writes the provided float value to the buffer; if it is a NaN, renders it as
+// just "nan" (i.e., avoids things like "nan(ind)").
+template <typename T>
+void AppendMaybeNanToString(const T val,
+                            const std::optional<int> float_precision,
+                            FastStringBuilder *out) {
   if (std::isnan(val)) {
     out->Append(std::signbit(val) ? "-nan" : "nan");
+    return;
+  }
+  if (float_precision.has_value()) {
+    out->Append(util::FormatFloat(val, float_precision.value()));
+  } else {
+    out->Append(val);
+  }
+}
+}  // namespace
+
+void FloatToString(double val, reflection::BaseType type,
+                   FastStringBuilder *out, JsonOptions json_options) {
+  // If standards-compliant JSON has been requested, we will encode
+  // NaN's/infinities as strings.
+  if (json_options.use_standard_json && !std::isfinite(val)) {
+    out->Append("\"");
+    AppendMaybeNanToString<float>(val, json_options.float_precision, out);
+    out->Append("\"");
     return;
   }
 
   switch (type) {
     case BaseType::Float:
-      if (json_options.float_precision.has_value()) {
-        out->Append(
-            util::FormatFloat(val, json_options.float_precision.value()));
-      } else {
-        out->Append(static_cast<float>(val));
-      }
+      AppendMaybeNanToString<float>(val, json_options.float_precision, out);
       break;
     case BaseType::Double:
-      if (json_options.float_precision.has_value()) {
-        out->Append(
-            util::FormatFloat(val, json_options.float_precision.value()));
-      } else {
-        out->Append(val);
-      }
+      AppendMaybeNanToString<double>(val, json_options.float_precision, out);
       break;
     default:
+      // This should be unreachable under normal circumstances.
       out->Append("null");
+      break;
   }
 }
 
@@ -156,6 +171,53 @@ bool ShouldCauseWrapping(reflection::BaseType type) {
   }
 }
 
+// Renders a string fields with appropriate escaping and/or conversion to a
+// vector.
+void RenderString(std::string_view str, const JsonOptions &json_options,
+                  FastStringBuilder *out) {
+  const bool valid_utf8 = aos::util::ValidateUtf8(str);
+  if (json_options.use_standard_json && !valid_utf8) {
+    out->Append("[ ");
+    for (size_t i = 0; i < str.size(); ++i) {
+      if (i != 0) {
+        out->Append(", ");
+      }
+      out->AppendInt(static_cast<uint8_t>(str[i]));
+    }
+    out->Append(" ]");
+  } else {
+    out->AppendChar('"');
+    for (char c : str) {
+      switch (c) {
+        case '"':
+          out->Append("\\\"");
+          break;
+        case '\\':
+          out->Append("\\\\");
+          break;
+        case '\b':
+          out->Append("\\b");
+          break;
+        case '\f':
+          out->Append("\\f");
+          break;
+        case '\n':
+          out->Append("\\n");
+          break;
+        case '\r':
+          out->Append("\\r");
+          break;
+        case '\t':
+          out->Append("\\t");
+          break;
+        default:
+          out->AppendChar(c);
+      }
+    }
+    out->AppendChar('"');
+  }
+}
+
 // Print field in flatbuffer table. Field must be populated.
 template <typename ObjT>
 void FieldToString(
@@ -185,37 +247,8 @@ void FieldToString(
       break;
     case BaseType::String:
       if constexpr (std::is_same<flatbuffers::Table, ObjT>()) {
-        flatbuffers::string_view str =
-            flatbuffers::GetFieldS(*table, *field)->string_view();
-        out->AppendChar('"');
-        for (char c : str) {
-          switch (c) {
-            case '"':
-              out->Append("\\\"");
-              break;
-            case '\\':
-              out->Append("\\\\");
-              break;
-            case '\b':
-              out->Append("\\b");
-              break;
-            case '\f':
-              out->Append("\\f");
-              break;
-            case '\n':
-              out->Append("\\n");
-              break;
-            case '\r':
-              out->Append("\\r");
-              break;
-            case '\t':
-              out->Append("\\t");
-              break;
-            default:
-              out->AppendChar(c);
-          }
-        }
-        out->AppendChar('"');
+        RenderString(flatbuffers::GetFieldS(*table, *field)->string_view(),
+                     json_options, out);
       } else {
         out->Append("null");
       }
@@ -263,9 +296,8 @@ void FieldToString(
             FloatToString(flatbuffers::GetAnyVectorElemF(vector, elem_type, i),
                           elem_type, out, json_options);
           } else if (elem_type == BaseType::String) {
-            out->AppendChar('"');
-            out->Append(flatbuffers::GetAnyVectorElemS(vector, elem_type, i));
-            out->AppendChar('"');
+            RenderString(flatbuffers::GetAnyVectorElemS(vector, elem_type, i),
+                         json_options, out);
           } else if (elem_type == BaseType::Obj) {
             if (type->index() > -1 &&
                 type->index() < (int32_t)objects->size()) {

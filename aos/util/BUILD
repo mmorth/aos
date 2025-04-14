@@ -245,6 +245,16 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        "@com_github_google_flatbuffers//:flatbuffers",
+    ],
+)
+
+cc_test(
+    name = "string_formatting_test",
+    srcs = ["string_formatting_test.cc"],
+    deps = [
+        ":string_formatting",
+        "//aos/testing:googletest",
     ],
 )
 

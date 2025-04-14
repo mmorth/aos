@@ -289,9 +289,8 @@ class JsonParser {
   }
 
  private:
-  // Setters and getters for in_vector (at the current level of the stack)
-  bool in_vector() const { return stack_.back().in_vector; }
-  void set_in_vector(bool in_vector) { stack_.back().in_vector = in_vector; }
+  // Getters for in_vector (at the current level of the stack)
+  bool in_vector() const { return !stack_.back().vector_elements.empty(); }
 
   // Parses the flatbuffer.  This is a second method so we can do easier
   // cleanup at the top level.  Returns true on success.
@@ -323,8 +322,6 @@ class JsonParser {
   struct FlatBufferContext {
     // Type of the current type.
     FlatbufferType type;
-    // If true, we are parsing a vector.
-    bool in_vector;
     // The field index of the current field.
     int field_index;
     // Name of the current field.
@@ -342,7 +339,17 @@ class JsonParser {
     // Strings and nested structures are vectors of offsets.
     // into the vector. Once you get to the end, you build up a vector and
     // push that into the field.
-    ::std::vector<Element> vector_elements;
+    //
+    // If non-empty, we are in a vector.
+    //
+    // An entry in vector_elements will be added whenever we enter a JSON array
+    // and removed when we exit the JSON array. vector_elements should only ever
+    // be two elements at the most---flatbuffers do not currently support
+    // arbitrarily-nested vectors, so the only situation where we have even 2
+    // vector_elements elements are for representing non-unicode strings that
+    // happen to be inside of a vector (which can end up looking like `[ "Valid
+    // String", [ 255 ], "<-- Non-Unicode String" ]`
+    ::std::vector<::std::vector<Element>> vector_elements;
   };
   ::std::vector<FlatBufferContext> stack_;
 };
@@ -373,7 +380,7 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
 
       case Tokenizer::TokenType::kStartObject:  // {
         if (stack_.size() == 0) {
-          stack_.push_back({type, false, -1, "", {}, {}});
+          stack_.push_back({type, -1, "", {}, {}});
         } else {
           int field_index = stack_.back().field_index;
 
@@ -391,12 +398,8 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
             return false;
           }
 
-          stack_.push_back({stack_.back().type.FieldType(field_index),
-                            false,
-                            -1,
-                            "",
-                            {},
-                            {}});
+          stack_.push_back(
+              {stack_.back().type.FieldType(field_index), -1, "", {}, {}});
         }
         break;
       case Tokenizer::TokenType::kEndObject:  // }
@@ -428,7 +431,11 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
 
             // Do the right thing if we are in a vector.
             if (in_vector()) {
-              stack_.back().vector_elements.emplace_back(
+              CHECK_EQ(1u, stack_.back().vector_elements.size())
+                  << ": Lost track of vector_elements book-keeping; when we "
+                     "have a vector of objects vector_elements should just "
+                     "have one entry.";
+              stack_.back().vector_elements[0].emplace_back(
                   std::move(object.value()));
             } else {
               stack_.back().elements.emplace_back(field_index,
@@ -444,13 +451,14 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
                   "We don't support an array of structs at the root level.\n");
           return false;
         }
-        // Sanity check that we aren't trying to make a vector of vectors.
-        if (in_vector()) {
+        // Sanity check that we aren't trying to make more than a single nested
+        // layer of vectors (and that single layer of nesting is only permitted
+        // for vectors of strings).
+        if (in_vector() && stack_.back().vector_elements.size() >= 2u) {
           fprintf(stderr, "We don't support vectors of vectors.\n");
           return false;
         }
-        set_in_vector(true);
-
+        stack_.back().vector_elements.emplace_back();
         break;
       case Tokenizer::TokenType::kEndArray: {  // ]
         if (!in_vector()) {
@@ -461,8 +469,6 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
         const int field_index = stack_.back().field_index;
 
         if (!FinishVector(field_index)) return false;
-
-        set_in_vector(false);
       } break;
 
       case Tokenizer::TokenType::kTrueValue:   // true
@@ -519,7 +525,12 @@ bool JsonParser::DoParse(FlatbufferType type, const std::string_view data,
 }
 
 bool JsonParser::AddElement(int field_index, absl::int128 int_value) {
-  if (stack_.back().type.FieldIsRepeating(field_index) != in_vector()) {
+  // We specifically allow strings to be represented as integer vectors.
+  const bool field_permits_int_vector =
+      stack_.back().type.FieldIsRepeating(field_index) ||
+      stack_.back().type.FieldElementaryType(field_index) ==
+          flatbuffers::ET_STRING;
+  if (field_permits_int_vector != in_vector()) {
     fprintf(stderr,
             "Type and json disagree on if we are in a vector or not (JSON "
             "believes that we are%s in a vector for field '%s').\n",
@@ -529,7 +540,7 @@ bool JsonParser::AddElement(int field_index, absl::int128 int_value) {
   }
 
   if (in_vector()) {
-    stack_.back().vector_elements.emplace_back(int_value);
+    stack_.back().vector_elements.back().emplace_back(int_value);
   } else {
     stack_.back().elements.emplace_back(field_index, int_value);
   }
@@ -547,7 +558,7 @@ bool JsonParser::AddElement(int field_index, double double_value) {
   }
 
   if (in_vector()) {
-    stack_.back().vector_elements.emplace_back(double_value);
+    stack_.back().vector_elements.back().emplace_back(double_value);
   } else {
     stack_.back().elements.emplace_back(field_index, double_value);
   }
@@ -591,23 +602,40 @@ bool JsonParser::AddElement(int field_index, const ::std::string &data) {
         }
 
         if (in_vector()) {
-          stack_.back().vector_elements.emplace_back(*int_value);
+          stack_.back().vector_elements.back().emplace_back(*int_value);
         } else {
           stack_.back().elements.emplace_back(field_index, *int_value);
         }
         return true;
       }
+      break;
+    case flatbuffers::ET_FLOAT:
+    case flatbuffers::ET_DOUBLE: {
+      // We *may* have an infinity/nan value that has been encoded as a string.
+      double double_value;
+      // If the string successfully converted to a double, we can consider it;
+      // only accept nan's/inf's that are converted this way, as people should
+      // not be providing regular floats/doubles as strings.
+      if (absl::SimpleAtod(data, &double_value) &&
+          !std::isfinite(double_value)) {
+        if (in_vector()) {
+          stack_.back().vector_elements.back().emplace_back(double_value);
+        } else {
+          stack_.back().elements.emplace_back(field_index, double_value);
+        }
+        return true;
+      }
+      break;
+    }
     case flatbuffers::ET_UTYPE:
     case flatbuffers::ET_BOOL:
-    case flatbuffers::ET_FLOAT:
-    case flatbuffers::ET_DOUBLE:
     case flatbuffers::ET_STRING:
     case flatbuffers::ET_SEQUENCE:
       break;
   }
 
   if (in_vector()) {
-    stack_.back().vector_elements.emplace_back(fbb_->CreateString(data));
+    stack_.back().vector_elements.back().emplace_back(fbb_->CreateString(data));
   } else {
     stack_.back().elements.emplace_back(field_index, fbb_->CreateString(data));
   }
@@ -798,18 +826,38 @@ bool AddSingleElement(FlatbufferType type, int field_index,
 }
 
 bool JsonParser::FinishVector(int field_index) {
+  const FlatbufferType &current_type = stack_.back().type;
+  CHECK(!stack_.back().vector_elements.empty());
+  const std::vector<Element> vector_elements =
+      std::move(stack_.back().vector_elements.back());
+  stack_.back().vector_elements.pop_back();
+
   // Vectors have a start (unfortunately which needs to know the size)
-  const size_t inline_size = stack_.back().type.FieldInlineSize(field_index);
-  const size_t alignment = stack_.back().type.FieldInlineAlignment(field_index);
-  fbb_->StartVector(stack_.back().vector_elements.size(), inline_size,
-                    /*align=*/alignment);
+  //
+  // When the JSON we are parsing was generated with use_standard_json set,
+  // strings may be represented as vectors of integers, in which case we will
+  // serialize them as if they are a vector of bytes; since this is bypassing
+  // some of the "normal" logic we end up needing to special-case it here
+  // (because it is simpler to write the logic, we check here if we are in the
+  // stage where we are constructing the parent vector).
+  if (current_type.FieldIsRepeating(field_index) &&
+      stack_.back().vector_elements.empty()) {
+    const size_t inline_size = current_type.FieldInlineSize(field_index);
+    const size_t alignment = current_type.FieldInlineAlignment(field_index);
+    fbb_->StartVector(vector_elements.size(), inline_size,
+                      /*align=*/alignment);
+  } else {
+    // Strings have 1-byte elements with only a 1-byte alignment requirement.
+    fbb_->StartVector(vector_elements.size(), /*element size*/ 1u,
+                      /*align*/ 1u);
+  }
 
   const flatbuffers::ElementaryType elementary_type =
       stack_.back().type.FieldElementaryType(field_index);
 
   // Then the data (in reverse order for some reason...)
-  for (size_t i = stack_.back().vector_elements.size(); i > 0;) {
-    const Element &element = stack_.back().vector_elements[--i];
+  for (size_t i = vector_elements.size(); i > 0;) {
+    const Element &element = vector_elements[--i];
     switch (element.type) {
       case Element::ElementType::INT:
         if (!PushElement(elementary_type, element.int_element)) return false;
@@ -829,10 +877,14 @@ bool JsonParser::FinishVector(int field_index) {
   }
 
   // Then an End which is placed into the buffer the same as any other offset.
-  stack_.back().elements.emplace_back(
-      field_index, flatbuffers::Offset<flatbuffers::String>(
-                       fbb_->EndVector(stack_.back().vector_elements.size())));
-  stack_.back().vector_elements.clear();
+  // Note that the type of the Offset being flatbuffers::String is immaterial.
+  const flatbuffers::Offset<flatbuffers::String> vector_offset =
+      fbb_->EndVector(vector_elements.size());
+  if (in_vector()) {
+    stack_.back().vector_elements.back().emplace_back(vector_offset);
+  } else {
+    stack_.back().elements.emplace_back(field_index, vector_offset);
+  }
   return true;
 }
 
@@ -873,6 +925,10 @@ bool JsonParser::PushElement(flatbuffers::ElementaryType elementary_type,
       fbb_->PushElement<double>(static_cast<double>(int_value));
       return true;
     case flatbuffers::ET_STRING:
+      // Strings may be represented as vectors of integers, in which case we
+      // will serialize them as if they are a vector of bytes.
+      fbb_->PushElement<uint8_t>(static_cast<uint8_t>(int_value));
+      return true;
     case flatbuffers::ET_UTYPE:
     case flatbuffers::ET_SEQUENCE:
       fprintf(stderr,
@@ -982,15 +1038,19 @@ flatbuffers::DetachedBuffer JsonToFlatbuffer(const std::string_view data,
 
 namespace {
 
+enum class UseStandardJson { kYes, kNo };
+
 // A visitor which manages skipping the contents of vectors that are longer than
 // a specified threshold.
 class TruncatingStringVisitor : public flatbuffers::IterationVisitor {
  public:
   TruncatingStringVisitor(size_t max_vector_size, std::string delimiter,
                           bool quotes, std::string indent, bool vdelimited,
+                          UseStandardJson standard_json,
                           std::optional<int> float_precision)
       : max_vector_size_(max_vector_size),
         to_string_(delimiter, quotes, indent, vdelimited),
+        use_standard_json_(standard_json == UseStandardJson::kYes),
         float_precision_(float_precision) {}
   ~TruncatingStringVisitor() override {}
 
@@ -1049,26 +1109,57 @@ class TruncatingStringVisitor : public flatbuffers::IterationVisitor {
     if (should_skip()) return;
     to_string_.ULong(value);
   }
-  void Float(float value) override {
-    if (should_skip()) return;
-    if (float_precision_.has_value()) {
-      to_string_.s +=
-          util::FormatFloat(static_cast<double>(value), *float_precision_);
-    } else {
-      to_string_.Float(value);
-    }
+
+  // Because the flatbuffers::IterationVisitor interface (and thus both this
+  // function and `to_string_`) uses separate `Float()` and `Double()` methods
+  // for floats versus doubles we end up having a bunch of common code for the
+  // two implementations which is only different in a couple of names that are
+  // somewhat nested.
+  // This code could be shared via templating, but given the nature of the code,
+  // it seems clearer to use a macro.
+#define STRINGIFY_FLOAT(type, Method)                                       \
+  void Method(type value) override {                                        \
+    if (should_skip()) return;                                              \
+    if (use_standard_json_ && !std::isfinite(value)) {                      \
+      /* When using standards-compliant JSON, use strings to represent      \
+       * numbers.*/                                                         \
+      if (std::isnan(value)) {                                              \
+        to_string_.s += std::signbit(value) ? "\"-nan\"" : "\"nan\"";       \
+      } else {                                                              \
+        DCHECK(std::isinf(value))                                           \
+            << "All non-finite, non-nan floats should be infinite; got "    \
+            << value;                                                       \
+        to_string_.s += std::signbit(value) ? "\"-inf\"" : "\"inf\"";       \
+      }                                                                     \
+      return;                                                               \
+    }                                                                       \
+    if (float_precision_.has_value()) {                                     \
+      to_string_.s +=                                                       \
+          util::FormatFloat(static_cast<double>(value), *float_precision_); \
+    } else {                                                                \
+      to_string_.Method(value);                                             \
+    }                                                                       \
   }
 
-  void Double(double value) override {
-    if (should_skip()) return;
-    if (float_precision_.has_value()) {
-      to_string_.s += util::FormatFloat(value, *float_precision_);
-    } else {
-      to_string_.Double(value);
-    }
-  }
+  STRINGIFY_FLOAT(float, Float);
+  STRINGIFY_FLOAT(double, Double);
+#undef STRINGIFY_FLOAT
+
   void String(const flatbuffers::String *value) override {
     if (should_skip()) return;
+    if (!aos::util::ValidateUtf8(value->string_view()) && use_standard_json_) {
+      // If the input string contains non-UTF-8 characters, and
+      // standards-compliant JSON has been requested, we will render
+      // the string as a uint8 vector.
+      StartVector(value->size());
+      for (size_t index = 0; index < value->size(); ++index) {
+        Element(index, flatbuffers::ElementaryType::ET_UCHAR,
+                /*type_table=*/nullptr, /*val (appears to be unused)=*/nullptr);
+        UChar(value->Get(index), /*enum name*/ nullptr);
+      }
+      EndVector();
+      return;
+    }
     to_string_.String(value);
   }
   void Unknown(const uint8_t *value) override {
@@ -1110,6 +1201,7 @@ class TruncatingStringVisitor : public flatbuffers::IterationVisitor {
   const size_t max_vector_size_;
   flatbuffers::ToStringVisitor to_string_;
   int skip_levels_ = 0;
+  bool use_standard_json_;
   std::optional<int> float_precision_;
 };
 
@@ -1126,6 +1218,8 @@ class TruncatingStringVisitor : public flatbuffers::IterationVisitor {
   TruncatingStringVisitor tostring_visitor(
       json_options.max_vector_size, json_options.multi_line ? "\n" : " ", true,
       json_options.multi_line ? " " : "", json_options.multi_line,
+      json_options.use_standard_json ? UseStandardJson::kYes
+                                     : UseStandardJson::kNo,
       json_options.float_precision);
   flatbuffers::IterateObject(reinterpret_cast<const uint8_t *>(t), typetable,
                              &tostring_visitor);

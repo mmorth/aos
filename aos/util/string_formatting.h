@@ -10,6 +10,9 @@ namespace aos::util {
 // point. This can be used for float or double types.
 std::string FormatFloat(double value, int precision);
 
+// Returns true if the provided string contains only valid UTF-8 characters.
+bool ValidateUtf8(const std::string_view string);
+
 }  // namespace aos::util
 
 #endif  // AOS_UTIL_STRING_FORMATTING_H_

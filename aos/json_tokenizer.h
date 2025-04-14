@@ -12,8 +12,10 @@ namespace aos {
 
 // This class implements the state machine at json.org
 //
-// The only modification is that it supports C++ comments /**/ in all
-// whitespace.
+// The only modification is that it:
+// * Supports C++ comments /**/ in all whitespace.
+// * Supports parsing nan/inf (without quotes) for floating point numbers.
+// * Supports a \x escape sequence in strings for non-unicode bytes.
 class Tokenizer {
  public:
   Tokenizer(const std::string_view data) : data_(data) {}
@@ -79,6 +81,10 @@ class Tokenizer {
   // true if a valid unicode was found, and false otherwise. data_ is updated
   // only on success.
   bool ConsumeUnicode(::std::string *s);
+  // Consumes a \x artbirary-byte-value. This escape sequence is used by the
+  // flatbuffer JSON serialization by default to represent non-unicode sequences
+  // (e.g., "\xFF" for a string that is just a single byte of all-ones).
+  bool ConsumeStringHexByte(::std::string *s);
 
   // State for the parsing state machine.
   enum class State {

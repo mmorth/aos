@@ -183,6 +183,22 @@ TEST_F(JsonToFlatbufferTest, Inf) {
   EXPECT_TRUE(JsonAndBack("{ \"foo_float\": -inf }"));
   EXPECT_TRUE(JsonAndBack("{ \"foo_double\": inf }"));
   EXPECT_TRUE(JsonAndBack("{ \"foo_double\": -inf }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_float\": [ inf ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_double\": [ inf ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_float\": \"inf\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_float\": \"-inf\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_double\": \"inf\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_double\": \"-inf\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_float\": [ \"-inf\" ] }",
+                          TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_double\": [ \"inf\" ] }",
+                          TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
 }
 
 // Tests that NaN is handled correctly
@@ -191,6 +207,38 @@ TEST_F(JsonToFlatbufferTest, Nan) {
   EXPECT_TRUE(JsonAndBack("{ \"foo_float\": -nan }"));
   EXPECT_TRUE(JsonAndBack("{ \"foo_double\": nan }"));
   EXPECT_TRUE(JsonAndBack("{ \"foo_double\": -nan }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_float\": [ nan ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_double\": [ nan ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_float\": \"nan\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_float\": \"-nan\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_double\": \"nan\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_double\": \"-nan\" }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_float\": [ \"-nan\" ] }",
+                          TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_double\": [ \"nan\" ] }",
+                          TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+}
+
+// Test that we support the standard JSON string escape sequences.
+TEST_F(JsonToFlatbufferTest, StringEscapes) {
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\b\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\f\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\n\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\r\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\\"\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": \"\\\\\" }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\b\" ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\f\" ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\n\" ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\r\" ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\\"\" ] }"));
+  EXPECT_TRUE(JsonAndBack("{ \"vector_foo_string\": [ \"\\\\\" ] }"));
 }
 
 // Tests that unicode is handled correctly
@@ -213,6 +261,23 @@ TEST_F(JsonToFlatbufferTest, Unicode) {
       JsonAndBack("{ \"foo_string\": \"\\uF89\" }", TestReflection::kNo));
   EXPECT_FALSE(
       JsonAndBack("{ \"foo_string\": \"\\uD83C\" }", TestReflection::kNo));
+}
+
+// Test how we handle non-ASCII/non-Unicode strings for consistency; it is
+// possible to end up with a serialized flatbuffer that contains a non-unicode
+// string.
+TEST_F(JsonToFlatbufferTest, NonUnicode) {
+  // The reflection-based FlatbufferToJson doesn't currently support outputting
+  // the "\xFF" format.
+  EXPECT_TRUE(
+      JsonAndBack("{ \"foo_string\": \"\\xFF\" }", TestReflection::kNo));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_string\": [ 255 ] }", TestReflection::kYes,
+                          JsonOptions{.use_standard_json = true}));
+  // Test that we can generate a vector of strings that contains both
+  // non-unicode and unicode strings.
+  EXPECT_TRUE(JsonAndBack(
+      "{ \"vector_foo_string\": [ [ 255 ], \"Hello, World!\" ] }",
+      TestReflection::kYes, JsonOptions{.use_standard_json = true}));
 }
 
 // Tests that we can handle decimal points.

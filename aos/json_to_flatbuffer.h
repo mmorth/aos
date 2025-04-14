@@ -58,6 +58,17 @@ struct JsonOptions {
   bool max_multi_line = false;
   // Will integers be printed in hexadecimal form instead of decimal.
   bool use_hex = false;
+  // If set, will output standards-compliant JSON. This does not override
+  // max_vector_size, so non-standards-compliant JSON may be output if you use a
+  // non-SIZE_MAX value for max_vector_size.
+  // When using standards-compliant JSON, the following substitutions will be
+  // made:
+  // * Non-finite floating-point values will be wrapped with quotes (i.e.,
+  //   `"nan"`will be output instead of a bare `nan`).
+  // * Strings containing non-UTF-8 characters will be treated as uint8 vectors
+  //   (i.e., instead of outputting `"\xFF"` for an invalid UTF-8 string we'd
+  //   output `[255]`).
+  bool use_standard_json = false;
   // Optional precision for floating-point numbers. When not specified, the
   // default precision is used. This is fractional precision, i.e. the number of
   // digits after the decimal point. Trailing zeros after the first trailing
