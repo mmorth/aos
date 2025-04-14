@@ -197,6 +197,27 @@ cc_test(
 )
 
 cc_library(
+    name = "sctp_error",
+    srcs = [
+        "sctp_error.cc",
+    ],
+    hdrs = [
+        "sctp_error.h",
+    ],
+)
+
+cc_test(
+    name = "sctp_error_test",
+    srcs = [
+        "sctp_error_test.cc",
+    ],
+    deps = [
+        ":sctp_error",
+        "//aos/testing:googletest",
+    ],
+)
+
+cc_library(
     name = "sctp_lib",
     srcs = [
         "sctp_lib.cc",
@@ -405,6 +426,7 @@ cc_library(
         ":sctp_client",
         ":sctp_config_fbs",
         ":sctp_config_request_fbs",
+        ":sctp_error",
         ":timestamp_fbs",
         "//aos/containers:ring_buffer",
         "//aos/events:shm_event_loop",

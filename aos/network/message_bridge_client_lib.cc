@@ -16,6 +16,7 @@
 #include "aos/network/sctp_client.h"
 #include "aos/network/sctp_config_generated.h"
 #include "aos/network/sctp_config_request_generated.h"
+#include "aos/network/sctp_error.h"
 #include "aos/network/timestamp_generated.h"
 #include "aos/unique_malloc_ptr.h"
 #include "aos/util/file.h"
@@ -213,9 +214,11 @@ void SctpClientConnection::MessageReceived() {
             case SCTP_SHUTDOWN_COMP:
             case SCTP_CANT_STR_ASSOC: {
               NodeDisconnected();
-              VLOG(1) << "Disconnect from " << message->PeerAddress()
-                      << " on assoc " << sac->sac_assoc_id << " state "
-                      << sac->sac_state;
+              VLOG(1) << "Disconnect from " << message->PeerAddress() << " on "
+                      << sac->sac_assoc_id << " state " << sac->sac_state
+                      << " error " << sac->sac_error << ": "
+                      << sctp::GetErrorString(
+                             sctp::ToSctpError(sac->sac_error));
             } break;
             default:
               LOG(FATAL) << "Never seen state " << sac->sac_state << " before.";
