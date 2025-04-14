@@ -52,10 +52,6 @@ ABSL_FLAG(uint32_t, max_retry_period_ms, 10000,
           "Maximum retry timer period--the additive backoff will not "
           "exceed this period, in milliseconds.");
 
-ABSL_FLAG(int32_t, force_wmem_max, -1,
-          "If set to a nonnegative numbers, the wmem buffer size to use, in "
-          "bytes. Intended solely for testing purposes.");
-
 ABSL_DECLARE_FLAG(bool, use_sctp_authentication);
 
 namespace aos::message_bridge {
@@ -590,12 +586,8 @@ MessageBridgeServer::MessageBridgeServer(
   LOG(INFO) << "Reliable buffer size for all clients is "
             << reliable_buffer_size;
   server_.SetMaxReadSize(max_size);
-  if (absl::GetFlag(FLAGS_force_wmem_max) >= 0) {
-    server_.SetMaxWriteSize(absl::GetFlag(FLAGS_force_wmem_max));
-  } else {
-    server_.SetMaxWriteSize(
-        std::max(max_channel_buffer_size, reliable_buffer_size));
-  }
+  server_.SetMaxWriteSize(
+      std::max(max_channel_buffer_size, reliable_buffer_size));
 
   // Since we are doing interleaving mode 1, we will see at most 1 message being
   // delivered at a time for an association.  That means, if a message is
