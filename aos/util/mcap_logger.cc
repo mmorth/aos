@@ -355,7 +355,7 @@ void McapLogger::WriteConfigurationMessage() {
   wrote_configuration_ = true;
 
   injected_configuration_->WriteMessage(
-      CopyFlatBuffer(event_loop_->configuration()).span());
+      configuration::StripConfiguration(event_loop_->configuration()).span());
 }
 
 void McapLogger::WriteLogConversionMetadataMessage() {
