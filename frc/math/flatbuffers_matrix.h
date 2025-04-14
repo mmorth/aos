@@ -32,16 +32,6 @@ struct EigenMatrix {
       type;
 };
 
-inline std::ostream &operator<<(std::ostream &os, fbs::MatrixField field) {
-  os << fbs::EnumNameMatrixField(field);
-  return os;
-}
-
-inline std::ostream &operator<<(std::ostream &os, fbs::FieldError error) {
-  os << fbs::EnumNameFieldError(error);
-  return os;
-}
-
 struct ConversionFailure {
   fbs::MatrixField field;
   fbs::FieldError error;
