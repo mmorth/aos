@@ -1,0 +1,8 @@
+namespace aos.examples;
+
+table VariableSizeMessage {
+  value:uint64 (id: 0);
+  data:[ubyte] (id: 1);
+}
+
+root_type VariableSizeMessage;

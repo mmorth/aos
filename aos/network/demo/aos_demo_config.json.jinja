@@ -1,0 +1,251 @@
+{% set DIRECTIONS = ["ping", "pong"] -%}
+{% set NODE_INFO = [
+    ("ping_node", "pong_node", "Ping", PING_PRIORITY),
+    ("pong_node", "ping_node", "Pong", 100),
+] -%}
+{% set HOSTNAMES = {
+    "ping": PING_NODE_NAME,
+    "pong": PONG_NODE_NAME,
+} -%}
+{% set VARIABLE_SIZE_FREQUENCY = (VARIABLE_NUM_MESSAGES * 1000 * 1000 / VARIABLE_SLEEP_US + 2 * VARIABLE_NUM_MESSAGES) -%}
+{
+  "channels": [
+  {% for node, other_node, send_type, send_priority in NODE_INFO %}
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.logging.LogMessageFbs",
+      "source_node": "{{ node }}",
+      "frequency": 200,
+      "num_senders": 20,
+      "max_size": 2048
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.starter.Status",
+      "source_node": "{{ node }}",
+      "max_size": 25000,
+      "frequency": 200
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.starter.StarterRpc",
+      "source_node": "{{ node }}"
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.message_bridge.Timestamp",
+      "source_node": "{{ node }}",
+      "frequency": 100,
+      "num_senders": 2,
+      "max_size": 200,
+      "destination_nodes": [
+        {
+          "name": "{{ other_node }}",
+          "time_to_live": 5000000,
+          "timestamp_logger": "LOCAL_AND_REMOTE_LOGGER",
+          "timestamp_logger_nodes": ["{{ node }}"]
+        }
+      ]
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.message_bridge.ServerStatistics",
+      "source_node": "{{ node }}",
+      "frequency": 4
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.message_bridge.ClientStatistics",
+      "source_node": "{{ node }}",
+      "frequency": 100
+    },
+    {
+      "name": "/{{ node }}/aos/remote_timestamps/{{ other_node }}/test/aos-examples-{{ send_type }}",
+      "type": "aos.message_bridge.RemoteMessage",
+      "frequency": 2000,
+      "logger": "NOT_LOGGED",
+      "source_node": "{{ node }}"
+    },
+    {
+      "name": "/{{ node }}/aos/remote_timestamps/{{ other_node }}/{{ node }}/aos/aos-message_bridge-Timestamp",
+      "type": "aos.message_bridge.RemoteMessage",
+      "frequency": 2000,
+      "logger": "NOT_LOGGED",
+      "source_node": "{{ node }}"
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.message_bridge.Timestamp",
+      "source_node": "{{ node }}",
+      "logger": "LOCAL_AND_REMOTE_LOGGER",
+      "logger_nodes": ["{{ other_node }}"],
+      "destination_nodes": [
+        {
+          "name": "{{ other_node }}",
+          "time_to_live": 5000000,
+          "timestamp_logger": "LOCAL_AND_REMOTE_LOGGER",
+          "timestamp_logger_nodes": ["{{ other_node }}"]
+        }
+      ]
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.timing.Report",
+      "source_node": "{{ node }}",
+      "frequency": 50,
+      "num_senders": 20,
+      "max_size": 4000
+    },
+    {
+      "name": "/{{ node }}/aos",
+      "type": "aos.logging.DynamicLogCommand",
+      "source_node": "{{ node }}",
+      "frequency": 10,
+      "num_senders": 1
+    },
+    {
+      "name": "/test",
+      "type": "aos.examples.{{ send_type }}",
+      "source_node": "{{ node }}",
+      "frequency": 2000,
+      "logger": "LOCAL_AND_REMOTE_LOGGER",
+      "logger_nodes": ["{{ other_node }}"],
+      "destination_nodes": [
+        {
+          /* Intentionally no time_to_live here to make it reliable. */
+          "name": "{{ other_node }}",
+          "priority": {{ send_priority }},
+          "timestamp_logger": "LOCAL_AND_REMOTE_LOGGER",
+          "timestamp_logger_nodes": ["{{ node }}"]
+        }
+      ]
+    },
+  {% endfor %}
+    {
+      "name": "/test",
+      "type": "aos.examples.VariableSizeMessage",
+      "source_node": "ping_node",
+      "frequency": {{ VARIABLE_SIZE_FREQUENCY | int }},
+      "max_size": {{ VARIABLE_MESSAGE_SIZE + 400 }},
+      /* Intentionally not logged because of size. */
+      "logger": "NOT_LOGGED",
+      "channel_storage_duration": {{ 2 * 1000 * 1000 * 1000 }},
+      "destination_nodes": [
+        {
+          "name": "pong_node",
+          "priority": {{ VARIABLE_SIZE_MESSAGE_PRIORITY }},
+          "time_to_live": 5000000,
+          "timestamp_logger": "NOT_LOGGED"
+        }
+      ]
+    },
+    {
+      "name": "/ping_node/aos/remote_timestamps/pong_node/test/aos-examples-VariableSizeMessage",
+      "type": "aos.message_bridge.RemoteMessage",
+      "frequency": {{ VARIABLE_SIZE_FREQUENCY | int }},
+      "logger": "NOT_LOGGED",
+      "source_node": "ping_node"
+    },
+  ],
+  "maps": [
+  {% for name in DIRECTIONS %}
+    {
+      "match": {
+        "name": "/aos*",
+        "source_node": "{{ name }}_node"
+      },
+      "rename": {
+        "name": "/{{ name }}_node/aos"
+      }
+    },
+  {% endfor %}
+  ],
+  "nodes": [
+  {% for name in DIRECTIONS %}
+    {
+      "name": "{{ name }}_node",
+      "hostname": "{{ HOSTNAMES[name] }}",
+      "port": 1234
+    },
+  {% endfor %}
+  ],
+  "applications": [
+  {% for name in DIRECTIONS %}
+    {
+      "name": "{{ name }}",
+      "executable_name": "../aos/aos/events/{{ name }}",
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+      ],
+      "nodes": ["{{ name }}_node"],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+    {
+      "name": "{{ name }}_logger",
+      "executable_name": "../aos/aos/events/logging/logger_main",
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+        "--xz_compress",
+        "--rotate_every={{ 10 * 60 }}",
+        "--logging_folder=/tmp/aos_network_demo/logs",
+      ],
+      "nodes": ["{{ name }}_node"],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+    {
+      "name": "{{ name }}_foxglove_websocket",
+      "executable_name": "../aos/aos/util/foxglove_websocket",
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+        "--port=8766",
+      ],
+      "nodes": ["{{ name }}_node"],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+    {
+      "name": "{{ name }}_message_bridge_client",
+      "executable_name": "../aos/aos/network/message_bridge_client",
+      "nodes": ["{{ name }}_node"],
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+        "--disable_ipv6",
+      ],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+    {
+      "name": "{{ name }}_message_bridge_server",
+      "executable_name": "../aos/aos/network/message_bridge_server",
+      "nodes": ["{{ name }}_node"],
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+        "--disable_ipv6",
+      ],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+  {% endfor %}
+    {
+      "name": "variable_size_message_sender",
+      "executable_name": "../aos/aos/network/demo/variable_size_message_sender",
+      "nodes": ["ping_node"],
+      "args": [
+        "--shm_base=/dev/shm/aos_network_demo",
+        "--config=aos/network/demo/aos_demo_config.bfbs",
+        "--override_hostname={{ HOSTNAMES[name] }}",
+        "--sleep_us={{ VARIABLE_SLEEP_US }}",
+        "--message_size={{ VARIABLE_MESSAGE_SIZE }}",
+        "--num_messages_per_sleep={{ VARIABLE_NUM_MESSAGES }}",
+      ],
+      "stop_time": {{ 5 * 1000 * 1000 * 1000 }}
+    },
+  ]
+}
