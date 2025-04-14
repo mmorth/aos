@@ -1,6 +1,9 @@
 load("//tools/build_rules:gtk_dependent.bzl", "gtk_dependent_cc_library")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:public"],
+)
 
 cc_library(
     name = "overlay",

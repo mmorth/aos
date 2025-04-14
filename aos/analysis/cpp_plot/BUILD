@@ -1,6 +1,9 @@
 load("//tools/build_rules:js.bzl", "rollup_bundle", "ts_project")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:public"],
+)
 
 ts_project(
     name = "cpp_plot",

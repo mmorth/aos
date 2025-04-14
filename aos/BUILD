@@ -7,6 +7,8 @@ load("//tools/build_rules:autocxx.bzl", "autocxx_library")
 load("//tools/build_rules:select.bzl", "compiler_select")
 load("//tools/rust:defs.bzl", "flatbuffer_rust_library", "rust_library")
 
+package(default_applicable_licenses = ["//:license"])
+
 exports_files(["aos_dump_autocomplete.sh"])
 
 filegroup(

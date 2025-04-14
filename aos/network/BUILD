@@ -8,7 +8,10 @@ load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//aos/seasocks:gen_embedded.bzl", "gen_embedded")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:public"],
+)
 
 static_flatbuffer(
     name = "remote_message_fbs",
