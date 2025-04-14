@@ -125,6 +125,10 @@ std::string NumToStringImplWrapper(T t, const char *fmt, int precision = 0) {
 // Convert an integer or floating point value to a string.
 // In contrast to std::stringstream, "char" values are
 // converted to a string of digits, and we don't use scientific notation.
+// TODO(james.kuszmaul): For floating point numbers, this should probably
+// output decimal points, but that may be a breaking change for upstream
+// flatbuffers; consider making a PR when next upgrading our flatbuffers
+// version.
 template<typename T> std::string NumToString(T t) {
   // clang-format off
 

@@ -31,6 +31,14 @@ void FastStringBuilder::Append(std::string_view str) {
 }
 
 void FastStringBuilder::Append(float val) {
+  if (val == 0.0 && std::signbit(val)) {
+    // By default a -0 will be represented as "-0" by std::to_chars, which some
+    // JSON parsers will interpret as a "-0" *integer*, which causes them to
+    // lose the sign bit. As such, force any parsers to interpret a -0 as a
+    // floating point number.
+    Append("-0.0");
+    return;
+  }
   std::size_t index = str_.size();
   constexpr std::size_t kMaxSize = 17;
   Resize(kMaxSize);
@@ -41,6 +49,14 @@ void FastStringBuilder::Append(float val) {
 }
 
 void FastStringBuilder::Append(double val) {
+  if (val == 0.0 && std::signbit(val)) {
+    // By default a -0 will be represented as "-0" by std::to_chars, which some
+    // JSON parsers will interpret as a "-0" *integer*, which causes them to
+    // lose the sign bit. As such, force any parsers to interpret a -0 as a
+    // floating point number.
+    Append("-0.0");
+    return;
+  }
   std::size_t index = str_.size();
   constexpr std::size_t kMaxSize = 25;
   Resize(kMaxSize);

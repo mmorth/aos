@@ -286,6 +286,13 @@ TEST_F(JsonToFlatbufferTest, DecimalPoint) {
   EXPECT_TRUE(JsonAndBack("{ \"foo_double\": 5.099999999999 }"));
 }
 
+// Tests that we can handle negative zero and that we present negative zero with
+// a "-" sign.
+TEST_F(JsonToFlatbufferTest, NegativeZero) {
+  EXPECT_TRUE(JsonAndBack("{ \"foo_float\": -0.0 }"));
+  EXPECT_TRUE(JsonAndBack("{ \"foo_double\": -0.0 }"));
+}
+
 // Test what happens if you pass a field name that we don't know.
 TEST_F(JsonToFlatbufferTest, InvalidFieldName) {
   EXPECT_FALSE(JsonAndBack("{ \"foo\": 5 }"));

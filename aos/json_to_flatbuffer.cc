@@ -1133,6 +1133,10 @@ class TruncatingStringVisitor : public flatbuffers::IterationVisitor {
       }                                                                     \
       return;                                                               \
     }                                                                       \
+    if (value == 0.0 && std::signbit(value)) {                              \
+      to_string_.s += "-0.0";                                               \
+      return;                                                               \
+    }                                                                       \
     if (float_precision_.has_value()) {                                     \
       to_string_.s +=                                                       \
           util::FormatFloat(static_cast<double>(value), *float_precision_); \
