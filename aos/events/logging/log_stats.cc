@@ -22,6 +22,9 @@ ABSL_FLAG(bool, excessive_size_only, false,
           "Only print channels that have a set max message size that is more "
           "than double of the max message size.");
 
+ABSL_FLAG(double, skip_seconds, 0.0,
+          "If set to a positive value, skip this many seconds at the beginning "
+          "of the log. Otherwise, process the log from the very beginning.");
 ABSL_FLAG(
     double, run_for, 0.0,
     "If set to a positive value, only process the log for this many seconds. "
@@ -485,6 +488,13 @@ int main(int argc, char **argv) {
   }
 
   LogStatsApplication *log_stats_application = nullptr;
+
+  if (absl::GetFlag(FLAGS_skip_seconds) > 0) {
+    reader.SetStartTime(
+        reader.realtime_start_time(node) +
+        std::chrono::duration_cast<aos::realtime_clock::duration>(
+            std::chrono::duration<double>(absl::GetFlag(FLAGS_skip_seconds))));
+  }
 
   // Start the LogStatsApplication when the logfile starts.
   aos::NodeEventLoopFactory *node_factory =
