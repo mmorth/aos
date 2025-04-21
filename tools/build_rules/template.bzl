@@ -1,7 +1,15 @@
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+
 def _jinja2_template_impl(ctx):
     out = ctx.outputs.out
     parameters = dict(ctx.attr.parameters)
     parameters.update(ctx.attr.list_parameters)
+
+    if ctx.attr.flag_parameters:
+        parameters.update({
+            name: flag[BuildSettingInfo].value
+            for flag, name in ctx.attr.flag_parameters.items()
+        })
 
     # For now we don't really want the user to worry about which configuration
     # to pull the file from. We don't yet have a use case for pulling the same
@@ -48,6 +56,12 @@ jinja2_template_rule = rule(
             default = {},
             doc = """The string parameters to supply to Jinja2.""",
         ),
+        "flag_parameters": attr.label_keyed_string_dict(
+            mandatory = False,
+            default = {},
+            doc = """Parameters that should be sourced from string_flag() targets.""",
+            providers = [BuildSettingInfo],
+        ),
         "list_parameters": attr.string_list_dict(
             mandatory = False,
             default = {},
@@ -76,16 +90,32 @@ Needs to have a register_filters function defined.""",
     doc = """Expands a jinja2 template given parameters.""",
 )
 
-def jinja2_template(name, src, parameters = {}, list_parameters = {}, **kwargs):
+def jinja2_template(name, src, flag_parameters = {}, **kwargs):
     # Since the `out` field will be set to `name`, and the name for the rule must
     # differ from `out`, name the rule as the `name` plus a suffix
     rule_name = name + "_rule"
+
+    # For consistency, the usage for flag_parameters is like this:
+    #
+    #   flag_parameters = {
+    #       "NAME1": "//path/to:flag1",
+    #       "NAME2": "//path/to:flag2",
+    #   },
+    #
+    # But the underlying bazel rule requires them like this:
+    #
+    #   flag_parameters = {
+    #       "//path/to:flag1": "NAME1",
+    #       "//path/to:flag2": "NAME2",
+    #   },
+    #
+    # Swap the key-value pairs around here.
+    swapped_flag_parameters = {value: key for key, value in (flag_parameters or {}).items()}
 
     jinja2_template_rule(
         name = rule_name,
         out = name,
         src = src,
-        parameters = parameters,
-        list_parameters = list_parameters,
+        flag_parameters = swapped_flag_parameters,
         **kwargs
     )
