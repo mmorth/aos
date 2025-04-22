@@ -3,6 +3,7 @@ load("@aspect_rules_ts//ts:defs.bzl", "ts_config")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@rules_license//rules:license.bzl", "license")
 
 # Link npm packages
 npm_link_all_packages(name = "node_modules")
@@ -14,6 +15,12 @@ exports_files([
     # Expose .clang-format so that the static flatbuffer codegen can format its files nicely.
     ".clang-format",
 ])
+
+license(
+    name = "license",
+    license_kinds = ["@rules_license//licenses/spdx:Apache-2.0"],
+    license_text = "LICENSE.txt",
+)
 
 # The root repo tsconfig
 ts_config(

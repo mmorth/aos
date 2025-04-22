@@ -5,7 +5,10 @@ load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
 load("//tools/build_rules:autocxx.bzl", "autocxx_library")
 load("//tools/rust:defs.bzl", "flatbuffer_rust_library", "rust_binary", "rust_library", "rust_test")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:public"],
+)
 
 static_flatbuffer(
     name = "test_message_fbs",
