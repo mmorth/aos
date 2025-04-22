@@ -57,6 +57,15 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "tensorrt",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":tensorrt-core-dev-headers",
+        ":usr_lib_libnvinfer.so.10.3.0-lib",
+    ],
+)
+
 # pkgconf -> absl_absl_check
 cc_library(
     name = "absl_absl_check",
@@ -4333,49 +4342,6 @@ cc_library(
     ],
 )
 
-# pkgconf -> gstreamer-vulkan-1.0
-cc_library(
-    name = "gstreamer-vulkan-1.0",
-    includes = ["usr/include/gstreamer-1.0"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":gstreamer-1.0",
-        ":gstreamer-base-1.0",
-        ":gstreamer-video-1.0",
-        ":gstreamer1.0-plugins-bad-dev-headers",
-        ":usr_lib_libgstvulkan-1.0.so.0.2410.0-lib",
-        ":vulkan",
-        ":wayland-client",
-        ":xcb",
-        ":xkbcommon",
-        ":xkbcommon-x11",
-    ],
-)
-
-# pkgconf -> gstreamer-vulkan-wayland-1.0
-cc_library(
-    name = "gstreamer-vulkan-wayland-1.0",
-    includes = ["usr/include/gstreamer-1.0"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":gstreamer-vulkan-1.0",
-        ":gstreamer1.0-plugins-bad-dev-headers",
-        ":wayland-client",
-    ],
-)
-
-# pkgconf -> gstreamer-vulkan-xcb-1.0
-cc_library(
-    name = "gstreamer-vulkan-xcb-1.0",
-    includes = ["usr/include/gstreamer-1.0"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":gstreamer-vulkan-1.0",
-        ":gstreamer1.0-plugins-bad-dev-headers",
-        ":xcb",
-    ],
-)
-
 # pkgconf -> gstreamer-wayland-1.0
 cc_library(
     name = "gstreamer-wayland-1.0",
@@ -6514,16 +6480,6 @@ cc_library(
     ],
 )
 
-# pkgconf -> vulkan
-cc_library(
-    name = "vulkan",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libvulkan-dev-headers",
-        ":usr_lib_libvulkan.so.1.3.296-lib",
-    ],
-)
-
 # pkgconf -> wayland-client
 cc_library(
     name = "wayland-client",
@@ -7713,48 +7669,6 @@ cc_library(
         "usr/include/gstreamer-1.0/gst/uridownloader/gsturidownloader.h",
         "usr/include/gstreamer-1.0/gst/uridownloader/gsturidownloader_debug.h",
         "usr/include/gstreamer-1.0/gst/uridownloader/uridownloader-prelude.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkapi.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbarrier.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbuffermemory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbufferpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkcommandbuffer.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkcommandpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkconfig.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdebug.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdecoder.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorcache.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorset.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdevice.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdisplay.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkerror.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkfence.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkformat.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkfullscreenquad.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkhandle.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkhandlepool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimagebufferpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimagememory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimageview.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkinstance.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkmemory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkoperation.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkphysicaldevice.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkqueue.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkswapper.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvktrash.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkutils.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkvideofilter.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkvideoutils.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkwindow.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan-enumtypes.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan-prelude.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan_fwd.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/wayland/gstvkdisplay_wayland.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/wayland/wayland.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/xcb/gstvkdisplay_xcb.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/xcb/xcb.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwl_fwd.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwlbuffer.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwlcontext.h",
@@ -7804,12 +7718,8 @@ cc_library(
         ":libgstsctp-1.0-0-headers",
         ":libgsttranscoder-1.0-0-headers",
         ":libgsturidownloader-1.0-0-headers",
-        ":libgstvulkan-1.0-0-headers",
         ":libgstwayland-1.0-0-headers",
         ":libgstwebrtc-1.0-0-headers",
-        ":libvulkan-dev-headers",
-        ":libxcb-dev-headers",
-        ":libxkbcommon-dev-headers",
         ":wayland-dev-headers",
     ],
 )
@@ -9885,6 +9795,20 @@ cc_library(
 )
 
 cc_library(
+    name = "libcudla-headers",
+    hdrs = [
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":libc6-headers",
+        ":libgcc1-headers",
+        ":libstdc++6-headers",
+        ":tegra-libraries-core-headers",
+        ":tegra-libraries-cuda-headers",
+    ],
+)
+
+cc_library(
     name = "libcufft-headers",
     hdrs = [
     ],
@@ -11021,24 +10945,6 @@ cc_library(
         ":libc6-headers",
         ":libglib-2.0-0-headers",
         ":liborc-0.4-0-headers",
-    ],
-)
-
-cc_library(
-    name = "libgstvulkan-1.0-0-headers",
-    hdrs = [
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":gstreamer1.0-headers",
-        ":libc6-headers",
-        ":libglib-2.0-0-headers",
-        ":libgstvideo-1.0-0-headers",
-        ":libvulkan1-headers",
-        ":libxcb1-headers",
-        ":libxkbcommon-x11-0-headers",
-        ":libxkbcommon0-headers",
-        ":wayland-headers",
     ],
 )
 
@@ -13424,26 +13330,6 @@ cc_library(
 )
 
 cc_library(
-    name = "libvulkan-dev-headers",
-    hdrs = [
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libvulkan1-headers",
-    ],
-)
-
-cc_library(
-    name = "libvulkan1-headers",
-    hdrs = [
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libc6-headers",
-    ],
-)
-
-cc_library(
     name = "libwebp-headers",
     hdrs = [
     ],
@@ -14021,113 +13907,12 @@ cc_library(
 )
 
 cc_library(
-    name = "libxkbcommon-dev-headers",
-    hdrs = [
-        "usr/include/xkbcommon/xkbcommon.h",
-        "usr/include/xkbcommon/xkbcommon-compat.h",
-        "usr/include/xkbcommon/xkbcommon-compose.h",
-        "usr/include/xkbcommon/xkbcommon-keysyms.h",
-        "usr/include/xkbcommon/xkbcommon-names.h",
-        "usr/include/xkbcommon/xkbcommon-x11.h",
-        "usr/include/xkbcommon/xkbregistry.h",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libxcb-dev-headers",
-        ":libxkbcommon-x11-0-headers",
-        ":libxkbcommon0-headers",
-        ":libxkbregistry0-headers",
-        ":libxml2-dev-headers",
-    ],
-)
-
-cc_library(
-    name = "libxkbcommon-x11-0-headers",
-    hdrs = [
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libc6-headers",
-        ":libxcb-xkb1-headers",
-        ":libxcb1-headers",
-        ":libxkbcommon0-headers",
-    ],
-)
-
-cc_library(
     name = "libxkbcommon0-headers",
     hdrs = [
     ],
     visibility = ["//visibility:public"],
     deps = [
         ":libc6-headers",
-    ],
-)
-
-cc_library(
-    name = "libxkbregistry0-headers",
-    hdrs = [
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libc6-headers",
-        ":libxml2-headers",
-    ],
-)
-
-cc_library(
-    name = "libxml2-dev-headers",
-    hdrs = [
-        "usr/include/libxml2/libxml/HTMLparser.h",
-        "usr/include/libxml2/libxml/HTMLtree.h",
-        "usr/include/libxml2/libxml/SAX.h",
-        "usr/include/libxml2/libxml/SAX2.h",
-        "usr/include/libxml2/libxml/c14n.h",
-        "usr/include/libxml2/libxml/catalog.h",
-        "usr/include/libxml2/libxml/chvalid.h",
-        "usr/include/libxml2/libxml/debugXML.h",
-        "usr/include/libxml2/libxml/dict.h",
-        "usr/include/libxml2/libxml/encoding.h",
-        "usr/include/libxml2/libxml/entities.h",
-        "usr/include/libxml2/libxml/globals.h",
-        "usr/include/libxml2/libxml/hash.h",
-        "usr/include/libxml2/libxml/list.h",
-        "usr/include/libxml2/libxml/nanoftp.h",
-        "usr/include/libxml2/libxml/nanohttp.h",
-        "usr/include/libxml2/libxml/parser.h",
-        "usr/include/libxml2/libxml/parserInternals.h",
-        "usr/include/libxml2/libxml/pattern.h",
-        "usr/include/libxml2/libxml/relaxng.h",
-        "usr/include/libxml2/libxml/schemasInternals.h",
-        "usr/include/libxml2/libxml/schematron.h",
-        "usr/include/libxml2/libxml/threads.h",
-        "usr/include/libxml2/libxml/tree.h",
-        "usr/include/libxml2/libxml/uri.h",
-        "usr/include/libxml2/libxml/valid.h",
-        "usr/include/libxml2/libxml/xinclude.h",
-        "usr/include/libxml2/libxml/xlink.h",
-        "usr/include/libxml2/libxml/xmlIO.h",
-        "usr/include/libxml2/libxml/xmlautomata.h",
-        "usr/include/libxml2/libxml/xmlerror.h",
-        "usr/include/libxml2/libxml/xmlexports.h",
-        "usr/include/libxml2/libxml/xmlmemory.h",
-        "usr/include/libxml2/libxml/xmlmodule.h",
-        "usr/include/libxml2/libxml/xmlreader.h",
-        "usr/include/libxml2/libxml/xmlregexp.h",
-        "usr/include/libxml2/libxml/xmlsave.h",
-        "usr/include/libxml2/libxml/xmlschemas.h",
-        "usr/include/libxml2/libxml/xmlschemastypes.h",
-        "usr/include/libxml2/libxml/xmlstring.h",
-        "usr/include/libxml2/libxml/xmlunicode.h",
-        "usr/include/libxml2/libxml/xmlversion.h",
-        "usr/include/libxml2/libxml/xmlwriter.h",
-        "usr/include/libxml2/libxml/xpath.h",
-        "usr/include/libxml2/libxml/xpathInternals.h",
-        "usr/include/libxml2/libxml/xpointer.h",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":libxml2-headers",
     ],
 )
 
@@ -16607,6 +16392,31 @@ cc_library(
 )
 
 cc_library(
+    name = "tegra-libraries-cuda-headers",
+    hdrs = [
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":libc6-headers",
+        ":libstdc++6-headers",
+        ":tegra-libraries-core-headers",
+    ],
+)
+
+cc_library(
+    name = "tegra-libraries-dla-compiler-headers",
+    hdrs = [
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":libc6-headers",
+        ":libgcc1-headers",
+        ":libstdc++6-headers",
+        ":tegra-libraries-core-headers",
+    ],
+)
+
+cc_library(
     name = "tegra-libraries-eglcore-headers",
     hdrs = [
     ],
@@ -16640,6 +16450,41 @@ cc_library(
         ":libxext6-headers",
         ":tegra-libraries-core-headers",
         ":tegra-libraries-eglcore-headers",
+    ],
+)
+
+cc_library(
+    name = "tensorrt-core-dev-headers",
+    hdrs = [
+        "usr/include/NvInfer.h",
+        "usr/include/NvInferConsistency.h",
+        "usr/include/NvInferConsistencyImpl.h",
+        "usr/include/NvInferImpl.h",
+        "usr/include/NvInferLegacyDims.h",
+        "usr/include/NvInferRuntime.h",
+        "usr/include/NvInferRuntimeBase.h",
+        "usr/include/NvInferRuntimeCommon.h",
+        "usr/include/NvInferRuntimePlugin.h",
+        "usr/include/NvInferSafeRuntime.h",
+        "usr/include/NvInferVersion.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":tensorrt-core-headers",
+    ],
+)
+
+cc_library(
+    name = "tensorrt-core-headers",
+    hdrs = [
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":libc6-headers",
+        ":libcudla-headers",
+        ":libgcc1-headers",
+        ":libstdc++6-headers",
+        ":tegra-libraries-dla-compiler-headers",
     ],
 )
 
@@ -17958,7 +17803,6 @@ cc_library(
 
 cc_library(
     name = "usr_lib_libc.so-lib",
-    srcs = ["usr/lib/libc.so"],
     deps = [
         ":usr_lib_ld-linux-aarch64.so.1-lib",
         ":usr_lib_libc_nonshared.a-lib",
@@ -17978,6 +17822,12 @@ cc_library(
     srcs = ["lib/libc_malloc_debug.so.0"],
     deps = [
         ":usr_lib_ld-linux-aarch64.so.1-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libc_nonshared.a-lib",
+    deps = [
     ],
 )
 
@@ -18023,6 +17873,19 @@ cc_library(
     srcs = ["lib/libcrypto.so.3"],
     deps = [
         ":usr_lib_ld-linux-aarch64.so.1-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libcuda.so.1.1-lib",
+    srcs = ["lib/libcuda.so.1"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libdl.so.2-lib",
+        ":usr_lib_libnvrm_gpu.so-lib",
+        ":usr_lib_libnvrm_mem.so-lib",
+        ":usr_lib_libpthread.so.0-lib",
+        ":usr_lib_librt.so.1-lib",
     ],
 )
 
@@ -18901,24 +18764,6 @@ cc_library(
 )
 
 cc_library(
-    name = "usr_lib_libgstvulkan-1.0.so.0.2410.0-lib",
-    srcs = ["lib/libgstvulkan-1.0.so.0"],
-    deps = [
-        ":usr_lib_ld-linux-aarch64.so.1-lib",
-        ":usr_lib_libglib-2.0.so.0.8200.4-lib",
-        ":usr_lib_libgobject-2.0.so.0.8200.4-lib",
-        ":usr_lib_libgstbase-1.0.so.0.2410.0-lib",
-        ":usr_lib_libgstreamer-1.0.so.0.2410.0-lib",
-        ":usr_lib_libgstvideo-1.0.so.0.2410.0-lib",
-        ":usr_lib_libvulkan.so.1.3.296-lib",
-        ":usr_lib_libwayland-client.so.0.23.1-lib",
-        ":usr_lib_libxcb.so.1.1.0-lib",
-        ":usr_lib_libxkbcommon.so.0.0.0-lib",
-        ":usr_lib_libxkbcommon-x11.so.0.0.0-lib",
-    ],
-)
-
-cc_library(
     name = "usr_lib_libgstwayland-1.0.so.0.2410.0-lib",
     srcs = ["lib/libgstwayland-1.0.so.0"],
     deps = [
@@ -19057,7 +18902,6 @@ cc_library(
 
 cc_library(
     name = "usr_lib_libm.so-lib",
-    srcs = ["usr/lib/libm.so"],
     deps = [
         ":usr_lib_libmvec.so.1-lib",
     ],
@@ -19148,6 +18992,30 @@ cc_library(
 )
 
 cc_library(
+    name = "usr_lib_libnvcucompat.so.36.4.3-lib",
+    srcs = ["lib/libnvcucompat.so"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libdl.so.2-lib",
+        ":usr_lib_libnvrm_gpu.so-lib",
+        ":usr_lib_libnvrm_host1x.so-lib",
+        ":usr_lib_libnvrm_mem.so-lib",
+        ":usr_lib_libnvrm_sync.so-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvcudla.so-lib",
+    srcs = ["lib/libnvcudla.so"],
+    deps = [
+        ":usr_lib_libcuda.so.1.1-lib",
+        ":usr_lib_libdl.so.2-lib",
+        ":usr_lib_libnvdla_runtime.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+    ],
+)
+
+cc_library(
     name = "usr_lib_libnvdc.so-lib",
     srcs = ["lib/libnvdc.so"],
     deps = [
@@ -19185,6 +19053,17 @@ cc_library(
         ":usr_lib_libnvrm_mem.so-lib",
         ":usr_lib_libnvrm_stream.so-lib",
         ":usr_lib_libnvrm_sync.so-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvdla_compiler.so-lib",
+    srcs = ["lib/libnvdla_compiler.so"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libnvos.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
     ],
 )
 
@@ -19260,6 +19139,27 @@ cc_library(
 )
 
 cc_library(
+    name = "usr_lib_libnvidia-nvvm.so.540.4.0-lib",
+    srcs = ["lib/libnvidia-nvvm.so.4"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libdl.so.2-lib",
+        ":usr_lib_libpthread.so.0-lib",
+        ":usr_lib_librt.so.1-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvidia-ptxjitcompiler.so.540.4.0-lib",
+    srcs = ["lib/libnvidia-ptxjitcompiler.so.1"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libdl.so.2-lib",
+        ":usr_lib_libpthread.so.0-lib",
+    ],
+)
+
+cc_library(
     name = "usr_lib_libnvidia-rmapi-tegra.so.540.4.0-lib",
     srcs = ["lib/libnvidia-rmapi-tegra.so.540.4.0"],
     deps = [
@@ -19298,6 +19198,52 @@ cc_library(
     deps = [
         ":usr_lib_ld-linux-aarch64.so.1-lib",
         ":usr_lib_libnvrm_chip.so-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvinfer.so.10.3.0-lib",
+    srcs = ["lib/libnvinfer.so.10"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libnvdla_compiler.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+        ":usr_local_cuda-12.6_lib_libcudla.so.1.0.0-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvinfer_builder_resource.so.10.3.0-lib",
+    srcs = ["lib/do_not_link_against_nvinfer_builder_resource"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvinfer_dispatch.so.10.3.0-lib",
+    srcs = ["lib/libnvinfer_dispatch.so.10"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libnvdla_compiler.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+        ":usr_local_cuda-12.6_lib_libcudla.so.1.0.0-lib",
+    ],
+)
+
+cc_library(
+    name = "usr_lib_libnvinfer_lean.so.10.3.0-lib",
+    srcs = ["lib/libnvinfer_lean.so.10"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libnvdla_compiler.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+        ":usr_local_cuda-12.6_lib_libcudla.so.1.0.0-lib",
     ],
 )
 
@@ -20855,14 +20801,6 @@ cc_library(
 )
 
 cc_library(
-    name = "usr_lib_libvulkan.so.1.3.296-lib",
-    srcs = ["lib/libvulkan.so.1"],
-    deps = [
-        ":usr_lib_ld-linux-aarch64.so.1-lib",
-    ],
-)
-
-cc_library(
     name = "usr_lib_libwayland-client.so.0.23.1-lib",
     srcs = ["lib/libwayland-client.so.0"],
     deps = [
@@ -21200,30 +21138,10 @@ cc_library(
 )
 
 cc_library(
-    name = "usr_lib_libxkbcommon-x11.so.0.0.0-lib",
-    srcs = ["lib/libxkbcommon-x11.so.0"],
-    deps = [
-        ":usr_lib_ld-linux-aarch64.so.1-lib",
-        ":usr_lib_libxcb.so.1.1.0-lib",
-        ":usr_lib_libxcb-xkb.so.1.0.0-lib",
-        ":usr_lib_libxkbcommon.so.0.0.0-lib",
-    ],
-)
-
-cc_library(
     name = "usr_lib_libxkbcommon.so.0.0.0-lib",
     srcs = ["lib/libxkbcommon.so.0"],
     deps = [
         ":usr_lib_ld-linux-aarch64.so.1-lib",
-    ],
-)
-
-cc_library(
-    name = "usr_lib_libxkbregistry.so.0.0.0-lib",
-    srcs = ["lib/libxkbregistry.so.0"],
-    deps = [
-        ":usr_lib_ld-linux-aarch64.so.1-lib",
-        ":usr_lib_libxml2.so.2.13.5-lib",
     ],
 )
 
@@ -22040,6 +21958,17 @@ cc_library(
 )
 
 cc_library(
+    name = "usr_local_cuda-12.6_lib_libcudla.so.1.0.0-lib",
+    srcs = ["usr/local/cuda-12.6/lib/libcudla.so.1"],
+    deps = [
+        ":usr_lib_ld-linux-aarch64.so.1-lib",
+        ":usr_lib_libgcc_s.so.1-lib",
+        ":usr_lib_libnvcudla.so-lib",
+        ":usr_lib_libstdc++.so.6.0.33-lib",
+    ],
+)
+
+cc_library(
     name = "usr_local_cuda-12.6_lib_libcufft.so.11.2.6.59-lib",
     srcs = ["usr/local/cuda-12.6/lib/libcufft.so.11"],
     deps = [
@@ -22609,6 +22538,7 @@ filegroup(
         ":libabsl-utf8-for-code-point2407.0.0-filegroup",
         ":libabsl-vlog-config-internal2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -22620,8 +22550,11 @@ filegroup(
         "usr/lib/girepository-1.0/Atspi-2.0.typelib",
         "usr/lib/gnome-settings-daemon-3.0/gtk-modules/at-spi2-atk.desktop",
         "usr/lib/gtk-2.0/modules/libatk-bridge.so",
+        "usr/lib/libatk-1.0.so.0",
         "usr/lib/libatk-1.0.so.0.25409.1",
+        "usr/lib/libatk-bridge-2.0.so.0",
         "usr/lib/libatk-bridge-2.0.so.0.0.0",
+        "usr/lib/libatspi.so.0",
         "usr/lib/libatspi.so.0.0.1",
         "usr/lib/systemd/user/at-spi-dbus-bus.service",
         "usr/libexec/at-spi-bus-launcher",
@@ -22636,6 +22569,7 @@ filegroup(
         ":libxi6-filegroup",
         ":libxtst6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -22648,12 +22582,15 @@ filegroup(
         "etc/issue",
         "etc/issue.net",
         "etc/motd",
+        "etc/mtab",
         "etc/nsswitch.conf",
         "etc/profile",
         "etc/shells",
         "etc/skel/.bashrc",
         "etc/skel/.profile",
+        "var/lock",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -22665,6 +22602,7 @@ filegroup(
         ":libtinfo5-filegroup",
         ":update-alternatives-opkg-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24234,12 +24172,14 @@ filegroup(
         "usr/local/cuda-12.6/lib/cmake/thrust/thrust-config-version.cmake",
         "usr/local/cuda-12.6/lib/cmake/thrust/thrust-header-search.cmake",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "cuda-crt-filegroup",
     srcs = [
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24339,6 +24279,7 @@ filegroup(
         "usr/local/cuda-12.6/include/vector_functions.hpp",
         "usr/local/cuda-12.6/include/vector_types.h",
         "usr/local/cuda-12.6/lib/libcudadevrt.a",
+        "usr/local/cuda-12.6/lib/libcudart.so",
         "usr/local/cuda-12.6/lib/libcudart_static.a",
         "usr/local/cuda-12.6/lib/libculibos.a",
         ":cuda-cccl-filegroup",
@@ -24348,21 +24289,25 @@ filegroup(
         ":cuda-nvcc-headers-filegroup",
         ":cuda-target-environment-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "cuda-cudart-filegroup",
     srcs = [
         "etc/ld.so.conf.d/cuda-12-6.conf",
+        "usr/local/cuda-12.6/lib/libcudart.so.12",
         "usr/local/cuda-12.6/lib/libcudart.so.12.6.68",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "cuda-cudart-stubs-filegroup",
     srcs = [
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24371,6 +24316,7 @@ filegroup(
         "usr/local/cuda-12.6/include/fatbinary_section.h",
         "usr/local/cuda-12.6/include/nvPTXCompiler.h",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24379,24 +24325,34 @@ filegroup(
         "environment-setup.d/cuda_target.sh",
         ":tegra-cmake-overrides-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "cudnn-filegroup",
     srcs = [
+        "usr/lib/libcudnn.so.9",
         "usr/lib/libcudnn.so.9.3.0",
+        "usr/lib/libcudnn_adv.so.9",
         "usr/lib/libcudnn_adv.so.9.3.0",
+        "usr/lib/libcudnn_cnn.so.9",
         "usr/lib/libcudnn_cnn.so.9.3.0",
+        "usr/lib/libcudnn_engines_precompiled.so.9",
         "usr/lib/libcudnn_engines_precompiled.so.9.3.0",
+        "usr/lib/libcudnn_engines_runtime_compiled.so.9",
         "usr/lib/libcudnn_engines_runtime_compiled.so.9.3.0",
+        "usr/lib/libcudnn_graph.so.9",
         "usr/lib/libcudnn_graph.so.9.3.0",
+        "usr/lib/libcudnn_heuristic.so.9",
         "usr/lib/libcudnn_heuristic.so.9.3.0",
+        "usr/lib/libcudnn_ops.so.9",
         "usr/lib/libcudnn_ops.so.9.3.0",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24525,6 +24481,11 @@ filegroup(
         "usr/include/gstreamer-1.0/gst/net/gstptpclock.h",
         "usr/include/gstreamer-1.0/gst/net/net.h",
         "usr/include/gstreamer-1.0/gst/net/net-prelude.h",
+        "usr/lib/libgstbase-1.0.so",
+        "usr/lib/libgstcheck-1.0.so",
+        "usr/lib/libgstcontroller-1.0.so",
+        "usr/lib/libgstnet-1.0.so",
+        "usr/lib/libgstreamer-1.0.so",
         "usr/lib/pkgconfig/gstreamer-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-base-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-check-1.0.pc",
@@ -24539,6 +24500,7 @@ filegroup(
         ":gstreamer1.0-filegroup",
         ":libglib-2.0-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24554,16 +24516,22 @@ filegroup(
         "usr/lib/girepository-1.0/GstController-1.0.typelib",
         "usr/lib/girepository-1.0/GstNet-1.0.typelib",
         "usr/lib/gstreamer-1.0/libgstcoreelements.so",
+        "usr/lib/libgstbase-1.0.so.0",
         "usr/lib/libgstbase-1.0.so.0.2410.0",
+        "usr/lib/libgstcheck-1.0.so.0",
         "usr/lib/libgstcheck-1.0.so.0.2410.0",
+        "usr/lib/libgstcontroller-1.0.so.0",
         "usr/lib/libgstcontroller-1.0.so.0.2410.0",
+        "usr/lib/libgstnet-1.0.so.0",
         "usr/lib/libgstnet-1.0.so.0.2410.0",
+        "usr/lib/libgstreamer-1.0.so.0",
         "usr/lib/libgstreamer-1.0.so.0.2410.0",
         "usr/libexec/gstreamer-1.0/gst-completion-helper",
         "usr/libexec/gstreamer-1.0/gst-plugin-scanner",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24661,48 +24629,6 @@ filegroup(
         "usr/include/gstreamer-1.0/gst/uridownloader/gsturidownloader.h",
         "usr/include/gstreamer-1.0/gst/uridownloader/gsturidownloader_debug.h",
         "usr/include/gstreamer-1.0/gst/uridownloader/uridownloader-prelude.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkapi.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbarrier.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbuffermemory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkbufferpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkcommandbuffer.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkcommandpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkconfig.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdebug.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdecoder.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorcache.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdescriptorset.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdevice.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkdisplay.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkerror.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkfence.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkformat.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkfullscreenquad.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkhandle.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkhandlepool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimagebufferpool.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimagememory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkimageview.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkinstance.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkmemory.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkoperation.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkphysicaldevice.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkqueue.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkswapper.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvktrash.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkutils.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkvideofilter.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkvideoutils.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/gstvkwindow.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan-enumtypes.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan-prelude.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/vulkan_fwd.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/wayland/gstvkdisplay_wayland.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/wayland/wayland.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/xcb/gstvkdisplay_xcb.h",
-        "usr/include/gstreamer-1.0/gst/vulkan/xcb/xcb.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwl_fwd.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwlbuffer.h",
         "usr/include/gstreamer-1.0/gst/wayland/gstwlcontext.h",
@@ -24727,6 +24653,26 @@ filegroup(
         "usr/include/gstreamer-1.0/gst/webrtc/webrtc.h",
         "usr/include/gstreamer-1.0/gst/webrtc/webrtc-enumtypes.h",
         "usr/include/gstreamer-1.0/gst/webrtc/webrtc_fwd.h",
+        "usr/lib/libgstadaptivedemux-1.0.so",
+        "usr/lib/libgstanalytics-1.0.so",
+        "usr/lib/libgstbadaudio-1.0.so",
+        "usr/lib/libgstbasecamerabinsrc-1.0.so",
+        "usr/lib/libgstcodecparsers-1.0.so",
+        "usr/lib/libgstcodecs-1.0.so",
+        "usr/lib/libgstcuda-1.0.so",
+        "usr/lib/libgstdxva-1.0.so",
+        "usr/lib/libgstinsertbin-1.0.so",
+        "usr/lib/libgstisoff-1.0.so",
+        "usr/lib/libgstmpegts-1.0.so",
+        "usr/lib/libgstmse-1.0.so",
+        "usr/lib/libgstphotography-1.0.so",
+        "usr/lib/libgstplay-1.0.so",
+        "usr/lib/libgstplayer-1.0.so",
+        "usr/lib/libgstsctp-1.0.so",
+        "usr/lib/libgsttranscoder-1.0.so",
+        "usr/lib/libgsturidownloader-1.0.so",
+        "usr/lib/libgstwayland-1.0.so",
+        "usr/lib/libgstwebrtc-1.0.so",
         "usr/lib/pkgconfig/gstreamer-analytics-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-bad-audio-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-codecparsers-1.0.pc",
@@ -24740,9 +24686,6 @@ filegroup(
         "usr/lib/pkgconfig/gstreamer-plugins-bad-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-sctp-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-transcoder-1.0.pc",
-        "usr/lib/pkgconfig/gstreamer-vulkan-1.0.pc",
-        "usr/lib/pkgconfig/gstreamer-vulkan-wayland-1.0.pc",
-        "usr/lib/pkgconfig/gstreamer-vulkan-xcb-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-wayland-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-webrtc-1.0.pc",
         "usr/share/gir-1.0/CudaGst-1.0.gir",
@@ -24757,9 +24700,6 @@ filegroup(
         "usr/share/gir-1.0/GstPlay-1.0.gir",
         "usr/share/gir-1.0/GstPlayer-1.0.gir",
         "usr/share/gir-1.0/GstTranscoder-1.0.gir",
-        "usr/share/gir-1.0/GstVulkan-1.0.gir",
-        "usr/share/gir-1.0/GstVulkanWayland-1.0.gir",
-        "usr/share/gir-1.0/GstVulkanXCB-1.0.gir",
         "usr/share/gir-1.0/GstWebRTC-1.0.gir",
         ":gstreamer1.0-dev-filegroup",
         ":gstreamer1.0-plugins-base-dev-filegroup",
@@ -24783,14 +24723,11 @@ filegroup(
         ":libgstsctp-1.0-0-filegroup",
         ":libgsttranscoder-1.0-0-filegroup",
         ":libgsturidownloader-1.0-0-filegroup",
-        ":libgstvulkan-1.0-0-filegroup",
         ":libgstwayland-1.0-0-filegroup",
         ":libgstwebrtc-1.0-0-filegroup",
-        ":libvulkan-dev-filegroup",
-        ":libxcb-dev-filegroup",
-        ":libxkbcommon-dev-filegroup",
         ":wayland-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24997,6 +24934,18 @@ filegroup(
         "usr/include/gstreamer-1.0/gst/video/videoorientation.h",
         "usr/include/gstreamer-1.0/gst/video/videooverlay.h",
         "usr/lib/gstreamer-1.0/include/gst/gl/gstglconfig.h",
+        "usr/lib/libgstallocators-1.0.so",
+        "usr/lib/libgstapp-1.0.so",
+        "usr/lib/libgstaudio-1.0.so",
+        "usr/lib/libgstfft-1.0.so",
+        "usr/lib/libgstgl-1.0.so",
+        "usr/lib/libgstpbutils-1.0.so",
+        "usr/lib/libgstriff-1.0.so",
+        "usr/lib/libgstrtp-1.0.so",
+        "usr/lib/libgstrtsp-1.0.so",
+        "usr/lib/libgstsdp-1.0.so",
+        "usr/lib/libgsttag-1.0.so",
+        "usr/lib/libgstvideo-1.0.so",
         "usr/lib/pkgconfig/gstreamer-allocators-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-app-1.0.pc",
         "usr/lib/pkgconfig/gstreamer-audio-1.0.pc",
@@ -25048,6 +24997,7 @@ filegroup(
         ":orc-dev-filegroup",
         ":wayland-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25056,6 +25006,7 @@ filegroup(
         "usr/include/EGL/eglext_nv.h",
         "usr/include/GLES2/gl2ext_nv.h",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25063,6 +25014,7 @@ filegroup(
     srcs = [
         "usr/sbin/ldconfig",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25070,6 +25022,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_bad_any_cast_impl.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25077,6 +25030,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_bad_optional_access.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25084,6 +25038,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_bad_variant_access.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25095,6 +25050,7 @@ filegroup(
         ":libc6-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25102,6 +25058,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_city.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25112,6 +25069,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25125,6 +25083,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25143,6 +25102,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25151,6 +25111,7 @@ filegroup(
         "usr/lib/libabsl_cordz_functions.so.2407.0.0",
         ":libabsl-exponential-biased2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25162,6 +25123,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25179,6 +25141,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25187,6 +25150,7 @@ filegroup(
         "usr/lib/libabsl_cordz_sample_token.so.2407.0.0",
         ":libabsl-cordz-info2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25198,6 +25162,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25206,6 +25171,7 @@ filegroup(
         "usr/lib/libabsl_crc_cpu_detect.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25217,6 +25183,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25228,6 +25195,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25239,6 +25207,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25248,6 +25217,7 @@ filegroup(
         ":libabsl-utf8-for-code-point2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25259,6 +25229,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25268,6 +25239,7 @@ filegroup(
         ":libabsl-decode-rust-punycode2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25279,6 +25251,7 @@ filegroup(
         ":libc6-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25289,6 +25262,7 @@ filegroup(
         ":libabsl-symbolize2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25297,6 +25271,7 @@ filegroup(
         "usr/lib/libabsl_exponential_biased.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25311,6 +25286,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25319,6 +25295,7 @@ filegroup(
         "usr/lib/libabsl_flags_commandlineflag_internal.so.2407.0.0",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25327,6 +25304,7 @@ filegroup(
         "usr/lib/libabsl_flags_commandlineflag.so.2407.0.0",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25339,6 +25317,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25356,6 +25335,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25369,6 +25349,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25390,6 +25371,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25398,6 +25380,7 @@ filegroup(
         "usr/lib/libabsl_flags_private_handle_accessor.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25409,6 +25392,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25427,6 +25411,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25443,6 +25428,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25455,6 +25441,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25468,6 +25455,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25477,6 +25465,7 @@ filegroup(
         ":libabsl-city2407.0.0-filegroup",
         ":libabsl-low-level-hash2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25491,6 +25480,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25501,6 +25491,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25512,6 +25503,7 @@ filegroup(
         ":libc6-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25519,6 +25511,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_leak_check.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25526,6 +25519,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_log_entry.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25542,6 +25536,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25554,6 +25549,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25563,6 +25559,7 @@ filegroup(
         ":libabsl-log-internal-globals2407.0.0-filegroup",
         ":libabsl-time-zone2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25575,6 +25572,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25584,6 +25582,7 @@ filegroup(
         ":libabsl-base2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25592,6 +25591,7 @@ filegroup(
         "usr/lib/libabsl_log_internal_fnmatch.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25604,6 +25604,7 @@ filegroup(
         ":libabsl-time2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25614,6 +25615,7 @@ filegroup(
         ":libc6-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25630,6 +25632,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25650,6 +25653,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25657,6 +25661,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_log_internal_nullguard.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25665,6 +25670,7 @@ filegroup(
         "usr/lib/libabsl_log_internal_proto.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25673,6 +25679,7 @@ filegroup(
         "usr/lib/libabsl_log_severity.so.2407.0.0",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25681,6 +25688,7 @@ filegroup(
         "usr/lib/libabsl_log_sink.so.2407.0.0",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25688,6 +25696,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_low_level_hash.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25701,6 +25710,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25710,6 +25720,7 @@ filegroup(
         ":libabsl-exponential-biased2407.0.0-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25718,6 +25729,7 @@ filegroup(
         "usr/lib/libabsl_poison.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25728,6 +25740,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25741,6 +25754,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25748,6 +25762,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_random_internal_platform.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25766,6 +25781,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25774,6 +25790,7 @@ filegroup(
         "usr/lib/libabsl_random_internal_randen_hwaes_impl.so.2407.0.0",
         ":libabsl-random-internal-platform2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25782,6 +25799,7 @@ filegroup(
         "usr/lib/libabsl_random_internal_randen_hwaes.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25790,6 +25808,7 @@ filegroup(
         "usr/lib/libabsl_random_internal_randen_slow.so.2407.0.0",
         ":libabsl-random-internal-platform2407.0.0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25802,6 +25821,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25812,6 +25832,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25820,6 +25841,7 @@ filegroup(
         "usr/lib/libabsl_random_seed_gen_exception.so.2407.0.0",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25831,6 +25853,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25840,6 +25863,7 @@ filegroup(
         ":libabsl-hash2407.0.0-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25848,6 +25872,7 @@ filegroup(
         "usr/lib/libabsl_raw_logging_internal.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25858,6 +25883,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25866,6 +25892,7 @@ filegroup(
         "usr/lib/libabsl_spinlock_wait.so.2407.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25876,6 +25903,7 @@ filegroup(
         ":libc6-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25890,6 +25918,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25904,6 +25933,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25916,6 +25946,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25926,6 +25957,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25933,6 +25965,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_string_view.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25944,6 +25977,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25956,6 +25990,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25971,6 +26006,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25990,6 +26026,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -25999,6 +26036,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26009,6 +26047,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26022,6 +26061,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26029,6 +26069,7 @@ filegroup(
     srcs = [
         "usr/lib/libabsl_utf8_for_code_point.so.2407.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26043,22 +26084,27 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libblkid1-filegroup",
     srcs = [
+        "usr/lib/libblkid.so.1",
         "usr/lib/libblkid.so.1.1.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libbz2-1-filegroup",
     srcs = [
+        "usr/lib/libbz2.so.1",
         "usr/lib/libbz2.so.1.0.8",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26067,6 +26113,7 @@ filegroup(
         "usr/lib/libc_malloc_debug.so.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26592,12 +26639,23 @@ filegroup(
         "usr/lib/gcc/aarch64-oe4t-linux/14.2.0/finclude/math-vector-fortran.h",
         "usr/lib/gcrt1.o",
         "usr/lib/grcrt1.o",
+        "usr/lib/libBrokenLocale.so",
         "usr/lib/libanl.a",
+        "usr/lib/libanl.so",
         "usr/lib/libc.so",
+        "usr/lib/libc_malloc_debug.so",
         "usr/lib/libc_nonshared.a",
         "usr/lib/libdl.a",
         "usr/lib/libm.so",
+        "usr/lib/libmvec.so",
+        "usr/lib/libnss_compat.so",
+        "usr/lib/libnss_db.so",
+        "usr/lib/libnss_hesiod.so",
         "usr/lib/libpthread.a",
+        "usr/lib/libpthread.so",
+        "usr/lib/libresolv.so",
+        "usr/lib/librt.so",
+        "usr/lib/libthread_db.so",
         "usr/lib/libutil.a",
         "usr/lib/rcrt1.o",
         ":libc-malloc-debug0-filegroup",
@@ -26607,6 +26665,7 @@ filegroup(
         ":libnss-db2-filegroup",
         ":linux-libc-headers-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26615,6 +26674,7 @@ filegroup(
         "usr/lib/libnss_hesiod.so.2",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26637,6 +26697,7 @@ filegroup(
         "usr/lib/librt.so.1",
         "usr/lib/libutil.so.1",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26645,6 +26706,7 @@ filegroup(
         "usr/lib/libthread_db.so.1",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26662,20 +26724,24 @@ filegroup(
         "usr/sbin/iconvconfig",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libcairo-gobject2-filegroup",
     srcs = [
+        "usr/lib/libcairo-gobject.so.2",
         "usr/lib/libcairo-gobject.so.2.11802.2",
         ":libcairo2-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libcairo2-filegroup",
     srcs = [
+        "usr/lib/libcairo.so.2",
         "usr/lib/libcairo.so.2.11802.2",
         ":libc6-filegroup",
         ":libfontconfig1-filegroup",
@@ -26690,17 +26756,21 @@ filegroup(
         ":libxrender1-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libcap-filegroup",
     srcs = [
+        "usr/lib/libcap.so.2",
         "usr/lib/libcap.so.2.73",
+        "usr/lib/libpsx.so.2",
         "usr/lib/libpsx.so.2.73",
         "usr/lib/security/pam_cap.so",
         ":libc6-filegroup",
         ":libpam-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26709,47 +26779,73 @@ filegroup(
         "usr/lib/libcrypto.so.3",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libcublas-filegroup",
     srcs = [
+        "usr/local/cuda-12.6/lib/libcublas.so.12",
         "usr/local/cuda-12.6/lib/libcublas.so.12.6.1.4",
+        "usr/local/cuda-12.6/lib/libcublasLt.so.12",
         "usr/local/cuda-12.6/lib/libcublasLt.so.12.6.1.4",
+        "usr/local/cuda-12.6/lib/libnvblas.so.12",
         "usr/local/cuda-12.6/lib/libnvblas.so.12.6.1.4",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "libcudla-filegroup",
+    srcs = [
+        "usr/local/cuda-12.6/lib/libcudla.so.1",
+        "usr/local/cuda-12.6/lib/libcudla.so.1.0.0",
+        ":libc6-filegroup",
+        ":libgcc1-filegroup",
+        ":libstdc++6-filegroup",
+        ":tegra-libraries-core-filegroup",
+        ":tegra-libraries-cuda-filegroup",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libcufft-filegroup",
     srcs = [
+        "usr/local/cuda-12.6/lib/libcufft.so.11",
         "usr/local/cuda-12.6/lib/libcufft.so.11.2.6.59",
+        "usr/local/cuda-12.6/lib/libcufftw.so.11",
         "usr/local/cuda-12.6/lib/libcufftw.so.11.2.6.59",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdbus-1-3-filegroup",
     srcs = [
+        "usr/lib/libdbus-1.so.3",
         "usr/lib/libdbus-1.so.3.38.3",
         ":libc6-filegroup",
         ":libsystemd0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-amdgpu1-filegroup",
     srcs = [
+        "usr/lib/libdrm_amdgpu.so.1",
         "usr/lib/libdrm_amdgpu.so.1.124.0",
         "usr/share/libdrm/amdgpu.ids",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26805,6 +26901,14 @@ filegroup(
         "usr/include/omap/omap_drm.h",
         "usr/include/xf86drm.h",
         "usr/include/xf86drmMode.h",
+        "usr/lib/libdrm.so",
+        "usr/lib/libdrm_amdgpu.so",
+        "usr/lib/libdrm_etnaviv.so",
+        "usr/lib/libdrm_freedreno.so",
+        "usr/lib/libdrm_intel.so",
+        "usr/lib/libdrm_nouveau.so",
+        "usr/lib/libdrm_omap.so",
+        "usr/lib/libdrm_radeon.so",
         "usr/lib/pkgconfig/libdrm.pc",
         "usr/lib/pkgconfig/libdrm_amdgpu.pc",
         "usr/lib/pkgconfig/libdrm_etnaviv.pc",
@@ -26824,113 +26928,138 @@ filegroup(
         ":libdrm2-filegroup",
         ":libpciaccess-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-etnaviv1-filegroup",
     srcs = [
+        "usr/lib/libdrm_etnaviv.so.1",
         "usr/lib/libdrm_etnaviv.so.1.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-freedreno1-filegroup",
     srcs = [
+        "usr/lib/libdrm_freedreno.so.1",
         "usr/lib/libdrm_freedreno.so.1.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-intel1-filegroup",
     srcs = [
+        "usr/lib/libdrm_intel.so.1",
         "usr/lib/libdrm_intel.so.1.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
         ":libpciaccess0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-nouveau2-filegroup",
     srcs = [
+        "usr/lib/libdrm_nouveau.so.2",
         "usr/lib/libdrm_nouveau.so.2.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-omap1-filegroup",
     srcs = [
+        "usr/lib/libdrm_omap.so.1",
         "usr/lib/libdrm_omap.so.1.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm-radeon1-filegroup",
     srcs = [
+        "usr/lib/libdrm_radeon.so.1",
         "usr/lib/libdrm_radeon.so.1.124.0",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libdrm2-filegroup",
     srcs = [
+        "usr/lib/libdrm.so.2",
         "usr/lib/libdrm.so.2.124.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libedit0-filegroup",
     srcs = [
+        "usr/lib/libedit.so.0",
         "usr/lib/libedit.so.0.0.75",
         ":libc6-filegroup",
         ":libncurses5-filegroup",
         ":libtinfo5-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libepoxy0-filegroup",
     srcs = [
+        "usr/lib/libepoxy.so.0",
         "usr/lib/libepoxy.so.0.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libexif12-filegroup",
     srcs = [
+        "usr/lib/libexif.so.12",
         "usr/lib/libexif.so.12.3.4",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libexpat1-filegroup",
     srcs = [
+        "usr/lib/libexpat.so.1",
         "usr/lib/libexpat.so.1.10.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libfdisk1-filegroup",
     srcs = [
+        "usr/lib/libfdisk.so.1",
         "usr/lib/libfdisk.so.1.1.0",
         ":libblkid1-filegroup",
         ":libc6-filegroup",
         ":libuuid1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -26940,24 +27069,50 @@ filegroup(
         "usr/include/ffi-64.h",
         "usr/include/ffitarget.h",
         "usr/include/ffitarget-64.h",
+        "usr/lib/libffi.so",
         "usr/lib/pkgconfig/libffi.pc",
         ":libffi8-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libffi8-filegroup",
     srcs = [
+        "usr/lib/libffi.so.8",
         "usr/lib/libffi.so.8.1.4",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libfontconfig1-filegroup",
     srcs = [
+        "etc/fonts/conf.d/10-hinting-slight.conf",
+        "etc/fonts/conf.d/10-scale-bitmap-fonts.conf",
+        "etc/fonts/conf.d/10-sub-pixel-none.conf",
+        "etc/fonts/conf.d/10-yes-antialias.conf",
+        "etc/fonts/conf.d/11-lcdfilter-default.conf",
+        "etc/fonts/conf.d/20-unhint-small-vera.conf",
+        "etc/fonts/conf.d/30-metric-aliases.conf",
+        "etc/fonts/conf.d/40-nonlatin.conf",
+        "etc/fonts/conf.d/45-generic.conf",
+        "etc/fonts/conf.d/45-latin.conf",
+        "etc/fonts/conf.d/48-spacing.conf",
+        "etc/fonts/conf.d/49-sansserif.conf",
+        "etc/fonts/conf.d/50-user.conf",
+        "etc/fonts/conf.d/51-local.conf",
+        "etc/fonts/conf.d/60-generic.conf",
+        "etc/fonts/conf.d/60-latin.conf",
+        "etc/fonts/conf.d/65-fonts-persian.conf",
+        "etc/fonts/conf.d/65-nonlatin.conf",
+        "etc/fonts/conf.d/69-unifont.conf",
+        "etc/fonts/conf.d/80-delicious.conf",
+        "etc/fonts/conf.d/90-synthetic.conf",
         "etc/fonts/conf.d/README",
         "etc/fonts/fonts.conf",
+        "usr/lib/libfontconfig.so.1",
         "usr/lib/libfontconfig.so.1.12.1",
         "usr/share/fontconfig/conf.avail/05-reset-dirs-sample.conf",
         "usr/share/fontconfig/conf.avail/09-autohint-if-no-hinting.conf",
@@ -27005,24 +27160,29 @@ filegroup(
         ":libexpat1-filegroup",
         ":libfreetype6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libfreetype6-filegroup",
     srcs = [
+        "usr/lib/libfreetype.so.6",
         "usr/lib/libfreetype.so.6.20.2",
         ":libc6-filegroup",
         ":libpng16-16-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libfribidi0-filegroup",
     srcs = [
+        "usr/lib/libfribidi.so.0",
         "usr/lib/libfribidi.so.0.4.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27031,6 +27191,7 @@ filegroup(
         "usr/lib/libgcc_s.so.1",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27039,6 +27200,7 @@ filegroup(
         "usr/lib/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders",
         "usr/lib/girepository-1.0/GdkPixbuf-2.0.typelib",
         "usr/lib/girepository-1.0/GdkPixdata-2.0.typelib",
+        "usr/lib/libgdk_pixbuf-2.0.so.0",
         "usr/lib/libgdk_pixbuf-2.0.so.0.4200.12",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
@@ -27046,6 +27208,7 @@ filegroup(
         ":libpng16-16-filegroup",
         ":shared-mime-info-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27058,11 +27221,17 @@ filegroup(
         "usr/lib/girepository-1.0/GObject-2.0.typelib",
         "usr/lib/girepository-1.0/Gio-2.0.typelib",
         "usr/lib/girepository-1.0/GioUnix-2.0.typelib",
+        "usr/lib/libgio-2.0.so.0",
         "usr/lib/libgio-2.0.so.0.8200.4",
+        "usr/lib/libgirepository-2.0.so.0",
         "usr/lib/libgirepository-2.0.so.0.8200.4",
+        "usr/lib/libglib-2.0.so.0",
         "usr/lib/libglib-2.0.so.0.8200.4",
+        "usr/lib/libgmodule-2.0.so.0",
         "usr/lib/libgmodule-2.0.so.0.8200.4",
+        "usr/lib/libgobject-2.0.so.0",
         "usr/lib/libgobject-2.0.so.0.8200.4",
+        "usr/lib/libgthread-2.0.so.0",
         "usr/lib/libgthread-2.0.so.0.8200.4",
         "usr/libexec/gio-launch-desktop",
         "usr/libexec/gio-querymodules",
@@ -27073,6 +27242,7 @@ filegroup(
         ":libpcre2-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27384,6 +27554,12 @@ filegroup(
         "usr/include/glib-2.0/gobject/gvaluecollector.h",
         "usr/include/glib-2.0/gobject/gvaluetypes.h",
         "usr/lib/glib-2.0/include/glibconfig.h",
+        "usr/lib/libgio-2.0.so",
+        "usr/lib/libgirepository-2.0.so",
+        "usr/lib/libglib-2.0.so",
+        "usr/lib/libgmodule-2.0.so",
+        "usr/lib/libgobject-2.0.so",
+        "usr/lib/libgthread-2.0.so",
         "usr/lib/pkgconfig/gio-2.0.pc",
         "usr/lib/pkgconfig/gio-unix-2.0.pc",
         "usr/lib/pkgconfig/girepository-2.0.pc",
@@ -27414,6 +27590,7 @@ filegroup(
         ":libz-dev-filegroup",
         ":util-linux-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27439,17 +27616,20 @@ filegroup(
         ":libffi8-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libglog2-filegroup",
     srcs = [
         "usr/lib/libglog.so.0.7.1",
+        "usr/lib/libglog.so.2",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
         ":libunwind-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27479,6 +27659,13 @@ filegroup(
         "usr/include/glvnd/GLdispatchABI.h",
         "usr/include/glvnd/libeglabi.h",
         "usr/include/glvnd/libglxabi.h",
+        "usr/lib/libEGL.so",
+        "usr/lib/libGL.so",
+        "usr/lib/libGLESv1_CM.so",
+        "usr/lib/libGLESv2.so",
+        "usr/lib/libGLX.so",
+        "usr/lib/libGLdispatch.so",
+        "usr/lib/libOpenGL.so",
         "usr/lib/pkgconfig/egl.pc",
         "usr/lib/pkgconfig/gl.pc",
         "usr/lib/pkgconfig/glesv1_cm.pc",
@@ -27489,17 +27676,25 @@ filegroup(
         ":l4t-nvidia-glheaders-dev-filegroup",
         ":libglvnd-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libglvnd-filegroup",
     srcs = [
+        "usr/lib/libEGL.so.1",
         "usr/lib/libEGL.so.1.1.0",
+        "usr/lib/libGL.so.1",
         "usr/lib/libGL.so.1.7.0",
+        "usr/lib/libGLESv1_CM.so.1",
         "usr/lib/libGLESv1_CM.so.1.2.0",
+        "usr/lib/libGLESv2.so.2",
         "usr/lib/libGLESv2.so.2.1.0",
+        "usr/lib/libGLX.so.0",
         "usr/lib/libGLX.so.0.0.0",
+        "usr/lib/libGLdispatch.so.0",
         "usr/lib/libGLdispatch.so.0.0.0",
+        "usr/lib/libOpenGL.so.0",
         "usr/lib/libOpenGL.so.0.0.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
@@ -27507,12 +27702,14 @@ filegroup(
         ":tegra-libraries-glescore-filegroup",
         ":tegra-libraries-glxcore-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgphoto2-6-filegroup",
     srcs = [
         "etc/udev/rules.d/40-libgphoto2.rules",
+        "usr/lib/libgphoto2.so.6",
         "usr/lib/libgphoto2.so.6.3.0",
         "usr/lib/libgphoto2/print-camera-list",
         "usr/lib/udev/check-ptp-camera",
@@ -27527,63 +27724,75 @@ filegroup(
         ":libgphoto2-port12-filegroup",
         ":libltdl7-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgphoto2-port12-filegroup",
     srcs = [
+        "usr/lib/libgphoto2_port.so.12",
         "usr/lib/libgphoto2_port.so.12.2.0",
         ":libc6-filegroup",
         ":libltdl7-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstadaptivedemux-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstadaptivedemux-1.0.so.0",
         "usr/lib/libgstadaptivedemux-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgsturidownloader-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstallocators-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstallocators-1.0.so.0",
         "usr/lib/libgstallocators-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libdrm2-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstanalytics-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstanalytics-1.0.so.0",
         "usr/lib/libgstanalytics-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgstvideo-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstapp-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstapp-1.0.so.0",
         "usr/lib/libgstapp-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstaudio-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstaudio-1.0.so.0",
         "usr/lib/libgstaudio-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27591,43 +27800,51 @@ filegroup(
         ":libgsttag-1.0-0-filegroup",
         ":liborc-0.4-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstbadaudio-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstbadaudio-1.0.so.0",
         "usr/lib/libgstbadaudio-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgstaudio-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstbasecamerabinsrc-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstbasecamerabinsrc-1.0.so.0",
         "usr/lib/libgstbasecamerabinsrc-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgstapp-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstcodecparsers-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstcodecparsers-1.0.so.0",
         "usr/lib/libgstcodecparsers-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstcodecs-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstcodecs-1.0.so.0",
         "usr/lib/libgstcodecs-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27635,11 +27852,13 @@ filegroup(
         ":libgstcodecparsers-1.0-0-filegroup",
         ":libgstvideo-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstcuda-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstcuda-1.0.so.0",
         "usr/lib/libgstcuda-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27649,11 +27868,13 @@ filegroup(
         ":libgstvideo-1.0-0-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstdxva-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstdxva-1.0.so.0",
         "usr/lib/libgstdxva-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27662,20 +27883,24 @@ filegroup(
         ":libgstvideo-1.0-0-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstfft-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstfft-1.0.so.0",
         "usr/lib/libgstfft-1.0.so.0.2410.0",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstgl-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstgl-1.0.so.0",
         "usr/lib/libgstgl-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27688,51 +27913,61 @@ filegroup(
         ":libxcb1-filegroup",
         ":wayland-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstinsertbin-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstinsertbin-1.0.so.0",
         "usr/lib/libgstinsertbin-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstisoff-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstisoff-1.0.so.0",
         "usr/lib/libgstisoff-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstmpegts-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstmpegts-1.0.so.0",
         "usr/lib/libgstmpegts-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstmse-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstmse-1.0.so.0",
         "usr/lib/libgstmse-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgstapp-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstpbutils-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstpbutils-1.0.so.0",
         "usr/lib/libgstpbutils-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27741,20 +27976,24 @@ filegroup(
         ":libgsttag-1.0-0-filegroup",
         ":libgstvideo-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstphotography-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstphotography-1.0.so.0",
         "usr/lib/libgstphotography-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstplay-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstplay-1.0.so.0",
         "usr/lib/libgstplay-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27763,11 +28002,13 @@ filegroup(
         ":libgsttag-1.0-0-filegroup",
         ":libgstvideo-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstplayer-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstplayer-1.0.so.0",
         "usr/lib/libgstplayer-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27775,11 +28016,13 @@ filegroup(
         ":libgstplay-1.0-0-filegroup",
         ":libgstvideo-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstriff-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstriff-1.0.so.0",
         "usr/lib/libgstriff-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27787,40 +28030,48 @@ filegroup(
         ":libgstaudio-1.0-0-filegroup",
         ":libgsttag-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstrtp-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstrtp-1.0.so.0",
         "usr/lib/libgstrtp-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstrtsp-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstrtsp-1.0.so.0",
         "usr/lib/libgstrtsp-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstsctp-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstsctp-1.0.so.0",
         "usr/lib/libgstsctp-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstsdp-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstsdp-1.0.so.0",
         "usr/lib/libgstsdp-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27828,11 +28079,13 @@ filegroup(
         ":libgstpbutils-1.0-0-filegroup",
         ":libgstrtp-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgsttag-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgsttag-1.0.so.0",
         "usr/lib/libgsttag-1.0.so.0.2410.0",
         "usr/share/gst-plugins-base/1.0/license-translations.dict",
         ":gstreamer1.0-filegroup",
@@ -27840,6 +28093,7 @@ filegroup(
         ":libglib-2.0-0-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27851,48 +28105,38 @@ filegroup(
         ":libglib-2.0-0-filegroup",
         ":libgstpbutils-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgsturidownloader-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgsturidownloader-1.0.so.0",
         "usr/lib/libgsturidownloader-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstvideo-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstvideo-1.0.so.0",
         "usr/lib/libgstvideo-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":liborc-0.4-0-filegroup",
     ],
-)
-
-filegroup(
-    name = "libgstvulkan-1.0-0-filegroup",
-    srcs = [
-        "usr/lib/libgstvulkan-1.0.so.0.2410.0",
-        ":gstreamer1.0-filegroup",
-        ":libc6-filegroup",
-        ":libglib-2.0-0-filegroup",
-        ":libgstvideo-1.0-0-filegroup",
-        ":libvulkan1-filegroup",
-        ":libxcb1-filegroup",
-        ":libxkbcommon-x11-0-filegroup",
-        ":libxkbcommon0-filegroup",
-        ":wayland-filegroup",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstwayland-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstwayland-1.0.so.0",
         "usr/lib/libgstwayland-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
@@ -27901,17 +28145,20 @@ filegroup(
         ":libgstvideo-1.0-0-filegroup",
         ":wayland-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libgstwebrtc-1.0-0-filegroup",
     srcs = [
+        "usr/lib/libgstwebrtc-1.0.so.0",
         "usr/lib/libgstwebrtc-1.0.so.0.2410.0",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libglib-2.0-0-filegroup",
         ":libgstsdp-1.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -27924,8 +28171,11 @@ filegroup(
         "usr/lib/girepository-1.0/Gdk-3.0.typelib",
         "usr/lib/girepository-1.0/GdkX11-3.0.typelib",
         "usr/lib/girepository-1.0/Gtk-3.0.typelib",
+        "usr/lib/libgailutil-3.so.0",
         "usr/lib/libgailutil-3.so.0.0.0",
+        "usr/lib/libgdk-3.so.0",
         "usr/lib/libgdk-3.so.0.2411.32",
+        "usr/lib/libgtk-3.so.0",
         "usr/lib/libgtk-3.so.0.2411.32",
         "usr/libexec/gtk-query-immodules-3.0",
         "usr/share/glib-2.0/schemas/org.gtk.Demo.gschema.xml",
@@ -27983,31 +28233,38 @@ filegroup(
         ":update-alternatives-opkg-filegroup",
         ":wayland-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libharfbuzz0-filegroup",
     srcs = [
         "usr/lib/girepository-1.0/HarfBuzz-0.0.typelib",
+        "usr/lib/libharfbuzz.so.0",
         "usr/lib/libharfbuzz.so.0.61010.0",
+        "usr/lib/libharfbuzz-cairo.so.0",
         "usr/lib/libharfbuzz-cairo.so.0.61010.0",
+        "usr/lib/libharfbuzz-gobject.so.0",
         "usr/lib/libharfbuzz-gobject.so.0.61010.0",
         ":libc6-filegroup",
         ":libcairo2-filegroup",
         ":libfreetype6-filegroup",
         ":libglib-2.0-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libhwloc15-filegroup",
     srcs = [
+        "usr/lib/libhwloc.so.15",
         "usr/lib/libhwloc.so.15.6.4",
         ":libc6-filegroup",
         ":libpciaccess0-filegroup",
         ":libudev1-filegroup",
         ":libxml2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -28022,62 +28279,77 @@ filegroup(
         "usr/lib/cmake/libjpeg-turbo/libjpeg-turboConfigVersion.cmake",
         "usr/lib/cmake/libjpeg-turbo/libjpeg-turboTargets.cmake",
         "usr/lib/cmake/libjpeg-turbo/libjpeg-turboTargets-release.cmake",
+        "usr/lib/libjpeg.so",
+        "usr/lib/libturbojpeg.so",
         "usr/lib/pkgconfig/libjpeg.pc",
         "usr/lib/pkgconfig/libturbojpeg.pc",
         ":libjpeg62-filegroup",
         ":libturbojpeg0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libjpeg62-filegroup",
     srcs = [
+        "usr/lib/libjpeg.so.62",
         "usr/lib/libjpeg.so.62.4.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "liblastlog2-2-filegroup",
     srcs = [
+        "usr/lib/liblastlog2.so.2",
         "usr/lib/liblastlog2.so.2.0.0",
         ":libc6-filegroup",
         ":libsqlite3-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libltdl7-filegroup",
     srcs = [
+        "usr/lib/libltdl.so.7",
         "usr/lib/libltdl.so.7.3.3",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "liblzma5-filegroup",
     srcs = [
+        "usr/lib/liblzma.so.5",
         "usr/lib/liblzma.so.5.6.3",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libmount1-filegroup",
     srcs = [
+        "usr/lib/libmount.so.1",
         "usr/lib/libmount.so.1.1.0",
         ":libblkid1-filegroup",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libncurses5-filegroup",
     srcs = [
+        "usr/lib/libncurses.so.5",
         "usr/lib/libncurses.so.5.9",
         ":libc6-filegroup",
         ":libtinfo5-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -28117,28 +28389,52 @@ filegroup(
         "usr/local/cuda-12.6/include/npps_initialization.h",
         "usr/local/cuda-12.6/include/npps_statistics_functions.h",
         "usr/local/cuda-12.6/include/npps_support_functions.h",
+        "usr/local/cuda-12.6/lib/libnppc.so",
+        "usr/local/cuda-12.6/lib/libnppial.so",
+        "usr/local/cuda-12.6/lib/libnppicc.so",
+        "usr/local/cuda-12.6/lib/libnppidei.so",
+        "usr/local/cuda-12.6/lib/libnppif.so",
+        "usr/local/cuda-12.6/lib/libnppig.so",
+        "usr/local/cuda-12.6/lib/libnppim.so",
+        "usr/local/cuda-12.6/lib/libnppist.so",
+        "usr/local/cuda-12.6/lib/libnppisu.so",
+        "usr/local/cuda-12.6/lib/libnppitc.so",
+        "usr/local/cuda-12.6/lib/libnpps.so",
         ":libnpp-filegroup",
         ":libnpp-stubs-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libnpp-filegroup",
     srcs = [
+        "usr/local/cuda-12.6/lib/libnppc.so.12",
         "usr/local/cuda-12.6/lib/libnppc.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppial.so.12",
         "usr/local/cuda-12.6/lib/libnppial.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppicc.so.12",
         "usr/local/cuda-12.6/lib/libnppicc.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppidei.so.12",
         "usr/local/cuda-12.6/lib/libnppidei.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppif.so.12",
         "usr/local/cuda-12.6/lib/libnppif.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppig.so.12",
         "usr/local/cuda-12.6/lib/libnppig.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppim.so.12",
         "usr/local/cuda-12.6/lib/libnppim.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppist.so.12",
         "usr/local/cuda-12.6/lib/libnppist.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppisu.so.12",
         "usr/local/cuda-12.6/lib/libnppisu.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnppitc.so.12",
         "usr/local/cuda-12.6/lib/libnppitc.so.12.3.1.54",
+        "usr/local/cuda-12.6/lib/libnpps.so.12",
         "usr/local/cuda-12.6/lib/libnpps.so.12.3.1.54",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -28156,6 +28452,7 @@ filegroup(
         "usr/local/cuda-12.6/lib/stubs/libnppitc.so",
         "usr/local/cuda-12.6/lib/stubs/libnpps.so",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -28167,24 +28464,28 @@ filegroup(
         ":libc6-filegroup",
         ":libc6-utils-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-alphamat410-filegroup",
     srcs = [
         "usr/lib/libopencv_alphamat.so.4.10.0",
+        "usr/lib/libopencv_alphamat.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-aruco410-filegroup",
     srcs = [
         "usr/lib/libopencv_aruco.so.4.10.0",
+        "usr/lib/libopencv_aruco.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28192,12 +28493,14 @@ filegroup(
         ":libopencv-objdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-bgsegm410-filegroup",
     srcs = [
         "usr/lib/libopencv_bgsegm.so.4.10.0",
+        "usr/lib/libopencv_bgsegm.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28206,23 +28509,27 @@ filegroup(
         ":libopencv-video410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-bioinspired410-filegroup",
     srcs = [
         "usr/lib/libopencv_bioinspired.so.4.10.0",
+        "usr/lib/libopencv_bioinspired.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-calib3d410-filegroup",
     srcs = [
         "usr/lib/libopencv_calib3d.so.4.10.0",
+        "usr/lib/libopencv_calib3d.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28231,12 +28538,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-ccalib410-filegroup",
     srcs = [
         "usr/lib/libopencv_ccalib.so.4.10.0",
+        "usr/lib/libopencv_ccalib.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28247,24 +28556,28 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-core410-filegroup",
     srcs = [
         "usr/lib/libopencv_core.so.4.10.0",
+        "usr/lib/libopencv_core.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
         ":libz1-filegroup",
         ":tbb-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudaarithm410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudaarithm.so.4.10.0",
+        "usr/lib/libopencv_cudaarithm.so.410",
         ":libc6-filegroup",
         ":libcublas-filegroup",
         ":libcufft-filegroup",
@@ -28273,34 +28586,40 @@ filegroup(
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudabgsegm410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudabgsegm.so.4.10.0",
+        "usr/lib/libopencv_cudabgsegm.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudacodec410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudacodec.so.4.10.0",
+        "usr/lib/libopencv_cudacodec.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudafeatures2d410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudafeatures2d.so.4.10.0",
+        "usr/lib/libopencv_cudafeatures2d.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28310,12 +28629,14 @@ filegroup(
         ":libopencv-features2d410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudafilters410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudafilters.so.4.10.0",
+        "usr/lib/libopencv_cudafilters.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libnpp-filegroup",
@@ -28324,12 +28645,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudaimgproc410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudaimgproc.so.4.10.0",
+        "usr/lib/libopencv_cudaimgproc.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libnpp-filegroup",
@@ -28339,12 +28662,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudalegacy410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudalegacy.so.4.10.0",
+        "usr/lib/libopencv_cudalegacy.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28356,12 +28681,14 @@ filegroup(
         ":libopencv-objdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudaobjdetect410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudaobjdetect.so.4.10.0",
+        "usr/lib/libopencv_cudaobjdetect.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28371,12 +28698,14 @@ filegroup(
         ":libopencv-objdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudaoptflow410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudaoptflow.so.4.10.0",
+        "usr/lib/libopencv_cudaoptflow.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28386,23 +28715,27 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudastereo410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudastereo.so.4.10.0",
+        "usr/lib/libopencv_cudastereo.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudawarping410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudawarping.so.4.10.0",
+        "usr/lib/libopencv_cudawarping.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libnpp-filegroup",
@@ -28410,42 +28743,50 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-cudev410-filegroup",
     srcs = [
         "usr/lib/libopencv_cudev.so.4.10.0",
+        "usr/lib/libopencv_cudev.so.410",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-datasets410-filegroup",
     srcs = [
         "usr/lib/libopencv_datasets.so.4.10.0",
+        "usr/lib/libopencv_datasets.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgcodecs410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-dnn-objdetect410-filegroup",
     srcs = [
         "usr/lib/libopencv_dnn_objdetect.so.4.10.0",
+        "usr/lib/libopencv_dnn_objdetect.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-dnn-superres410-filegroup",
     srcs = [
         "usr/lib/libopencv_dnn_superres.so.4.10.0",
+        "usr/lib/libopencv_dnn_superres.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28453,12 +28794,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-dnn410-filegroup",
     srcs = [
         "usr/lib/libopencv_dnn.so.4.10.0",
+        "usr/lib/libopencv_dnn.so.410",
         ":cudnn-filegroup",
         ":libabsl-hash2407.0.0-filegroup",
         ":libabsl-log-internal-message2407.0.0-filegroup",
@@ -28472,24 +28815,28 @@ filegroup(
         ":libprotobuf25.5.0-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-dpm410-filegroup",
     srcs = [
         "usr/lib/libopencv_dpm.so.4.10.0",
+        "usr/lib/libopencv_dpm.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-face410-filegroup",
     srcs = [
         "usr/lib/libopencv_face.so.4.10.0",
+        "usr/lib/libopencv_face.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28498,12 +28845,14 @@ filegroup(
         ":libopencv-objdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-features2d410-filegroup",
     srcs = [
         "usr/lib/libopencv_features2d.so.4.10.0",
+        "usr/lib/libopencv_features2d.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28511,34 +28860,40 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-flann410-filegroup",
     srcs = [
         "usr/lib/libopencv_flann.so.4.10.0",
+        "usr/lib/libopencv_flann.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-fuzzy410-filegroup",
     srcs = [
         "usr/lib/libopencv_fuzzy.so.4.10.0",
+        "usr/lib/libopencv_fuzzy.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-gapi410-filegroup",
     srcs = [
         "usr/lib/libopencv_gapi.so.4.10.0",
+        "usr/lib/libopencv_gapi.so.410",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
@@ -28553,24 +28908,28 @@ filegroup(
         ":libstdc++6-filegroup",
         ":tbb-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-hfs410-filegroup",
     srcs = [
         "usr/lib/libopencv_hfs.so.4.10.0",
+        "usr/lib/libopencv_hfs.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-highgui410-filegroup",
     srcs = [
         "usr/lib/libopencv_highgui.so.4.10.0",
+        "usr/lib/libopencv_highgui.so.410",
         ":libc6-filegroup",
         ":libcairo2-filegroup",
         ":libgcc1-filegroup",
@@ -28582,24 +28941,28 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-img-hash410-filegroup",
     srcs = [
         "usr/lib/libopencv_img_hash.so.4.10.0",
+        "usr/lib/libopencv_img_hash.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-imgcodecs410-filegroup",
     srcs = [
         "usr/lib/libopencv_imgcodecs.so.4.10.0",
+        "usr/lib/libopencv_imgcodecs.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libjpeg62-filegroup",
@@ -28610,47 +28973,55 @@ filegroup(
         ":libtiff6-filegroup",
         ":libwebp-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-imgproc410-filegroup",
     srcs = [
         "usr/lib/libopencv_imgproc.so.4.10.0",
+        "usr/lib/libopencv_imgproc.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-intensity-transform410-filegroup",
     srcs = [
         "usr/lib/libopencv_intensity_transform.so.4.10.0",
+        "usr/lib/libopencv_intensity_transform.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-line-descriptor410-filegroup",
     srcs = [
         "usr/lib/libopencv_line_descriptor.so.4.10.0",
+        "usr/lib/libopencv_line_descriptor.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-mcc410-filegroup",
     srcs = [
         "usr/lib/libopencv_mcc.so.4.10.0",
+        "usr/lib/libopencv_mcc.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28659,23 +29030,27 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-ml410-filegroup",
     srcs = [
         "usr/lib/libopencv_ml.so.4.10.0",
+        "usr/lib/libopencv_ml.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-objdetect410-filegroup",
     srcs = [
         "usr/lib/libopencv_objdetect.so.4.10.0",
+        "usr/lib/libopencv_objdetect.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28684,12 +29059,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-optflow410-filegroup",
     srcs = [
         "usr/lib/libopencv_optflow.so.4.10.0",
+        "usr/lib/libopencv_optflow.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28701,23 +29078,27 @@ filegroup(
         ":libopencv-ximgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-phase-unwrapping410-filegroup",
     srcs = [
         "usr/lib/libopencv_phase_unwrapping.so.4.10.0",
+        "usr/lib/libopencv_phase_unwrapping.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-photo410-filegroup",
     srcs = [
         "usr/lib/libopencv_photo.so.4.10.0",
+        "usr/lib/libopencv_photo.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28726,24 +29107,28 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-plot410-filegroup",
     srcs = [
         "usr/lib/libopencv_plot.so.4.10.0",
+        "usr/lib/libopencv_plot.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-quality410-filegroup",
     srcs = [
         "usr/lib/libopencv_quality.so.4.10.0",
+        "usr/lib/libopencv_quality.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28751,12 +29136,14 @@ filegroup(
         ":libopencv-ml410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-rapid410-filegroup",
     srcs = [
         "usr/lib/libopencv_rapid.so.4.10.0",
+        "usr/lib/libopencv_rapid.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28764,24 +29151,28 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-reg410-filegroup",
     srcs = [
         "usr/lib/libopencv_reg.so.4.10.0",
+        "usr/lib/libopencv_reg.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-rgbd410-filegroup",
     srcs = [
         "usr/lib/libopencv_rgbd.so.4.10.0",
+        "usr/lib/libopencv_rgbd.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28790,36 +29181,42 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-saliency410-filegroup",
     srcs = [
         "usr/lib/libopencv_saliency.so.4.10.0",
+        "usr/lib/libopencv_saliency.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-sfm410-filegroup",
     srcs = [
         "usr/lib/libopencv_sfm.so.4.10.0",
+        "usr/lib/libopencv_sfm.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libglog2-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-shape410-filegroup",
     srcs = [
         "usr/lib/libopencv_shape.so.4.10.0",
+        "usr/lib/libopencv_shape.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28827,23 +29224,27 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-signal410-filegroup",
     srcs = [
         "usr/lib/libopencv_signal.so.4.10.0",
+        "usr/lib/libopencv_signal.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-stereo410-filegroup",
     srcs = [
         "usr/lib/libopencv_stereo.so.4.10.0",
+        "usr/lib/libopencv_stereo.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28852,12 +29253,14 @@ filegroup(
         ":libopencv-video410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-stitching410-filegroup",
     srcs = [
         "usr/lib/libopencv_stitching.so.4.10.0",
+        "usr/lib/libopencv_stitching.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28871,12 +29274,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-structured-light410-filegroup",
     srcs = [
         "usr/lib/libopencv_structured_light.so.4.10.0",
+        "usr/lib/libopencv_structured_light.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28885,12 +29290,14 @@ filegroup(
         ":libopencv-phase-unwrapping410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-superres410-filegroup",
     srcs = [
         "usr/lib/libopencv_superres.so.4.10.0",
+        "usr/lib/libopencv_superres.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28906,24 +29313,28 @@ filegroup(
         ":libopencv-videoio410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-surface-matching410-filegroup",
     srcs = [
         "usr/lib/libopencv_surface_matching.so.4.10.0",
+        "usr/lib/libopencv_surface_matching.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-flann410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-tracking410-filegroup",
     srcs = [
         "usr/lib/libopencv_tracking.so.4.10.0",
+        "usr/lib/libopencv_tracking.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28931,12 +29342,14 @@ filegroup(
         ":libopencv-video410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-ts410-filegroup",
     srcs = [
         "usr/lib/libopencv_ts.so.4.10.0",
+        "usr/lib/libopencv_ts.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -28945,12 +29358,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-video410-filegroup",
     srcs = [
         "usr/lib/libopencv_video.so.4.10.0",
+        "usr/lib/libopencv_video.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -28959,12 +29374,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-videoio410-filegroup",
     srcs = [
         "usr/lib/libopencv_videoio.so.4.10.0",
+        "usr/lib/libopencv_videoio.so.410",
         ":gstreamer1.0-filegroup",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
@@ -28981,12 +29398,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-videostab410-filegroup",
     srcs = [
         "usr/lib/libopencv_videostab.so.4.10.0",
+        "usr/lib/libopencv_videostab.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -29002,12 +29421,14 @@ filegroup(
         ":libopencv-videoio410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-wechat-qrcode410-filegroup",
     srcs = [
         "usr/lib/libopencv_wechat_qrcode.so.4.10.0",
+        "usr/lib/libopencv_wechat_qrcode.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -29015,12 +29436,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-xfeatures2d410-filegroup",
     srcs = [
         "usr/lib/libopencv_xfeatures2d.so.4.10.0",
+        "usr/lib/libopencv_xfeatures2d.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -29028,12 +29451,14 @@ filegroup(
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-ximgproc410-filegroup",
     srcs = [
         "usr/lib/libopencv_ximgproc.so.4.10.0",
+        "usr/lib/libopencv_ximgproc.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-calib3d410-filegroup",
@@ -29043,12 +29468,14 @@ filegroup(
         ":libopencv-video410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-xobjdetect410-filegroup",
     srcs = [
         "usr/lib/libopencv_xobjdetect.so.4.10.0",
+        "usr/lib/libopencv_xobjdetect.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
@@ -29057,81 +29484,100 @@ filegroup(
         ":libopencv-objdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libopencv-xphoto410-filegroup",
     srcs = [
         "usr/lib/libopencv_xphoto.so.4.10.0",
+        "usr/lib/libopencv_xphoto.so.410",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libopencv-core410-filegroup",
         ":libopencv-imgproc410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "liborc-0.4-0-filegroup",
     srcs = [
+        "usr/lib/liborc-0.4.so.0",
         "usr/lib/liborc-0.4.so.0.40.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "liborc-test-0.4-0-filegroup",
     srcs = [
+        "usr/lib/liborc-test-0.4.so.0",
         "usr/lib/liborc-test-0.4.so.0.40.0",
         ":libc6-filegroup",
         ":liborc-0.4-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpam-filegroup",
     srcs = [
+        "usr/lib/libpam.so.0",
         "usr/lib/libpam.so.0.85.1",
+        "usr/lib/libpam_misc.so.0",
         "usr/lib/libpam_misc.so.0.82.1",
+        "usr/lib/libpamc.so.0",
         "usr/lib/libpamc.so.0.82.1",
         "usr/lib/tmpfiles.d/pam.conf",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpciaccess-dev-filegroup",
     srcs = [
         "usr/include/pciaccess.h",
+        "usr/lib/libpciaccess.so",
         "usr/lib/pkgconfig/pciaccess.pc",
         ":libpciaccess0-filegroup",
         ":libz-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpciaccess0-filegroup",
     srcs = [
+        "usr/lib/libpciaccess.so.0",
         "usr/lib/libpciaccess.so.0.11.1",
         ":libc6-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpcre2-16-0-filegroup",
     srcs = [
+        "usr/lib/libpcre2-16.so.0",
         "usr/lib/libpcre2-16.so.0.13.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpcre2-32-0-filegroup",
     srcs = [
+        "usr/lib/libpcre2-32.so.0",
         "usr/lib/libpcre2-32.so.0.13.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -29140,6 +29586,10 @@ filegroup(
         "usr/bin/pcre2-config",
         "usr/include/pcre2.h",
         "usr/include/pcre2posix.h",
+        "usr/lib/libpcre2-16.so",
+        "usr/lib/libpcre2-32.so",
+        "usr/lib/libpcre2-8.so",
+        "usr/lib/libpcre2-posix.so",
         "usr/lib/pkgconfig/libpcre2-16.pc",
         "usr/lib/pkgconfig/libpcre2-32.pc",
         "usr/lib/pkgconfig/libpcre2-8.pc",
@@ -29148,32 +29598,40 @@ filegroup(
         ":libpcre2-32-0-filegroup",
         ":libpcre2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpcre2-filegroup",
     srcs = [
+        "usr/lib/libpcre2-8.so.0",
         "usr/lib/libpcre2-8.so.0.13.0",
+        "usr/lib/libpcre2-posix.so.3",
         "usr/lib/libpcre2-posix.so.3.0.5",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpixman-1-0-filegroup",
     srcs = [
+        "usr/lib/libpixman-1.so.0",
         "usr/lib/libpixman-1.so.0.44.2",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libpng16-16-filegroup",
     srcs = [
+        "usr/lib/libpng16.so.16",
         "usr/lib/libpng16.so.16.44.0",
         ":libc6-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -29206,6 +29664,7 @@ filegroup(
         ":libstdc++6-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -29215,22 +29674,27 @@ filegroup(
         ":libc6-filegroup",
         ":libgcc1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libsmartcols1-filegroup",
     srcs = [
+        "usr/lib/libsmartcols.so.1",
         "usr/lib/libsmartcols.so.1.1.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libsqlite3-0-filegroup",
     srcs = [
+        "usr/lib/libsqlite3.so.0",
         "usr/lib/libsqlite3.so.0.8.6",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -29238,9 +29702,11 @@ filegroup(
     srcs = [
         "usr/include/sqlite3.h",
         "usr/include/sqlite3ext.h",
+        "usr/lib/libsqlite3.so",
         "usr/lib/pkgconfig/sqlite3.pc",
         ":libsqlite3-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -29250,6 +29716,7 @@ filegroup(
         ":libc6-filegroup",
         ":libcrypto3-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -30080,133 +30547,145 @@ filegroup(
         "usr/include/c++/14.2.0/variant",
         "usr/include/c++/14.2.0/vector",
         "usr/include/c++/14.2.0/version",
+        "usr/lib/libstdc++.so",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libstdc++6-filegroup",
     srcs = [
+        "usr/lib/libstdc++.so.6",
         "usr/lib/libstdc++.so.6.0.33",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libsystemd0-filegroup",
     srcs = [
+        "usr/lib/libsystemd.so.0",
         "usr/lib/libsystemd.so.0.40.0",
         ":libc6-filegroup",
         ":libcap-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libtiff6-filegroup",
     srcs = [
+        "usr/lib/libtiff.so.6",
         "usr/lib/libtiff.so.6.1.0",
         ":libc6-filegroup",
         ":libjpeg62-filegroup",
         ":liblzma5-filegroup",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libtinfo5-filegroup",
     srcs = [
+        "usr/lib/libtinfo.so.5",
         "usr/lib/libtinfo.so.5.9",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libturbojpeg0-filegroup",
     srcs = [
+        "usr/lib/libturbojpeg.so.0",
         "usr/lib/libturbojpeg.so.0.3.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libudev1-filegroup",
     srcs = [
+        "usr/lib/libudev.so.1",
         "usr/lib/libudev.so.1.7.10",
         ":libc6-filegroup",
         ":libcap-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libunwind-filegroup",
     srcs = [
+        "usr/lib/libunwind.so.8",
         "usr/lib/libunwind.so.8.0.1",
+        "usr/lib/libunwind-aarch64.so.8",
         "usr/lib/libunwind-aarch64.so.8.0.1",
+        "usr/lib/libunwind-coredump.so.0",
         "usr/lib/libunwind-coredump.so.0.0.0",
+        "usr/lib/libunwind-ptrace.so.0",
         "usr/lib/libunwind-ptrace.so.0.0.0",
+        "usr/lib/libunwind-setjmp.so.0",
         "usr/lib/libunwind-setjmp.so.0.0.0",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libuuid-dev-filegroup",
     srcs = [
         "usr/include/uuid/uuid.h",
+        "usr/lib/libuuid.so",
         "usr/lib/pkgconfig/uuid.pc",
         ":libuuid1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libuuid1-filegroup",
     srcs = [
+        "usr/lib/libuuid.so.1",
         "usr/lib/libuuid.so.1.3.0",
         ":libc6-filegroup",
     ],
-)
-
-filegroup(
-    name = "libvulkan-dev-filegroup",
-    srcs = [
-        "usr/lib/cmake/VulkanLoader/VulkanLoaderConfig.cmake",
-        "usr/lib/cmake/VulkanLoader/VulkanLoaderConfig-noconfig.cmake",
-        "usr/lib/cmake/VulkanLoader/VulkanLoaderConfigVersion.cmake",
-        "usr/lib/pkgconfig/vulkan.pc",
-        ":libvulkan1-filegroup",
-    ],
-)
-
-filegroup(
-    name = "libvulkan1-filegroup",
-    srcs = [
-        "usr/lib/libvulkan.so.1.3.296",
-        ":libc6-filegroup",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libwebp-filegroup",
     srcs = [
+        "usr/lib/libsharpyuv.so.0",
         "usr/lib/libsharpyuv.so.0.1.1",
+        "usr/lib/libwebp.so.7",
         "usr/lib/libwebp.so.7.1.10",
+        "usr/lib/libwebpdemux.so.2",
         "usr/lib/libwebpdemux.so.2.0.16",
+        "usr/lib/libwebpmux.so.3",
         "usr/lib/libwebpmux.so.3.1.1",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libx11-6-filegroup",
     srcs = [
+        "usr/lib/libX11.so.6",
         "usr/lib/libX11.so.6.4.0",
         "usr/share/X11/XErrorDB",
         "usr/share/X11/Xcms.txt",
         ":libc6-filegroup",
         ":libxcb1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -30225,6 +30704,8 @@ filegroup(
         "usr/include/X11/Xutil.h",
         "usr/include/X11/cursorfont.h",
         "usr/include/X11/extensions/XKBgeom.h",
+        "usr/lib/libX11.so",
+        "usr/lib/libX11-xcb.so",
         "usr/lib/pkgconfig/x11.pc",
         "usr/lib/pkgconfig/x11-xcb.pc",
         ":libx11-6-filegroup",
@@ -30232,64 +30713,77 @@ filegroup(
         ":libxcb-dev-filegroup",
         ":xorgproto-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libx11-xcb1-filegroup",
     srcs = [
+        "usr/lib/libX11-xcb.so.1",
         "usr/lib/libX11-xcb.so.1.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxau-dev-filegroup",
     srcs = [
         "usr/include/X11/Xauth.h",
+        "usr/lib/libXau.so",
         "usr/lib/pkgconfig/xau.pc",
         ":libxau6-filegroup",
         ":xorgproto-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxau6-filegroup",
     srcs = [
+        "usr/lib/libXau.so.6",
         "usr/lib/libXau.so.6.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-composite0-filegroup",
     srcs = [
+        "usr/lib/libxcb-composite.so.0",
         "usr/lib/libxcb-composite.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-damage0-filegroup",
     srcs = [
+        "usr/lib/libxcb-damage.so.0",
         "usr/lib/libxcb-damage.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-dbe0-filegroup",
     srcs = [
+        "usr/lib/libxcb-dbe.so.0",
         "usr/lib/libxcb-dbe.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -30328,6 +30822,31 @@ filegroup(
         "usr/include/xcb/xtest.h",
         "usr/include/xcb/xv.h",
         "usr/include/xcb/xvmc.h",
+        "usr/lib/libxcb.so",
+        "usr/lib/libxcb-composite.so",
+        "usr/lib/libxcb-damage.so",
+        "usr/lib/libxcb-dbe.so",
+        "usr/lib/libxcb-dpms.so",
+        "usr/lib/libxcb-dri2.so",
+        "usr/lib/libxcb-dri3.so",
+        "usr/lib/libxcb-glx.so",
+        "usr/lib/libxcb-present.so",
+        "usr/lib/libxcb-randr.so",
+        "usr/lib/libxcb-record.so",
+        "usr/lib/libxcb-render.so",
+        "usr/lib/libxcb-res.so",
+        "usr/lib/libxcb-screensaver.so",
+        "usr/lib/libxcb-shape.so",
+        "usr/lib/libxcb-shm.so",
+        "usr/lib/libxcb-sync.so",
+        "usr/lib/libxcb-xf86dri.so",
+        "usr/lib/libxcb-xfixes.so",
+        "usr/lib/libxcb-xinerama.so",
+        "usr/lib/libxcb-xinput.so",
+        "usr/lib/libxcb-xkb.so",
+        "usr/lib/libxcb-xtest.so",
+        "usr/lib/libxcb-xv.so",
+        "usr/lib/libxcb-xvmc.so",
         "usr/lib/pkgconfig/xcb.pc",
         "usr/lib/pkgconfig/xcb-composite.pc",
         "usr/lib/pkgconfig/xcb-damage.pc",
@@ -30381,318 +30900,378 @@ filegroup(
         ":libxcb1-filegroup",
         ":libxdmcp-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-dpms0-filegroup",
     srcs = [
+        "usr/lib/libxcb-dpms.so.0",
         "usr/lib/libxcb-dpms.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-dri2-0-filegroup",
     srcs = [
+        "usr/lib/libxcb-dri2.so.0",
         "usr/lib/libxcb-dri2.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-dri3-0-filegroup",
     srcs = [
+        "usr/lib/libxcb-dri3.so.0",
         "usr/lib/libxcb-dri3.so.0.1.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-glx0-filegroup",
     srcs = [
+        "usr/lib/libxcb-glx.so.0",
         "usr/lib/libxcb-glx.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-present0-filegroup",
     srcs = [
+        "usr/lib/libxcb-present.so.0",
         "usr/lib/libxcb-present.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-randr0-filegroup",
     srcs = [
+        "usr/lib/libxcb-randr.so.0",
         "usr/lib/libxcb-randr.so.0.1.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-record0-filegroup",
     srcs = [
+        "usr/lib/libxcb-record.so.0",
         "usr/lib/libxcb-record.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-render0-filegroup",
     srcs = [
+        "usr/lib/libxcb-render.so.0",
         "usr/lib/libxcb-render.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-res0-filegroup",
     srcs = [
+        "usr/lib/libxcb-res.so.0",
         "usr/lib/libxcb-res.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-screensaver0-filegroup",
     srcs = [
+        "usr/lib/libxcb-screensaver.so.0",
         "usr/lib/libxcb-screensaver.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-shape0-filegroup",
     srcs = [
+        "usr/lib/libxcb-shape.so.0",
         "usr/lib/libxcb-shape.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-shm0-filegroup",
     srcs = [
+        "usr/lib/libxcb-shm.so.0",
         "usr/lib/libxcb-shm.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-sync1-filegroup",
     srcs = [
+        "usr/lib/libxcb-sync.so.1",
         "usr/lib/libxcb-sync.so.1.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xf86dri0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xf86dri.so.0",
         "usr/lib/libxcb-xf86dri.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xfixes0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xfixes.so.0",
         "usr/lib/libxcb-xfixes.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xinerama0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xinerama.so.0",
         "usr/lib/libxcb-xinerama.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xinput0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xinput.so.0",
         "usr/lib/libxcb-xinput.so.0.1.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xkb1-filegroup",
     srcs = [
+        "usr/lib/libxcb-xkb.so.1",
         "usr/lib/libxcb-xkb.so.1.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xtest0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xtest.so.0",
         "usr/lib/libxcb-xtest.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xv0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xv.so.0",
         "usr/lib/libxcb-xv.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb-xvmc0-filegroup",
     srcs = [
+        "usr/lib/libxcb-xvmc.so.0",
         "usr/lib/libxcb-xvmc.so.0.0.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxcb1-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcb1-filegroup",
     srcs = [
+        "usr/lib/libxcb.so.1",
         "usr/lib/libxcb.so.1.1.0",
         ":libc6-filegroup",
         ":libxau6-filegroup",
         ":libxdmcp6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcomposite1-filegroup",
     srcs = [
+        "usr/lib/libXcomposite.so.1",
         "usr/lib/libXcomposite.so.1.0.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxcursor1-filegroup",
     srcs = [
+        "usr/lib/libXcursor.so.1",
         "usr/lib/libXcursor.so.1.0.2",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
         ":libxfixes3-filegroup",
         ":libxrender1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxdamage1-filegroup",
     srcs = [
+        "usr/lib/libXdamage.so.1",
         "usr/lib/libXdamage.so.1.1.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
         ":libxfixes3-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxdmcp-dev-filegroup",
     srcs = [
         "usr/include/X11/Xdmcp.h",
+        "usr/lib/libXdmcp.so",
         "usr/lib/pkgconfig/xdmcp.pc",
         ":libxdmcp6-filegroup",
         ":xorgproto-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxdmcp6-filegroup",
     srcs = [
+        "usr/lib/libXdmcp.so.6",
         "usr/lib/libXdmcp.so.6.0.0",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxext6-filegroup",
     srcs = [
+        "usr/lib/libXext.so.6",
         "usr/lib/libXext.so.6.4.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxfixes3-filegroup",
     srcs = [
+        "usr/lib/libXfixes.so.3",
         "usr/lib/libXfixes.so.3.1.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxft2-filegroup",
     srcs = [
+        "usr/lib/libXft.so.2",
         "usr/lib/libXft.so.2.3.8",
         ":libc6-filegroup",
         ":libfontconfig1-filegroup",
@@ -30700,161 +31279,76 @@ filegroup(
         ":libx11-6-filegroup",
         ":libxrender1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxi6-filegroup",
     srcs = [
+        "usr/lib/libXi.so.6",
         "usr/lib/libXi.so.6.1.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
         ":libxext6-filegroup",
     ],
-)
-
-filegroup(
-    name = "libxkbcommon-dev-filegroup",
-    srcs = [
-        "usr/include/xkbcommon/xkbcommon.h",
-        "usr/include/xkbcommon/xkbcommon-compat.h",
-        "usr/include/xkbcommon/xkbcommon-compose.h",
-        "usr/include/xkbcommon/xkbcommon-keysyms.h",
-        "usr/include/xkbcommon/xkbcommon-names.h",
-        "usr/include/xkbcommon/xkbcommon-x11.h",
-        "usr/include/xkbcommon/xkbregistry.h",
-        "usr/lib/pkgconfig/xkbcommon.pc",
-        "usr/lib/pkgconfig/xkbcommon-x11.pc",
-        "usr/lib/pkgconfig/xkbregistry.pc",
-        ":libxcb-dev-filegroup",
-        ":libxkbcommon-x11-0-filegroup",
-        ":libxkbcommon0-filegroup",
-        ":libxkbregistry0-filegroup",
-        ":libxml2-dev-filegroup",
-    ],
-)
-
-filegroup(
-    name = "libxkbcommon-x11-0-filegroup",
-    srcs = [
-        "usr/lib/libxkbcommon-x11.so.0.0.0",
-        ":libc6-filegroup",
-        ":libxcb-xkb1-filegroup",
-        ":libxcb1-filegroup",
-        ":libxkbcommon0-filegroup",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxkbcommon0-filegroup",
     srcs = [
+        "usr/lib/libxkbcommon.so.0",
         "usr/lib/libxkbcommon.so.0.0.0",
         ":libc6-filegroup",
     ],
-)
-
-filegroup(
-    name = "libxkbregistry0-filegroup",
-    srcs = [
-        "usr/lib/libxkbregistry.so.0.0.0",
-        ":libc6-filegroup",
-        ":libxml2-filegroup",
-    ],
-)
-
-filegroup(
-    name = "libxml2-dev-filegroup",
-    srcs = [
-        "usr/bin/xml2-config",
-        "usr/include/libxml2/libxml/HTMLparser.h",
-        "usr/include/libxml2/libxml/HTMLtree.h",
-        "usr/include/libxml2/libxml/SAX.h",
-        "usr/include/libxml2/libxml/SAX2.h",
-        "usr/include/libxml2/libxml/c14n.h",
-        "usr/include/libxml2/libxml/catalog.h",
-        "usr/include/libxml2/libxml/chvalid.h",
-        "usr/include/libxml2/libxml/debugXML.h",
-        "usr/include/libxml2/libxml/dict.h",
-        "usr/include/libxml2/libxml/encoding.h",
-        "usr/include/libxml2/libxml/entities.h",
-        "usr/include/libxml2/libxml/globals.h",
-        "usr/include/libxml2/libxml/hash.h",
-        "usr/include/libxml2/libxml/list.h",
-        "usr/include/libxml2/libxml/nanoftp.h",
-        "usr/include/libxml2/libxml/nanohttp.h",
-        "usr/include/libxml2/libxml/parser.h",
-        "usr/include/libxml2/libxml/parserInternals.h",
-        "usr/include/libxml2/libxml/pattern.h",
-        "usr/include/libxml2/libxml/relaxng.h",
-        "usr/include/libxml2/libxml/schemasInternals.h",
-        "usr/include/libxml2/libxml/schematron.h",
-        "usr/include/libxml2/libxml/threads.h",
-        "usr/include/libxml2/libxml/tree.h",
-        "usr/include/libxml2/libxml/uri.h",
-        "usr/include/libxml2/libxml/valid.h",
-        "usr/include/libxml2/libxml/xinclude.h",
-        "usr/include/libxml2/libxml/xlink.h",
-        "usr/include/libxml2/libxml/xmlIO.h",
-        "usr/include/libxml2/libxml/xmlautomata.h",
-        "usr/include/libxml2/libxml/xmlerror.h",
-        "usr/include/libxml2/libxml/xmlexports.h",
-        "usr/include/libxml2/libxml/xmlmemory.h",
-        "usr/include/libxml2/libxml/xmlmodule.h",
-        "usr/include/libxml2/libxml/xmlreader.h",
-        "usr/include/libxml2/libxml/xmlregexp.h",
-        "usr/include/libxml2/libxml/xmlsave.h",
-        "usr/include/libxml2/libxml/xmlschemas.h",
-        "usr/include/libxml2/libxml/xmlschemastypes.h",
-        "usr/include/libxml2/libxml/xmlstring.h",
-        "usr/include/libxml2/libxml/xmlunicode.h",
-        "usr/include/libxml2/libxml/xmlversion.h",
-        "usr/include/libxml2/libxml/xmlwriter.h",
-        "usr/include/libxml2/libxml/xpath.h",
-        "usr/include/libxml2/libxml/xpathInternals.h",
-        "usr/include/libxml2/libxml/xpointer.h",
-        "usr/lib/cmake/libxml2/libxml2-config.cmake",
-        "usr/lib/pkgconfig/libxml-2.0.pc",
-        "usr/share/aclocal/libxml.m4",
-        ":libxml2-filegroup",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxml2-filegroup",
     srcs = [
+        "usr/lib/libxml2.so.2",
         "usr/lib/libxml2.so.2.13.5",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxrandr2-filegroup",
     srcs = [
+        "usr/lib/libXrandr.so.2",
         "usr/lib/libXrandr.so.2.2.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
         ":libxext6-filegroup",
         ":libxrender1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxrender1-filegroup",
     srcs = [
+        "usr/lib/libXrender.so.1",
         "usr/lib/libXrender.so.1.3.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libxtst6-filegroup",
     srcs = [
+        "usr/lib/libXtst.so.6",
         "usr/lib/libXtst.so.6.1.0",
         ":libc6-filegroup",
         ":libx11-6-filegroup",
         ":libxext6-filegroup",
         ":libxi6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -30862,17 +31356,21 @@ filegroup(
     srcs = [
         "usr/include/zconf.h",
         "usr/include/zlib.h",
+        "usr/lib/libz.so",
         "usr/lib/pkgconfig/zlib.pc",
         ":libz1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "libz1-filegroup",
     srcs = [
+        "usr/lib/libz.so.1",
         "usr/lib/libz.so.1.3.1",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -31872,6 +32370,7 @@ filegroup(
         "usr/include/xen/gntdev.h",
         "usr/include/xen/privcmd.h",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -31932,6 +32431,7 @@ filegroup(
         ":libopencv-xobjdetect410-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32611,6 +33111,7 @@ filegroup(
         "usr/lib/cmake/opencv4/OpenCVModules-release.cmake",
         "usr/lib/pkgconfig/opencv4.pc",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32686,6 +33187,7 @@ filegroup(
         ":opencv-samples-filegroup",
         ":python3-opencv-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32760,6 +33262,7 @@ filegroup(
         "usr/share/opencv4/samples/python/videocapture_obsensor.py",
         "usr/share/opencv4/samples/python/watershed.py",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32801,11 +33304,14 @@ filegroup(
         "usr/include/orc-0.4/orc/orcvariable.h",
         "usr/include/orc-0.4/orc/orcx86.h",
         "usr/include/orc-0.4/orc/orcx86insn.h",
+        "usr/lib/liborc-0.4.so",
+        "usr/lib/liborc-test-0.4.so",
         "usr/lib/pkgconfig/orc-0.4.pc",
         "usr/lib/pkgconfig/orc-test-0.4.pc",
         ":liborc-0.4-0-filegroup",
         ":liborc-test-0.4-0-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32820,9 +33326,13 @@ filegroup(
         "usr/lib/girepository-1.0/PangoFc-1.0.typelib",
         "usr/lib/girepository-1.0/PangoOT-1.0.typelib",
         "usr/lib/girepository-1.0/PangoXft-1.0.typelib",
+        "usr/lib/libpango-1.0.so.0",
         "usr/lib/libpango-1.0.so.0.5505.0",
+        "usr/lib/libpangocairo-1.0.so.0",
         "usr/lib/libpangocairo-1.0.so.0.5505.0",
+        "usr/lib/libpangoft2-1.0.so.0",
         "usr/lib/libpangoft2-1.0.so.0.5505.0",
+        "usr/lib/libpangoxft-1.0.so.0",
         "usr/lib/libpangoxft-1.0.so.0.5505.0",
         ":libc6-filegroup",
         ":libcairo2-filegroup",
@@ -32835,6 +33345,7 @@ filegroup(
         ":libxft2-filegroup",
         ":libxrender1-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32925,6 +33436,7 @@ filegroup(
         ":python3-numbers-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32934,6 +33446,7 @@ filegroup(
         "usr/lib/python3.13/wave.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32943,6 +33456,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -32962,11 +33476,13 @@ filegroup(
         "usr/lib/python3.13/zipfile/_path/glob.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "python3-core-filegroup",
     srcs = [
+        "usr/bin/python3",
         "usr/bin/python3.13",
         "usr/include/python3.13/pyconfig.h",
         "usr/include/python3.13/pyconfig-64.h",
@@ -33523,6 +34039,7 @@ filegroup(
         ":libz1-filegroup",
         ":python3-compression-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33540,6 +34057,7 @@ filegroup(
         ":libcrypto3-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33575,6 +34093,7 @@ filegroup(
         ":python3-io-filegroup",
         ":python3-math-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33590,6 +34109,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33604,6 +34124,7 @@ filegroup(
         ":python3-shell-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33613,6 +34134,7 @@ filegroup(
         "usr/lib/python3.13/difflib.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33628,6 +34150,7 @@ filegroup(
         ":python3-stringold-filegroup",
         ":python3-unittest-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33702,6 +34225,7 @@ filegroup(
         ":python3-netclient-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33725,6 +34249,7 @@ filegroup(
         ":python3-math-filegroup",
         ":python3-netclient-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33744,6 +34269,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33762,6 +34288,7 @@ filegroup(
         ":python3-stringold-filegroup",
         ":python3-threading-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33774,6 +34301,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33783,6 +34311,7 @@ filegroup(
         "usr/lib/python3.13/quopri.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33932,6 +34461,7 @@ filegroup(
         ":python3-pickle-filegroup",
         ":python3-pydoc-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -33941,6 +34471,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -34005,6 +34536,7 @@ filegroup(
         ":python3-pickle-filegroup",
         ":python3-threading-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -34048,6 +34580,7 @@ filegroup(
         ":python3-mime-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -34058,6 +34591,7 @@ filegroup(
         ":python3-core-filegroup",
         ":python3-io-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -34078,6 +34612,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35344,6 +35879,7 @@ filegroup(
         ":python3-threading-filegroup",
         ":python3-unittest-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35514,6 +36050,7 @@ filegroup(
         ":python3-core-filegroup",
         ":python3-numpy-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35531,6 +36068,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35538,6 +36076,7 @@ filegroup(
     srcs = [
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35547,11 +36086,13 @@ filegroup(
         "usr/lib/python3.13/pprint.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "python3-pydoc-filegroup",
     srcs = [
+        "usr/bin/pydoc3",
         "usr/bin/pydoc3.13",
         "usr/lib/python3.13/__pycache__/pydoc.cpython-313.pyc",
         "usr/lib/python3.13/pydoc.py",
@@ -35563,6 +36104,7 @@ filegroup(
         ":python3-core-filegroup",
         ":python3-io-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35575,6 +36117,7 @@ filegroup(
         ":python3-core-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35584,6 +36127,7 @@ filegroup(
         "usr/lib/python3.13/string.py",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35597,6 +36141,7 @@ filegroup(
         ":libc6-filegroup",
         ":python3-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -35638,6 +36183,7 @@ filegroup(
         ":python3-pprint-filegroup",
         ":python3-stringold-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36570,26 +37116,33 @@ filegroup(
         ":libstdc++6-filegroup",
         ":libxml2-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "tbb-filegroup",
     srcs = [
+        "usr/lib/libtbb.so.12",
         "usr/lib/libtbb.so.12.13",
+        "usr/lib/libtbbbind_2_5.so.3",
         "usr/lib/libtbbbind_2_5.so.3.13",
+        "usr/lib/libtbbmalloc.so.2",
         "usr/lib/libtbbmalloc.so.2.13",
+        "usr/lib/libtbbmalloc_proxy.so.2",
         "usr/lib/libtbbmalloc_proxy.so.2.13",
         ":libc6-filegroup",
         ":libgcc1-filegroup",
         ":libhwloc15-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "tegra-cmake-overrides-filegroup",
     srcs = [
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36627,6 +37180,40 @@ filegroup(
         ":libgcc1-filegroup",
         ":libstdc++6-filegroup",
     ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "tegra-libraries-cuda-filegroup",
+    srcs = [
+        "usr/lib/libcuda.so",
+        "usr/lib/libcuda.so.1",
+        "usr/lib/libcuda.so.1.1",
+        "usr/lib/libnvcucompat.so",
+        "usr/lib/libnvcucompat.so.36.4.3",
+        "usr/lib/libnvcudla.so",
+        "usr/lib/libnvidia-nvvm.so",
+        "usr/lib/libnvidia-nvvm.so.4",
+        "usr/lib/libnvidia-nvvm.so.540.4.0",
+        "usr/lib/libnvidia-ptxjitcompiler.so.1",
+        "usr/lib/libnvidia-ptxjitcompiler.so.540.4.0",
+        ":libc6-filegroup",
+        ":libstdc++6-filegroup",
+        ":tegra-libraries-core-filegroup",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "tegra-libraries-dla-compiler-filegroup",
+    srcs = [
+        "usr/lib/libnvdla_compiler.so",
+        ":libc6-filegroup",
+        ":libgcc1-filegroup",
+        ":libstdc++6-filegroup",
+        ":tegra-libraries-core-filegroup",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36642,6 +37229,7 @@ filegroup(
         ":libgcc1-filegroup",
         ":tegra-libraries-core-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36651,6 +37239,7 @@ filegroup(
         "usr/lib/libGLESv2_nvidia.so.2",
         ":libc6-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36665,6 +37254,48 @@ filegroup(
         ":tegra-libraries-core-filegroup",
         ":tegra-libraries-eglcore-filegroup",
     ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "tensorrt-core-dev-filegroup",
+    srcs = [
+        "usr/include/NvInfer.h",
+        "usr/include/NvInferConsistency.h",
+        "usr/include/NvInferConsistencyImpl.h",
+        "usr/include/NvInferImpl.h",
+        "usr/include/NvInferLegacyDims.h",
+        "usr/include/NvInferRuntime.h",
+        "usr/include/NvInferRuntimeBase.h",
+        "usr/include/NvInferRuntimeCommon.h",
+        "usr/include/NvInferRuntimePlugin.h",
+        "usr/include/NvInferSafeRuntime.h",
+        "usr/include/NvInferVersion.h",
+        "usr/lib/libnvinfer.so",
+        "usr/lib/libnvinfer_dispatch.so",
+        "usr/lib/libnvinfer_lean.so",
+        ":tensorrt-core-filegroup",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "tensorrt-core-filegroup",
+    srcs = [
+        "usr/lib/libnvinfer.so.10",
+        "usr/lib/libnvinfer.so.10.3.0",
+        "usr/lib/libnvinfer_builder_resource.so.10.3.0",
+        "usr/lib/libnvinfer_dispatch.so.10",
+        "usr/lib/libnvinfer_dispatch.so.10.3.0",
+        "usr/lib/libnvinfer_lean.so.10",
+        "usr/lib/libnvinfer_lean.so.10.3.0",
+        ":libc6-filegroup",
+        ":libcudla-filegroup",
+        ":libgcc1-filegroup",
+        ":libstdc++6-filegroup",
+        ":tegra-libraries-dla-compiler-filegroup",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36672,6 +37303,7 @@ filegroup(
     srcs = [
         "usr/bin/update-alternatives",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36682,6 +37314,11 @@ filegroup(
         "usr/include/liblastlog2/lastlog2.h",
         "usr/include/libmount/libmount.h",
         "usr/include/libsmartcols/libsmartcols.h",
+        "usr/lib/libblkid.so",
+        "usr/lib/libfdisk.so",
+        "usr/lib/liblastlog2.so",
+        "usr/lib/libmount.so",
+        "usr/lib/libsmartcols.so",
         "usr/lib/pkgconfig/blkid.pc",
         "usr/lib/pkgconfig/fdisk.pc",
         "usr/lib/pkgconfig/lastlog2.pc",
@@ -36695,6 +37332,7 @@ filegroup(
         ":libsqlite3-dev-filegroup",
         ":libuuid-dev-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36712,6 +37350,10 @@ filegroup(
         "usr/include/wayland-server-protocol.h",
         "usr/include/wayland-util.h",
         "usr/include/wayland-version.h",
+        "usr/lib/libwayland-client.so",
+        "usr/lib/libwayland-cursor.so",
+        "usr/lib/libwayland-egl.so",
+        "usr/lib/libwayland-server.so",
         "usr/lib/pkgconfig/wayland-client.pc",
         "usr/lib/pkgconfig/wayland-cursor.pc",
         "usr/lib/pkgconfig/wayland-egl.pc",
@@ -36723,20 +37365,26 @@ filegroup(
         ":libffi-dev-filegroup",
         ":wayland-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "wayland-filegroup",
     srcs = [
+        "usr/lib/libwayland-client.so.0",
         "usr/lib/libwayland-client.so.0.23.1",
+        "usr/lib/libwayland-cursor.so.0",
         "usr/lib/libwayland-cursor.so.0.23.1",
+        "usr/lib/libwayland-egl.so.1",
         "usr/lib/libwayland-egl.so.1.23.1",
+        "usr/lib/libwayland-server.so.0",
         "usr/lib/libwayland-server.so.0.23.1",
         "usr/share/wayland/wayland.dtd",
         "usr/share/wayland/wayland.xml",
         ":libc6-filegroup",
         ":libffi8-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36901,6 +37549,7 @@ filegroup(
         "usr/lib/pkgconfig/xproto.pc",
         "usr/lib/pkgconfig/xwaylandproto.pc",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -36921,7 +37570,9 @@ filegroup(
         "usr/include/lzma/stream_flags.h",
         "usr/include/lzma/version.h",
         "usr/include/lzma/vli.h",
+        "usr/lib/liblzma.so",
         "usr/lib/pkgconfig/liblzma.pc",
         ":liblzma5-filegroup",
     ],
+    visibility = ["//visibility:public"],
 )

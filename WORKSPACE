@@ -112,35 +112,11 @@ load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
 
-load(
-    "//debian:apache2.bzl",
-    apache2_debs = "files",
-)
-load(
-    "//debian:mingw_compiler.bzl",
-    mingw_compiler_debs = "files",
-)
 load("//debian:packages.bzl", "generate_repositories_for_debs")
 load(
     "//debian:phoenix6.bzl",
     phoenix6_debs = "files",
 )
-load(
-    "//debian:postgresql_amd64.bzl",
-    postgresql_amd64_debs = "files",
-)
-load(
-    "//debian:xvfb_amd64.bzl",
-    xvfb_amd64_debs = "files",
-)
-
-generate_repositories_for_debs(apache2_debs)
-
-generate_repositories_for_debs(postgresql_amd64_debs)
-
-generate_repositories_for_debs(mingw_compiler_debs)
-
-generate_repositories_for_debs(xvfb_amd64_debs)
 
 generate_repositories_for_debs(phoenix6_debs)
 
@@ -375,16 +351,26 @@ http_archive(
 http_archive(
     name = "arm64_debian_sysroot",
     build_file = "@//:compilers/orin_debian_rootfs.BUILD",
-    sha256 = "351d97e255874d7739f38dda2747ca3939d68e66094f82ede54f0c69a198e9f5",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-02-02-walnascar-arm64-nvidia-rootfs.tar.zst",
+    sha256 = "d1eeb1224a726cc9a8bb0eb55171872edea90bb0564f639b5c310b97d5cc7001",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-06-walnascar-arm64-nvidia-rootfs.tar.zst",
 )
 
 # Sysroot generated using //frc/amd64/build_rootfs.py
 http_archive(
     name = "amd64_debian_sysroot",
     build_file = "@//:compilers/amd64_debian_rootfs.BUILD",
-    sha256 = "70c4d31acb5e4ff4849f2c2c3aeb897b6b266f931d075cbb882c684230d128e9",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-02-22-bookworm-amd64-nvidia-rootfs.tar.zst",
+    sha256 = "e94dec03e19d88cd428964f1e4a430e6bc4a2dd2f4f7342f56b75efa9c75a761",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/2025-04-20-bookworm-amd64-nvidia-rootfs.tar.zst",
+)
+
+# Originally from: https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.gz
+# Recompressed for faster extraction.
+http_archive(
+    name = "amd64_tensorrt",
+    build_file = "@//:compilers/tensorrt.BUILD",
+    sha256 = "5b5b828be725077d13a23d296a5ae56ce42f785ad8258dc79d34f326b34cc783",
+    strip_prefix = "TensorRT-10.9.0.34",
+    url = "https://realtimeroboticsgroup.org/build-dependencies/developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.9.0/tars/TensorRT-10.9.0.34.Linux.x86_64-gnu.cuda-11.8.tar.zst",
 )
 
 http_archive(
@@ -397,21 +383,6 @@ filegroup(
 )""",
     sha256 = "5312c79b19e9883b3cebd9d65b4438a2bf05b41da0bcd8c35e19d22c3b2e1859",
     urls = ["https://realtimeroboticsgroup.org/build-dependencies/test_image_frc971.vision.CameraImage_2023.01.28.tar.gz"],
-)
-
-# Recompressed from libusb-1.0.21.7z.
-http_file(
-    name = "libusb_1_0_windows",
-    downloaded_file_path = "libusb-1.0.21-windows.tar.xz",
-    sha256 = "fc2ba03992f343aabbaf9eb90559c6e00cdc6a2bd914d7cebea85857d5244015",
-    urls = ["https://realtimeroboticsgroup.org/build-dependencies/libusb-1.0.21-windows.tar.xz"],
-)
-
-http_archive(
-    name = "postgresql_amd64",
-    build_file = "@//debian:postgresql_amd64.BUILD",
-    sha256 = "483e199d0e7feae7cca0df132c649b5c20ddcc1a17760e656c25709f44f57a65",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/postgresql_amd64_v2.tar.gz",
 )
 
 http_archive(
@@ -429,20 +400,6 @@ native_binary(
     """,
     sha256 = "28268bf402f1083833ea269331587f60a242848880073be8016501d864bd07a5",
     url = "https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-6.0.1-amd64-static.tar.xz",
-)
-
-http_archive(
-    name = "apache2",
-    build_file = "@//debian:apache2.BUILD",
-    sha256 = "98b0ad6d911751ba0aa486429e6278f995e7bbabd928c7d3d44c888fa2bf371b",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/apache2.tar.gz",
-)
-
-http_archive(
-    name = "mingw_compiler",
-    build_file = "@//debian:mingw_compiler.BUILD",
-    sha256 = "45e86a8460f2151a4f0306e7ae7b06761029d2412ee16f63d1e8d2d29354e378",
-    url = "https://realtimeroboticsgroup.org/build-dependencies/mingw_compiler.tar.gz",
 )
 
 # Downloaded from
@@ -1204,16 +1161,6 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/4.2.4.tar.gz",
     ],
-)
-
-http_archive(
-    name = "xvfb_amd64",
-    build_file = "//third_party:xvfb/xvfb.BUILD",
-    patch_cmds = [
-        "unlink usr/bin/X11",
-    ],
-    sha256 = "a7491bf6c47ed0037992fa493f9c25af3ab00a695d706e1fdc122a8b798c0d7c",
-    urls = ["https://realtimeroboticsgroup.org/build-dependencies/xvfb_amd64.tar.gz"],
 )
 
 # https://curl.haxx.se/download/curl-7.69.1.tar.gz

@@ -78,7 +78,7 @@ func main() {
 
 	dbDir := filepath.Join(tmpdir, "db")
 	initdb := exec.Command(
-		getRunfile("postgresql_amd64/initdb"),
+		getRunfile("amd64_debian_sysroot/initdb"),
 		"-D", dbDir,
 		"--username=test", "--pwfile="+passwordPath)
 	initdb.Stdout = os.Stdout
@@ -98,7 +98,7 @@ func main() {
 		socketDir)
 
 	log.Println("Starting up postgres.")
-	server := exec.Command(getRunfile("postgresql_amd64/postgres"), "-D", dbDir)
+	server := exec.Command(getRunfile("amd64_debian_sysroot/postgres"), "-D", dbDir)
 	server.Stdout = os.Stdout
 	server.Stderr = os.Stderr
 	err = server.Start()

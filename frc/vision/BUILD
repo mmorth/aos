@@ -798,3 +798,22 @@ cc_binary(
         "@com_google_absl//absl/log:die_if_null",
     ],
 )
+
+cc_binary(
+    name = "yolo",
+    srcs = [
+        "yolo.cc",
+    ],
+    features = ["cuda"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//aos:init",
+        "//aos/util:file",
+        "//frc/orin:cuda",
+        "//third_party:cudart",
+        "//third_party:tensorrt",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)

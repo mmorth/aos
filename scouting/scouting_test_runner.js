@@ -7,8 +7,8 @@ const cypress = require('cypress');
 // TODO(philipp): Figure out how to point Xvfb at the sandboxed usr/bin
 // directory. Currently impossible as it's hardcoded to use /usr/bin.
 process.env['PATH'] = [
-  `${process.env.RUNFILES_DIR}/xvfb_amd64/wrapped_bin`,
-  `${process.env.RUNFILES_DIR}/xvfb_amd64/usr/bin`,
+  `${process.env.RUNFILES_DIR}/amd64_debian_sysroot/wrapped_bin`,
+  `${process.env.RUNFILES_DIR}/amd64_debian_sysroot/usr/bin`,
   process.env.PATH,
 ].join(':');
 

@@ -135,6 +135,8 @@ def main(argv):
                 filesystem.packages['libglib-2.0-dev'],
                 filesystem.packages['opencv-dev'],
                 filesystem.packages['opencv'],
+                filesystem.packages['tensorrt-core'],
+                filesystem.packages['tensorrt-core-dev'],
                 filesystem.packages['libz-dev'],
                 filesystem.packages['libc6-dev'],
                 filesystem.packages['xz-dev'],

@@ -98,7 +98,8 @@ def main(argv):
         print("-" * 60)
 
         # Make modules available.
-        modules_path = Path("external/apache2/usr/lib/apache2/modules")
+        modules_path = Path(
+            "external/amd64_debian_sysroot/usr/lib/apache2/modules")
         os.symlink(modules_path.resolve(), temp_dir / "modules")
 
         # Generate a testing cert.
@@ -127,10 +128,12 @@ def main(argv):
 
         # Start the apache server.
         env = os.environ.copy()
-        env["LD_LIBRARY_PATH"] = "external/apache2/usr/lib/x86_64-linux-gnu"
+        env["LD_LIBRARY_PATH"] = "external/amd64_debian_sysroot/usr/lib/x86_64-linux-gnu"
         apache = subprocess.Popen(
-            ["external/apache2/usr/sbin/apache2", "-X", "-d",
-             str(temp_dir)],
+            [
+                "external/amd64_debian_sysroot/usr/sbin/apache2", "-X", "-d",
+                str(temp_dir)
+            ],
             env=env,
         )
 

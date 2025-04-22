@@ -141,6 +141,16 @@ cc_library(
 )
 
 cc_library(
+    name = "tensorrt",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "//tools:cpu_k8": ["@amd64_tensorrt//:tensorrt"],
+        "//tools:cpu_arm64": ["@arm64_debian_sysroot//:tensorrt"],
+        "//conditions:default": [":unavailable"],
+    }),
+)
+
+cc_library(
     name = "libturbojpeg",
     visibility = ["//visibility:public"],
     deps = select({
