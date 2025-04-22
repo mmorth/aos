@@ -20,7 +20,7 @@ py_binary(
     srcs = ["apache_runner.py"],
     data = [
         "apache_template.conf",
-        "@apache2//:all_files",
+        "@amd64_debian_sysroot//:sysroot_files",
     ],
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],

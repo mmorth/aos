@@ -22,7 +22,7 @@ Wait until the database has fully started up before starting the webserver.
 You can use the `psql` program to look at the contents of the database
 directly.
 ```console
-$ bazel run @postgresql_amd64//:psql -- --port=2345 --host=localhost --username=test --dbname=postgres
+$ bazel run @amd64_debian_sysroot//:psql -- --port=2345 --host=localhost --username=test --dbname=postgres
 
 postgres=# select * from team_match_stats;
 ```

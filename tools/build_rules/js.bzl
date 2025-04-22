@@ -398,7 +398,7 @@ def cypress_test(name, runner, data = None, **kwargs):
 
     data = data or []
     data.append(":%s_config" % name)
-    data.append("@xvfb_amd64//:wrapped_bin/Xvfb")
+    data.append("@amd64_debian_sysroot//:wrapped_bin/Xvfb")
     data.append("//:node_modules")
 
     cypress_module_test(

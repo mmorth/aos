@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
 filegroup(
     name = "sysroot_files",
     srcs = glob(
@@ -24,6 +26,107 @@ filegroup(
     ),
     visibility = ["//visibility:public"],
 )
+
+write_file(
+    name = "generate_wrapper",
+    out = "wrapped_bin/Xvfb.sh",
+    content = ["""\
+#!/bin/bash
+
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; set +e; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+
+
+runfiles_export_envvars
+
+export LD_LIBRARY_PATH="${RUNFILES_DIR}/amd64_debian_sysroot/usr/lib/x86_64-linux-gnu"
+export LD_LIBRARY_PATH+=":${RUNFILES_DIR}/amd64_debian_sysroot/lib/x86_64-linux-gnu"
+
+exec "${RUNFILES_DIR}/amd64_debian_sysroot/usr/bin/Xvfb" "$@"
+"""],
+    is_executable = True,
+)
+
+sh_binary(
+    name = "wrapped_bin/Xvfb",
+    srcs = ["wrapped_bin/Xvfb.sh"],
+    data = glob([
+        "usr/lib/**/*",
+        "lib/**/*",
+        "usr/bin/*",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)
+
+TEMPLATE = """\
+#!/bin/bash
+
+set -ex
+
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+
+add_ld_library_path_for() {
+  local file="$1"
+  local dir
+  local resolved_file
+  if ! resolved_file="$(rlocation "amd64_debian_sysroot/$file")"; then
+    echo "Couldn't find file amd64_debian_sysroot/${file}" >&2
+    exit 1
+  fi
+  dir="$(dirname "${resolved_file}")"
+  export LD_LIBRARY_PATH="${dir}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+}
+
+add_ld_library_path_for usr/lib/x86_64-linux-gnu/libbsd.so.0.11.7
+add_ld_library_path_for lib/x86_64-linux-gnu/libreadline.so.8.2
+
+exec $(rlocation amd64_debian_sysroot/usr/lib/postgresql/15/bin/%s) "$@"
+"""
+
+[(
+    write_file(
+        name = "generate_%s_wrapper" % binary,
+        out = "%s.sh" % binary,
+        content = [TEMPLATE % binary],
+    ),
+    sh_binary(
+        name = binary,
+        srcs = ["%s.sh" % binary],
+        data = glob([
+            "usr/lib/**/*",
+            "usr/share/postgresql/**/*",
+            "lib/**/*",
+        ]),
+        visibility = ["//visibility:public"],
+        deps = [
+            "@bazel_tools//tools/bash/runfiles",
+        ],
+    ),
+) for binary in (
+    "postgres",
+    "psql",
+    "initdb",
+)]
 
 # Don't include libraries which need to come from the host.
 # https://peps.python.org/pep-0513/

@@ -13,8 +13,8 @@ go_binary(
     name = "testdb_server",
     data = [
         "postgres_test.conf",
-        "@postgresql_amd64//:initdb",
-        "@postgresql_amd64//:postgres",
+        "@amd64_debian_sysroot//:initdb",
+        "@amd64_debian_sysroot//:postgres",
     ],
     embed = [":testdb_server_lib"],
     target_compatible_with = ["@platforms//cpu:x86_64"],

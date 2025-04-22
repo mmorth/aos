@@ -66,29 +66,6 @@ cc_binary(
     ],
 )
 
-genrule(
-    name = "usb_forward_windows",
-    srcs = [
-        "usb_forward.cc",
-        "@libusb_1_0_windows//file",
-    ],
-    outs = [
-        "usb_forward.exe",
-    ],
-    cmd = " ".join([
-        "$(location usb_forward_windows_build.sh)",
-        "$(location usb_forward.cc)",
-        "$(location @libusb_1_0_windows//file)",
-        "$@",
-    ]),
-    output_to_bindir = True,
-    target_compatible_with = ["@platforms//os:linux"],
-    tools = [
-        "usb_forward_windows_build.sh",
-        "@mingw_compiler//:all_files",
-    ],
-)
-
 cc_library(
     name = "motor_controls",
     srcs = [
