@@ -235,6 +235,7 @@ class CppGenerator : public BaseGenerator {
   }
 
   void GenIncludeDependencies() {
+    code_ += "#include <ostream>";
     if (opts_.generate_object_based_api) {
       for (auto it = parser_.native_included_files_.begin();
            it != parser_.native_included_files_.end(); ++it) {
@@ -1366,6 +1367,11 @@ class CppGenerator : public BaseGenerator {
       code_ += "}";
       code_ += "";
     }
+    code_ += "inline std::ostream& operator<<(std::ostream& os, const {{ENUM_NAME}} &e) {";
+    code_ += "  os << EnumName{{ENUM_NAME}}(e);";
+    code_ += "  return os;";
+    code_ += "}";
+    code_ += "";
 
     // Generate type traits for unions to map from a type to union enum value.
     if (enum_def.is_union && !enum_def.uses_multiple_type_instances) {
