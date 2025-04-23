@@ -32,6 +32,13 @@
 ABSL_FLAG(std::string, interface, "", "network interface");
 ABSL_FLAG(bool, disable_ipv6, false, "disable ipv6");
 ABSL_FLAG(int32_t, rmem, 0, "If nonzero, set rmem to this size.");
+ABSL_FLAG(int32_t, force_wmem_max, -1,
+          "If set to a nonnegative numbers, the wmem buffer size to use, in "
+          "bytes. Intended solely for testing purposes.");
+ABSL_FLAG(size_t, min_wmem, 64 * 1024,
+          "The minimum size for the wmem buffer. Setting this too low can "
+          "cause messages to get dropped. --force_wmem_max takes precedence "
+          "over this option.");
 
 // The Type of Service.
 // https://www.tucny.com/Home/dscp-tos
@@ -693,7 +700,14 @@ void SctpReadWrite::CloseSocket() {
 }
 
 void SctpReadWrite::DoSetMaxSize() {
-  size_t max_size = max_write_size_;
+  const int32_t force_wmem_max = absl::GetFlag(FLAGS_force_wmem_max);
+
+  // Set the size to be the max message size unless it's smaller than
+  // --min_wmem. Or use --force_wmem_max if it's set.
+  size_t max_size =
+      force_wmem_max > 0
+          ? force_wmem_max
+          : std::max(max_write_size_, absl::GetFlag(FLAGS_min_wmem));
 
   // This sets the max packet size that we can send.
   CHECK_GE(ReadWMemMax(), max_write_size_)
@@ -702,6 +716,7 @@ void SctpReadWrite::DoSetMaxSize() {
       << max_size;
   PCHECK(setsockopt(fd(), SOL_SOCKET, SO_SNDBUF, &max_size, sizeof(max_size)) ==
          0);
+  VLOG(1) << "Set SO_SNDBUF of socket " << fd() << " to " << max_size;
 
   // The SO_RCVBUF option (also controlled by net.core.rmem_default) needs to be
   // decently large but the actual size can be measured by tuning.  The defaults

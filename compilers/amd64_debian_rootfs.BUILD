@@ -72,8 +72,6 @@ sh_binary(
 TEMPLATE = """\
 #!/bin/bash
 
-set -ex
-
 # --- begin runfiles.bash initialization v2 ---
 # Copy-pasted from the Bazel Bash runfiles library v2.
 set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
@@ -99,6 +97,12 @@ add_ld_library_path_for() {
 
 add_ld_library_path_for usr/lib/x86_64-linux-gnu/libbsd.so.0.11.7
 add_ld_library_path_for lib/x86_64-linux-gnu/libreadline.so.8.2
+
+set -ex
+
+echo "--- Available locales ---"
+locale -a
+echo "-------------------------"
 
 exec $(rlocation amd64_debian_sysroot/usr/lib/postgresql/15/bin/%s) "$@"
 """
