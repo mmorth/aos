@@ -60,6 +60,7 @@ def _flatbuffer_library_compile_impl(ctx):
     outs = []
     commands = []
     for src in ctx.files.srcs:
+        workspaces = []
         if ctx.attr.tables_for_filenames:
             out_dir = None
             for table in ctx.attr.tables_for_filenames:
@@ -75,8 +76,14 @@ def _flatbuffer_library_compile_impl(ctx):
             out = ctx.actions.declare_file(ctx.attr.out_prefix + src.basename.replace(".fbs", "") + ctx.attr.output_suffix)
             outs.append(out)
             out_dir = out.dirname
+
+        for f in ctx.files.includes:
+            root = f.owner.workspace_root
+            if root and root not in workspaces:
+                workspaces.append(root)
+
         arguments = [ctx.executable._flatc.path]
-        for path in ctx.attr.include_paths:
+        for path in ctx.attr.include_paths + workspaces:
             for subpath in ["", ctx.bin_dir.path + "/"]:
                 arguments.append("-I")
                 arguments.append(subpath + path)
