@@ -1,3 +1,5 @@
+load("//tools/build_rules:clean_dep.bzl", "clean_dep")
+
 def _pip_configure_impl(repository_ctx):
     """Runs tools/python/pip_configure.py."""
     script_path = repository_ctx.path(repository_ctx.attr._script).realpath
@@ -24,10 +26,10 @@ pip_configure = repository_rule(
             default = "@python3_9_x86_64-unknown-linux-gnu//:bin/python3",
         ),
         "_script": attr.label(
-            default = "@//tools/python:pip_configure.py",
+            default = clean_dep("//tools/python:pip_configure.py"),
         ),
         "_requirements": attr.label(
-            default = "@//tools/python:requirements.txt",
+            default = clean_dep("//tools/python:requirements.txt"),
         ),
     },
 )

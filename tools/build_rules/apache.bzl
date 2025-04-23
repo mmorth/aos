@@ -1,3 +1,5 @@
+load("//tools/build_rules:clean_dep.bzl", "clean_dep")
+
 def _apache_binary_impl(ctx):
     binary_path = ctx.attr.binary.files_to_run.executable.short_path
 
@@ -35,7 +37,7 @@ apache_wrapper = rule(
             doc = "The binary that we're wrapping with LDAP+HTTPS.",
         ),
         "_apache_runner": attr.label(
-            default = "@//tools/build_rules:apache_runner",
+            default = clean_dep("//tools/build_rules:apache_runner"),
             executable = True,
             cfg = "target",
         ),

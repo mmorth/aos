@@ -1,3 +1,5 @@
+load("//tools/build_rules:clean_dep.bzl", "clean_dep")
+
 # This file contains replacements for select where the keys have more abstract
 # meanings so we can map multiple conditions to the same value easily and
 # quickly find issues where something new isn't handled.
@@ -58,12 +60,12 @@ def cpu_select(values):
         if key not in all_cpus and key != "else":
             fail("Not sure what a %s CPU is!" % key, "values")
     return select({
-        "@//tools:cpu_k8": values["amd64"],
-        "@//tools:cpu_roborio": values["roborio"],
-        "@//tools:cpu_arm64": values["arm64"],
-        "@//tools:cpu_cortex_m4f": values["cortex-m"],
-        "@//tools:cpu_cortex_m0plus": values["cortex-m0plus"],
-        "@//tools:cpu_cortex-m4f-imu": values["cortex-m4f-imu"],
+        clean_dep("//tools:cpu_k8"): values["amd64"],
+        clean_dep("//tools:cpu_roborio"): values["roborio"],
+        clean_dep("//tools:cpu_arm64"): values["arm64"],
+        clean_dep("//tools:cpu_cortex_m4f"): values["cortex-m"],
+        clean_dep("//tools:cpu_cortex_m0plus"): values["cortex-m0plus"],
+        clean_dep("//tools:cpu_cortex-m4f-imu"): values["cortex-m4f-imu"],
         # TODO(phil): Support this properly.
         #"@//tools:cpu_cortex_m4f_k22": values["cortex-m"],
     })
@@ -81,14 +83,14 @@ def address_size_select(values):
     if "64" not in values:
         fail("Need to handle 64 bit addresses!", "values")
     return select({
-        "@//tools:cpu_k8": values["64"],
-        "@//tools:cpu_arm64": values["64"],
-        "@//tools:cpu_roborio": values["32"],
-        "@//tools:cpu_cortex_m4f": values["32"],
-        "@//tools:cpu_cortex_m0plus": values["32"],
-        "@//tools:cpu_cortex-m4f-imu": values["32"],
+        clean_dep("//tools:cpu_k8"): values["64"],
+        clean_dep("//tools:cpu_arm64"): values["64"],
+        clean_dep("//tools:cpu_roborio"): values["32"],
+        clean_dep("//tools:cpu_cortex_m4f"): values["32"],
+        clean_dep("//tools:cpu_cortex_m0plus"): values["32"],
+        clean_dep("//tools:cpu_cortex-m4f-imu"): values["32"],
         # TODO(phil): Support this properly.
-        #"@//tools:cpu_cortex_m4f_k22": values["32"],
+        # clean_dep("//tools:cpu_cortex_m4f_k22"): values["32"],
     })
 
 """A select wrapper for compilers.
@@ -105,6 +107,6 @@ def compiler_select(values):
     if "clang" not in values:
         fail("Need to handle clang!", "values")
     return select({
-        "@//tools:compiler_gcc": values["gcc"],
-        "@//tools:compiler_clang": values["clang"],
+        clean_dep("//tools:compiler_gcc"): values["gcc"],
+        clean_dep("//tools:compiler_clang"): values["clang"],
     })
