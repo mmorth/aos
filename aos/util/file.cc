@@ -15,13 +15,15 @@
 #include <optional>
 #include <ostream>
 #include <string_view>
-#if __has_feature(memory_sanitizer)
-#include <sanitizer/msan_interface.h>
-#endif
 
 #include "flatbuffers/util.h"
 
+#include "aos/sanitizers.h"
 #include "aos/scoped/scoped_fd.h"
+
+#if defined(AOS_SANITIZE_MEMORY)
+#include <sanitizer/msan_interface.h>
+#endif
 
 namespace aos::util {
 
@@ -151,7 +153,7 @@ void UnlinkRecursive(std::string_view path) {
   }
 
   while ((curr = fts_read(ftsp))) {
-#if __has_feature(memory_sanitizer)
+#if AOS_SANITIZE_MEMORY
     // fts_read doesn't have propper msan interceptors.  Unpoison it ourselves.
     if (curr) {
       __msan_unpoison(curr, sizeof(*curr));

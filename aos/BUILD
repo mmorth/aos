@@ -259,6 +259,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
+        ":sanitizers",
         ":uuid",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
@@ -890,4 +891,12 @@ cc_library(
     deps = [
         "@com_google_absl//absl/types:span",
     ],
+)
+
+cc_library(
+    name = "sanitizers",
+    hdrs = [
+        "sanitizers.h",
+    ],
+    visibility = ["//:__subpackages__"],
 )

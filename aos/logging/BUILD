@@ -21,6 +21,7 @@ cc_library(
     deps = [
         "//aos:die",
         "//aos:macros",
+        "//aos:sanitizers",
         "//aos/libc:aos_strerror",
         "//aos/time",
         "@com_google_absl//absl/log",

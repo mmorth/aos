@@ -386,6 +386,7 @@ cc_library(
     ],
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
+        "//aos:sanitizers",
         "//aos/scoped:scoped_fd",
         "@com_github_google_flatbuffers//:flatbuffers",
         "@com_google_absl//absl/log",

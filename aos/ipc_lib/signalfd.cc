@@ -2,18 +2,20 @@
 
 #include <string.h>
 #include <sys/types.h>
-
-#include <csignal>
-#include <ostream>
-#if __has_feature(memory_sanitizer)
-#include <sanitizer/msan_interface.h>
-#endif
 #include <unistd.h>
 
+#include <csignal>
 #include <initializer_list>
+#include <ostream>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+
+#include "aos/sanitizers.h"
+
+#if defined(AOS_SANITIZE_MEMORY)
+#include <sanitizer/msan_interface.h>
+#endif
 
 namespace aos::ipc_lib {
 namespace {
@@ -23,7 +25,7 @@ namespace {
 // intercept this function natively.
 int wrapped_sigandset(sigset_t *dest, const sigset_t *left,
                       const sigset_t *right) {
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
   if (left) {
     __msan_check_mem_is_initialized(left, sizeof(*left));
   }
@@ -32,7 +34,7 @@ int wrapped_sigandset(sigset_t *dest, const sigset_t *left,
   }
 #endif
   const int r = sigandset(dest, left, right);
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
   if (!r && dest) {
     __msan_unpoison(dest, sizeof(*dest));
   }
@@ -45,13 +47,13 @@ int wrapped_sigandset(sigset_t *dest, const sigset_t *left,
 // <https://reviews.llvm.org/rG89ae290b58e20fc5f56b7bfae4b34e7fef06e1b1> to
 // intercept this function natively.
 int wrapped_pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
   if (set) {
     __msan_check_mem_is_initialized(set, sizeof(*set));
   }
 #endif
   const int r = pthread_sigmask(how, set, oldset);
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
   if (!r && oldset) {
     __msan_unpoison(oldset, sizeof(*oldset));
   }

@@ -20,6 +20,7 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 
+#include "aos/sanitizers.h"
 #include "aos/uuid.h"
 
 ABSL_FLAG(
@@ -106,7 +107,7 @@ void LockAllMemory() {
       << ": Failed to lock memory, use --skip_locking_memory to bypass this.  "
          "Bypassing will impact RT performance.";
 
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_ADDRESS) && !defined(AOS_SANITIZE_MEMORY)
   // Don't give freed memory back to the OS.
   CHECK_EQ(1, mallopt(M_TRIM_THRESHOLD, -1));
   // Don't use mmap for large malloc chunks.
@@ -240,7 +241,7 @@ bool MarkRealtime(bool realtime) {
     // For some applications (generally tools built for the host in Bazel), we
     // don't have malloc hooks available, but we also don't go realtime.  Delay
     // complaining in that case until we try to go RT and it matters.
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_ADDRESS) && !defined(AOS_SANITIZE_MEMORY)
     CHECK(has_malloc_hook)
         << ": Failed to register required malloc hooks before going realtime.  "
            "Disable --die_on_malloc to continue.";

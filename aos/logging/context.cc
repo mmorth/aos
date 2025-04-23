@@ -4,9 +4,6 @@
 #define _GNU_SOURCE /* See feature_test_macros(7) */
 #endif
 
-#if __has_feature(memory_sanitizer)
-#include <sanitizer/msan_interface.h>
-#endif
 #include <sys/prctl.h>
 #include <unistd.h>
 
@@ -23,6 +20,12 @@ extern char *program_invocation_short_name;
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+
+#include "aos/sanitizers.h"
+
+#if defined(AOS_SANITIZE_MEMORY)
+#include <sanitizer/msan_interface.h>
+#endif
 
 namespace aos::logging::internal {
 namespace {
@@ -42,7 +45,7 @@ namespace {
   if (prctl(PR_GET_NAME, thread_name_array) != 0) {
     PLOG(FATAL) << "prctl(PR_GET_NAME, " << thread_name_array << ") failed";
   }
-#if __has_feature(memory_sanitizer)
+#if defined(AOS_SANITIZE_MEMORY)
   // msan doesn't understand PR_GET_NAME, so help it along.
   __msan_unpoison(thread_name_array, sizeof(thread_name_array));
 #endif
