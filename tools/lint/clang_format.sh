@@ -23,6 +23,7 @@ cd "${BUILD_WORKSPACE_DIRECTORY}"
 # shouldn't be auto-formatted too.
 cc_files=($(git ls-tree --name-only --full-tree -r @ \
     | grep -v -e '^third_party/' \
+        -e '^aos/flatbuffers/test_dir/sample_test_static.h$' \
         -e '^motors/core/kinetis\.h$' \
         -e '^motors/core/mk20dx128\.*c$' \
         -e '^motors/core/nonstd\..*$' \

@@ -439,43 +439,48 @@ void PopulateTypeData(const reflection::Schema *schema,
 }
 
 std::string MakeMoveConstructor(std::string_view type_name) {
-  return absl::StrFormat(R"code(
-  // We need to provide a MoveConstructor to allow this table to be
+  return absl::StrFormat(
+      R"code(  // We need to provide a MoveConstructor to allow this table to be
   // used inside of vectors, but we do not want it readily available to
   // users. See TableMover for more details.
   %s(%s &&) = default;
   friend struct ::aos::fbs::internal::TableMover<%s>;
-  )code",
-                         type_name, type_name, type_name);
+)code",
+      type_name, type_name, type_name);
 }
 
 std::string MakeConstructor(std::string_view type_name) {
   const std::string constructor_body =
-      R"code(
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u, reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
-    PopulateVtable();
-)code";
-  return absl::StrFormat(R"code(
-  // Constructors for creating a flatbuffer object.
+      R"code(CHECK_EQ(buffer.size(), kSize);
+    CHECK_EQ(0u,
+             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    PopulateVtable();)code";
+  return absl::Substitute(
+      R"code(  // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
   // in order to allow it to populate the root table offset.
 
   // The buffer provided to these constructors should be aligned to kAlign
   // and kSize in length.
   // The parent/allocator may not be nullptr.
-  %s(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent) : Table(buffer, parent) {
-    %s
+  $0(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
+      : Table(buffer, parent) {
+    $1
   }
-  %s(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator) : Table(buffer, allocator) {
-    %s
+  $0(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator)
+      : Table(buffer, allocator) {
+    $1
   }
-  %s(std::span<uint8_t> buffer, ::std::unique_ptr<::aos::fbs::Allocator> allocator) : Table(buffer, ::std::move(allocator)) {
-    %s
+  $0(
+      std::span<uint8_t> buffer,
+      ::std::unique_ptr<::aos::fbs::Allocator> allocator)
+      : Table(buffer, ::std::move(allocator)) {
+    $1
   }
 )code",
-                         type_name, constructor_body, type_name,
-                         constructor_body, type_name, constructor_body);
+      type_name,        // $0
+      constructor_body  // $1
+  );
 }
 
 std::string MemberName(const FieldData &data) {
@@ -494,15 +499,15 @@ std::string InlineAbsoluteOffsetName(const FieldData &data) {
 std::string MakeClearer(const FieldData &field) {
   std::string logical_clearer;
   if (!field.is_inline) {
-    logical_clearer = MemberName(field) + ".reset();";
+    logical_clearer = "    " + MemberName(field) + ".reset();\n";
   }
   return absl::StrFormat(R"code(
-  // Clears the %s field. This will cause has_%s() to return false.
+  // Clears the %s field. This will cause
+  // has_%s() to return false.
   void clear_%s() {
-    %s
-    ClearField(%s, %d, %d);
+%s    ClearField(%s, %d, %d);
   }
-  )code",
+)code",
                          field.name, field.name, field.name, logical_clearer,
                          InlineAbsoluteOffsetName(field), field.inline_size,
                          field.vtable_offset);
@@ -515,7 +520,7 @@ std::string MakeHaser(const FieldData &field) {
   bool has_%s() const {
     return AsFlatbuffer().has_%s();
   }
-  )code",
+)code",
                          field.name, field.name, field.name);
 }
 
@@ -538,22 +543,26 @@ std::string MakeInlineAccessors(const FieldData &field,
   void set_%s(const %s &value) {
     SetField<%s>(%s, %d, value);
   }
-  )code",
+)code",
                       field.name, field.name, field.full_type, field.full_type,
                       InlineAbsoluteOffsetName(field), field.vtable_offset);
   const std::string getters = absl::StrFormat(
       R"code(
   // Returns the value of %s if set; nullopt otherwise.
   std::optional<%s> %s() const {
-    return has_%s() ? std::make_optional(Get<%s>(%s)) : std::nullopt;
+    return has_%s()
+               ? std::make_optional(Get<%s>(%s))
+               : std::nullopt;
   }
   // Returns a pointer to modify the %s field.
-  // The pointer may be invalidated by mutations/movements of the underlying buffer.
-  // Returns nullptr if the field is not set.
-  %s* mutable_%s() {
-    return has_%s() ? MutableGet<%s>(%s) : nullptr;
+  // The pointer may be invalidated by mutations/movements of the underlying
+  // buffer. Returns nullptr if the field is not set.
+  %s *mutable_%s() {
+    return has_%s()
+               ? MutableGet<%s>(%s)
+               : nullptr;
   }
-  )code",
+)code",
       field.name, field.full_type, field.name, field.name, field.full_type,
       InlineAbsoluteOffsetName(field), field.name, field.full_type, field.name,
       field.name, field.full_type, InlineAbsoluteOffsetName(field));
@@ -591,15 +600,18 @@ std::string MakeOffsetDataAccessors(const FieldData &field) {
   // Creates an empty object for the $0 field, which you can
   // then populate/modify as desired.
   // The field must not be populated yet.
-  $1* add_$0() {
+  $1 *add_$0() {
     CHECK(!$2.has_value());
     constexpr size_t kVtableIndex = $3;
-    // If this object does not normally have its initial memory statically allocated,
-    // allocate it now (this is used for zero-length vectors).
+    // If this object does not normally have its initial memory statically
+    // allocated, allocate it now (this is used for zero-length vectors).
     if constexpr ($1::kPreallocatedSize == 0) {
-      const size_t object_absolute_offset = $4;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset, $1::kSize, ::aos::fbs::SetZero::kYes);
+      const size_t object_absolute_offset =
+          $4;
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          $1::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -608,25 +620,39 @@ std::string MakeOffsetDataAccessors(const FieldData &field) {
       // The InsertBytes() call normally goes through and "fixes" any offsets
       // that will have been affected by the memory insertion. Unfortunately,
       // if this object currently takes up zero bytes then the InsertBytes()
-      // cannot distinguish between this offset and the (identical) offsets for any other objects
-      // that may have been "sharing" this location. The effect of this logic
-      // is that the first object that gets populated at any given location will
-      // bump all other objects to later. This is fine, although it does mean
-      // that the order in which objects appear in memory may vary depending
-      // on the order in which they are constructed (if they start out sharing a start pointer).
+      // cannot distinguish between this offset and the (identical) offsets for
+      // any other objects that may have been "sharing" this location. The
+      // effect of this logic is that the first object that gets populated at
+      // any given location will bump all other objects to later. This is fine,
+      // although it does mean that the order in which objects appear in memory
+      // may vary depending on the order in which they are constructed (if they
+      // start out sharing a start pointer).
       $4 = object_absolute_offset;
 
-      // Construct the *Static object that we will use for managing this subtable.
-      $5.emplace(BufferForObject($4, $1::$7), this);
+      // Construct the *Static object that we will use for managing this
+      // subtable.
+      $5.emplace(
+          BufferForObject(
+              $4,
+              $1::$7),
+          this);
     } else {
-      // Construct the *Static object that we will use for managing this subtable.
-      $5.emplace(BufferForObject($4, $1::kSize), this);
+      // Construct the *Static object that we will use for managing this
+      // subtable.
+      $5.emplace(
+          BufferForObject(
+              $4,
+              $1::kSize),
+          this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
-    SetField<::flatbuffers::uoffset_t>($6, kVtableIndex, $4 - $6);
+    SetField<::flatbuffers::uoffset_t>(
+        $6,
+        kVtableIndex,
+        $4 - $6);
     return &$5.value().t;
   }
-  )code",
+)code",
       field.name,                       // $0
       field.full_type,                  // $1
       MemberName(field),                // $2
@@ -654,10 +680,10 @@ std::string MakeOffsetDataAccessors(const FieldData &field) {
   const $1* $0() const {
     return $2.has_value() ? &$2.value().t : nullptr;
   }
-  $1* mutable_$0() {
+  $1 *mutable_$0() {
     return $2.has_value() ? &$2.value().t : nullptr;
   }
-  )code",
+)code",
       field.name,        // $0
       field.full_type,   // $1
       MemberName(field)  // $2
@@ -673,7 +699,7 @@ std::string MakeOffsetDataAccessors(const FieldData &field) {
     %s %s_or_default() const {
           return has_%s() ? *%s() : kDefault_%s;
         }
-      )code",
+)code",
                         field.name,  // e.g. float
                         field.full_type,
                         field.name,  // e.g. stopping_distance_or_default
@@ -696,39 +722,42 @@ std::string MakeMembers(const FieldData &field,
                         size_t inline_absolute_offset) {
   if (field.is_inline) {
     std::string code_str = absl::StrFormat(
-        R"code(
-    // Offset from the start of the buffer to the inline data for the %s field.
-    static constexpr size_t %s = %d;
-        )code",
+        R"code(  // Offset from the start of the buffer to the inline data for the field
+  // %s.
+  static constexpr size_t %s = %d;
+)code",
         field.name, InlineAbsoluteOffsetName(field), inline_absolute_offset);
 
     if (field.default_value_expression.has_value()) {
-      code_str += absl::StrFormat(R"code(
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr %s kDefault_%s = %s;
-        )code",
-                                  field.full_type, field.name,
-                                  field.default_value_expression.value());
+      code_str += absl::StrFormat(
+          R"code(  // This is an inline scalar/enum with a default, define kDefault_<name>.
+  static constexpr %s kDefault_%s = %s;
+)code",
+          field.full_type, field.name, field.default_value_expression.value());
     }
     return code_str;
   } else {
     return absl::StrFormat(
         R"code(
-    // Members relating to the %s field.
-    //
-    // *Static object used for managing this subtable. Will be nullopt
-    // when the field is not populated.
-    // We use the TableMover to be able to make this object moveable.
-    std::optional<::aos::fbs::internal::TableMover<%s>> %s;
-    // Offset from the start of the buffer to the start of the actual
-    // data for this field. Will be updated even when the table is not
-    // populated, so that we know where to construct it when requested.
-    static constexpr size_t kDefaultObjectAbsoluteOffset%s = %s;
-    size_t %s = kDefaultObjectAbsoluteOffset%s;
-    // Offset from the start of the buffer to the offset in the inline data for
-    // this field.
-    static constexpr size_t %s = %d;
-    )code",
+  // Members relating to the %s field.
+  //
+  // *Static object used for managing this subtable. Will be nullopt
+  // when the field is not populated.
+  // We use the TableMover to be able to make this object moveable.
+  std::optional<::aos::fbs::internal::TableMover<
+      %s>>
+      %s;
+  // Offset from the start of the buffer to the start of the actual
+  // data for this field. Will be updated even when the table is not
+  // populated, so that we know where to construct it when requested.
+  static constexpr size_t kDefaultObjectAbsoluteOffset%s =
+      %s;
+  size_t %s =
+      kDefaultObjectAbsoluteOffset%s;
+  // Offset from the start of the buffer to the offset in the inline data for
+  // this field.
+  static constexpr size_t %s = %d;
+)code",
         field.name, field.full_type, MemberName(field), field.name,
         offset_data_absolute_offset, ObjectAbsoluteOffsetName(field),
         field.name, InlineAbsoluteOffsetName(field), inline_absolute_offset);
@@ -738,12 +767,14 @@ std::string MakeMembers(const FieldData &field,
 std::string MakeFullClearer(const std::vector<FieldData> &fields) {
   std::vector<std::string> clearers;
   for (const FieldData &field : fields) {
-    clearers.emplace_back(absl::StrFormat("clear_%s();", field.name));
+    clearers.emplace_back(absl::StrFormat("    clear_%s();", field.name));
   }
-  return absl::StrFormat(R"code(
-  // Clears every field of the table, removing any existing state.
-  void Clear() { %s })code",
-                         absl::StrJoin(clearers, "\n"));
+  return absl::StrFormat(
+      R"code(  // Clears every field of the table, removing any existing state.
+  void Clear() {
+%s
+  })code",
+      absl::StrJoin(clearers, "\n"));
 }
 
 // Creates the FromFlatbuffer() method that copies from a flatbuffer object API
@@ -754,70 +785,71 @@ std::string MakeObjectCopier(const std::vector<FieldData> &fields) {
     if (field.is_struct) {
       // Structs are stored as unique_ptr<FooStruct>
       copiers.emplace_back(absl::StrFormat(R"code(
-      if (other.%s) {
-        set_%s(*other.%s);
-      }
-      )code",
+    if (other.%s) {
+      set_%s(*other.%s);
+    }
+)code",
                                            field.name, field.name, field.name));
     } else if (field.is_inline) {
       // Inline non-struct elements are stored as FooType.
       copiers.emplace_back(absl::StrFormat(R"code(
-      set_%s(other.%s);
-      )code",
+    set_%s(other.%s);
+)code",
                                            field.name, field.name));
     } else if (field.is_repeated) {
       // strings are stored as std::string's.
       // vectors are stored as std::vector's.
-      copiers.emplace_back(absl::StrFormat(R"code(
-      // Unconditionally copy strings/vectors, even if it will just end up
-      // being 0-length (this maintains consistency with the flatbuffer Pack()
-      // behavior).
-      {
-        %s* added_%s = add_%s();
-        CHECK(added_%s != nullptr);
-        if (!added_%s->FromFlatbuffer(other.%s)) {
-          // Fail if we were unable to copy (e.g., if we tried to copy in a long
-          // vector and do not have the space for it).
-          return false;
-        }
+      copiers.emplace_back(absl::StrFormat(
+          R"code(    // Unconditionally copy strings/vectors, even if it will just end up
+    // being 0-length (this maintains consistency with the flatbuffer Pack()
+    // behavior).
+    {
+      %s *added_%s =
+          add_%s();
+      CHECK(added_%s != nullptr);
+      if (!added_%s->FromFlatbuffer(other.%s)) {
+        // Fail if we were unable to copy (e.g., if we tried to copy in a long
+        // vector and do not have the space for it).
+        return false;
       }
-      )code",
-                                           field.full_type, field.name,
-                                           field.name, field.name, field.name,
-                                           field.name));
+    }
+)code",
+          field.full_type, field.name, field.name, field.name, field.name,
+          field.name));
     } else {
       // Tables are stored as unique_ptr<FooTable>
-      copiers.emplace_back(absl::StrFormat(R"code(
-      if (other.%s) {
-        %s* added_%s = add_%s();
-        CHECK(added_%s != nullptr);
-        if (!added_%s->FromFlatbuffer(*other.%s)) {
-          // Fail if we were unable to copy (e.g., if we tried to copy in a long
-          // vector and do not have the space for it).
-          return false;
-        }
+      copiers.emplace_back(absl::StrFormat(R"code(    if (other.%s) {
+      %s *added_%s =
+          add_%s();
+      CHECK(added_%s != nullptr);
+      if (!added_%s->FromFlatbuffer(*other.%s)) {
+        // Fail if we were unable to copy (e.g., if we tried to copy in a long
+        // vector and do not have the space for it).
+        return false;
       }
-      )code",
+    }
+)code",
                                            field.name, field.full_type,
                                            field.name, field.name, field.name,
                                            field.name, field.name));
     }
   }
   return absl::StrFormat(
-      R"code(
-  // Copies the contents of the provided flatbuffer into this flatbuffer,
+      R"code(  // Copies the contents of the provided flatbuffer into this flatbuffer,
   // returning true on success.
   // Because the Flatbuffer Object API does not provide any concept of an
   // optionally populated scalar field, all scalar fields will be populated
   // after a call to FromFlatbufferObject().
   // This is a deep copy, and will call FromFlatbufferObject on
   // any constituent objects.
-  [[nodiscard]] bool FromFlatbuffer([[maybe_unused]] const Flatbuffer::NativeTableType &other) {
+  [[nodiscard]] bool FromFlatbuffer(
+      [[maybe_unused]] const Flatbuffer::NativeTableType &other) {
     Clear();
-    %s
+%s
     return true;
   }
-  [[nodiscard]] bool FromFlatbuffer(const flatbuffers::unique_ptr<Flatbuffer::NativeTableType>& other) {
+  [[nodiscard]] bool FromFlatbuffer(
+      const flatbuffers::unique_ptr<Flatbuffer::NativeTableType> &other) {
     return FromFlatbuffer(*other);
   }
 )code",
@@ -830,31 +862,29 @@ std::string MakeCopier(const std::vector<FieldData> &fields) {
   std::vector<std::string> copiers;
   for (const FieldData &field : fields) {
     if (field.is_struct) {
-      copiers.emplace_back(absl::StrFormat(R"code(
-      if (other.has_%s()) {
-        set_%s(*other.%s());
-      }
-      )code",
+      copiers.emplace_back(absl::StrFormat(R"code(    if (other.has_%s()) {
+      set_%s(*other.%s());
+    }
+)code",
                                            field.name, field.name, field.name));
     } else if (field.is_inline) {
-      copiers.emplace_back(absl::StrFormat(R"code(
-      if (other.has_%s()) {
-        set_%s(other.%s());
-      }
-      )code",
+      copiers.emplace_back(absl::StrFormat(R"code(    if (other.has_%s()) {
+      set_%s(other.%s());
+    }
+)code",
                                            field.name, field.name, field.name));
     } else {
-      copiers.emplace_back(absl::StrFormat(R"code(
-      if (other.has_%s()) {
-        %s* added_%s = add_%s();
-        CHECK(added_%s != nullptr);
-        if (!added_%s->FromFlatbuffer(other.%s())) {
-          // Fail if we were unable to copy (e.g., if we tried to copy in a long
-          // vector and do not have the space for it).
-          return false;
-        }
+      copiers.emplace_back(absl::StrFormat(R"code(    if (other.has_%s()) {
+      %s *added_%s =
+          add_%s();
+      CHECK(added_%s != nullptr);
+      if (!added_%s->FromFlatbuffer(other.%s())) {
+        // Fail if we were unable to copy (e.g., if we tried to copy in a long
+        // vector and do not have the space for it).
+        return false;
       }
-      )code",
+    }
+)code",
                                            field.name, field.full_type,
                                            field.name, field.name, field.name,
                                            field.name, field.name));
@@ -868,7 +898,7 @@ std::string MakeCopier(const std::vector<FieldData> &fields) {
   // objects.
   [[nodiscard]] bool FromFlatbuffer([[maybe_unused]] const Flatbuffer &other) {
     Clear();
-    %s
+%s
     return true;
   }
   // Equivalent to FromFlatbuffer(const Flatbuffer&); this overload is provided
@@ -896,15 +926,15 @@ std::string MakeSubObjectList(const std::vector<FieldData> &fields) {
     }
   }
   if (num_object_fields == 0) {
-    return R"code(
-  // This object has no non-inline subobjects, so we don't have to do anything special.
+    return R"code(  // This object has no non-inline subobjects, so we don't have to do anything
+  // special.
   size_t NumberOfSubObjects() const final { return 0; }
   using ::aos::fbs::ResizeableObject::SubObject;
   SubObject GetSubObject(size_t) final { LOG(FATAL) << "No subobjects."; }
-  )code";
+)code";
   }
-  return absl::StrFormat(R"code(
-  size_t NumberOfSubObjects() const final { return %d; }
+  return absl::Substitute(
+      R"code(  size_t NumberOfSubObjects() const final { return $0; }
   using ::aos::fbs::ResizeableObject::SubObject;
   SubObject GetSubObject(size_t index) final {
     SubObject object;
@@ -915,33 +945,43 @@ std::string MakeSubObjectList(const std::vector<FieldData> &fields) {
     // each subobject belong.
     // Pointers because these may need to be modified when memory is
     // inserted into the buffer.
-    const std::array<size_t*, %d> subobject_object_offsets{%s};
+    const std::array<size_t *, $0> subobject_object_offsets{
+        $1,
+    };
     // Actual subobjects; note that the pointers will be invalid when the
     // field is not populated.
-    const std::array<::aos::fbs::ResizeableObject*, %d> subobject_objects{%s};
+    const std::array<::aos::fbs::ResizeableObject *, $0> subobject_objects{
+        $2,
+    };
     // Absolute offsets from the start of the buffer to where the inline
     // entry is for each table. These offsets do not need to change at
     // runtime (because memory is never inserted into the start of
     // a given table), but the offsets pointed to by these offsets
     // may need to be updated.
-    const std::array<size_t, %d> subobject_inline_offsets{%s};
-    object.inline_entry = MutableGet<::flatbuffers::uoffset_t>(subobject_inline_offsets[index]);
-    object.object = (*object.inline_entry == 0) ? nullptr : subobject_objects[index];
+    const std::array<size_t, $0> subobject_inline_offsets{
+        $3,
+    };
+    object.inline_entry =
+        MutableGet<::flatbuffers::uoffset_t>(subobject_inline_offsets[index]);
+    object.object =
+        (*object.inline_entry == 0) ? nullptr : subobject_objects[index];
     object.absolute_offset = subobject_object_offsets[index];
     return object;
   }
-  )code",
-                         num_object_fields, num_object_fields,
-                         absl::StrJoin(object_offsets, ", "), num_object_fields,
-                         absl::StrJoin(objects, ", "), num_object_fields,
-                         absl::StrJoin(inline_offsets, ", "));
+)code",
+      num_object_fields,                             // $0
+      absl::StrJoin(object_offsets, ",\n        "),  // $1
+      absl::StrJoin(objects, ",\n        "),         // $2
+      absl::StrJoin(inline_offsets, ",\n        ")   // $3
+  );
 }
 
 std::string AlignCppString(const std::string_view expression,
                            const std::string_view alignment,
                            const std::string_view offset) {
-  return absl::StrCat("::aos::fbs::AlignOffset(", expression, ", ", alignment,
-                      ", ", offset, ")");
+  return absl::StrCat("::aos::fbs::AlignOffset(", expression,
+                      ",\n                              ", alignment, ", ",
+                      offset, ")");
 }
 
 std::string MakeInclude(std::string_view path, bool system = false) {
@@ -993,7 +1033,6 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
   std::vector<std::string> accessors;
   std::vector<std::string> members;
   std::set<std::string> includes = {
-      MakeInclude("optional", true),
       MakeInclude("aos/flatbuffers/static_table.h"),
       MakeInclude("aos/flatbuffers/static_vector.h")};
   for (const reflection::SchemaFile *file : *schema->fbs_files()) {
@@ -1011,18 +1050,19 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
     inline_absolute_offset = AlignOffset(
         inline_absolute_offset, field.inline_alignment, kVtablePointerSize);
     if (!field.is_inline) {
-      alignments.push_back(field.full_type + "::kAlign");
+      alignments.push_back("      " + field.full_type + "::kAlign,\n");
       // We care about aligning each field relative to the alignment point in
       // this flatbuffer (which is kAlignOffset into the block of memory).  We
       // then need to report out the offset relative to the start, not the
       // alignment point.
       offset_data_relative_offset =
           AlignCppString(offset_data_relative_offset + " - kAlignOffset",
-                         alignments.back(),
+                         field.full_type + "::kAlign",
                          field.full_type + "::kAlignOffset") +
-          " + kAlignOffset";
+          " +\n      kAlignOffset";
     } else {
-      alignments.push_back(std::to_string(field.inline_alignment));
+      alignments.push_back("      " + std::to_string(field.inline_alignment) +
+                           ",\n");
     }
     const std::string offset_data_absolute_offset = offset_data_relative_offset;
     accessors.emplace_back(MakeAccessors(field, inline_absolute_offset));
@@ -1042,15 +1082,15 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
   }
 
   const std::string alignment = absl::StrCat(
-      "static constexpr size_t kAlign = std::max<size_t>({kMinAlign, ",
-      absl::StrJoin(alignments, ", "), "});\n");
+      "static constexpr size_t kAlign = std::max<size_t>({\n      kMinAlign,\n",
+      absl::StrJoin(alignments, ""), "  });\n");
   // Same here, we want to align the end relative to the alignment point, but
   // then we want to report out the size including the offset.
   const std::string size = absl::StrCat(
-      "static constexpr size_t kSize = ",
+      "static constexpr size_t kSize =\n      ",
       AlignCppString(offset_data_relative_offset + " - kAlignOffset", "kAlign",
                      "kAlignOffset"),
-      " + kAlignOffset;");
+      " +\n      kAlignOffset;");
   const size_t inline_data_size = inline_absolute_offset;
   const std::string constants = absl::StrFormat(
       R"code(
@@ -1059,7 +1099,7 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
   static constexpr size_t kInlineDataSize = %d;
   // Space taken up by the vtable for this object, in bytes.
   static constexpr size_t kVtableSize =
-     sizeof(::flatbuffers::voffset_t) * (2 + %d);
+      sizeof(::flatbuffers::voffset_t) * (2 + %d);
   // Offset from the start of the internal memory buffer to the start of the
   // vtable.
   static constexpr size_t kVtableStart = ::aos::fbs::AlignOffset(
@@ -1098,14 +1138,17 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
       R"code(
 namespace %s {
 class %s : public ::aos::fbs::Table {
-  public:
+ public:
   // The underlying "raw" flatbuffer type for this type.
   typedef %s Flatbuffer;
-  typedef flatbuffers::unique_ptr<Flatbuffer::NativeTableType> FlatbufferObjectType;
+  typedef flatbuffers::unique_ptr<Flatbuffer::NativeTableType>
+      FlatbufferObjectType;
   // Returns this object as a flatbuffer type. This reference may not be valid
   // following mutations to the underlying flatbuffer, due to how memory may get
   // may get moved around.
-  const Flatbuffer &AsFlatbuffer() const { return *GetFlatbuffer<Flatbuffer>(); }
+  const Flatbuffer &AsFlatbuffer() const {
+    return *GetFlatbuffer<Flatbuffer>();
+  }
 %s
 %s
   virtual ~%s() {}
@@ -1113,7 +1156,7 @@ class %s : public ::aos::fbs::Table {
 %s
 %s
 %s
-  private:
+ private:
 %s
 %s
 %s
@@ -1129,13 +1172,14 @@ class %s : public ::aos::fbs::Table {
   static constexpr size_t kRootSize =
       ::aos::fbs::AlignOffset(kSize + sizeof(::flatbuffers::uoffset_t), kAlign);
 };
-}
-  )code",
+}  // namespace %s
+)code",
       type_namespace, type_name, FlatbufferNameToCppName(fbs_type_name),
       constants, MakeConstructor(type_name), type_name,
       absl::StrJoin(accessors, ""), MakeFullClearer(fields), MakeCopier(fields),
       MakeObjectCopier(fields), MakeMoveConstructor(type_name),
-      absl::StrJoin(members, ""), MakeSubObjectList(fields), size);
+      absl::StrJoin(members, ""), MakeSubObjectList(fields), size,
+      type_namespace);
 
   GeneratedObject result;
   result.name = fbs_type_name;
@@ -1183,7 +1227,8 @@ GeneratedCode GeneratedCode::MergeCode(
   GeneratedCode result;
   // TODO(james): Should we use #ifdef include guards instead?
   result.contents_prefix =
-      "#pragma once\n// This is a generated file. Do not modify.\n";
+      "#pragma once\n// This is a generated file. Do not modify.\n#include "
+      "<optional>\n\n";
   // We need to get the ordering of objects correct in order to ensure that
   // depended-on objects appear before their dependees.
   // In order to do this, we:

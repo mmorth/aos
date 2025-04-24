@@ -26,5 +26,4 @@ for ((i = 0; i < $LEN; i++)); do
     --reflection_bfbs "${INPUTS[i]}" \
     --output_file "${OUTPUTS[i]}" \
     --base_file_name "$(basename ${SCHEMA_FILES[i]})"
-  $(rlocation llvm_k8/bin/clang-format) --style=file:"$(rlocation ${AOS_REPO_NAME}/.clang-format)" -i "${OUTPUTS[i]}"
 done

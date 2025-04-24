@@ -165,8 +165,6 @@ sh_binary(
     srcs = ["generate.sh"],
     data = [
         ":generate",
-        "//:.clang-format",
-        "@llvm_k8//:bin",
     ],
     visibility = ["//visibility:public"],
     deps = ["@bazel_tools//tools/bash/runfiles"],

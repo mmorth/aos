@@ -35,7 +35,10 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
       kInlineDataSize, alignof(::flatbuffers::voffset_t));
   // Required alignment of this object. The buffer that this object gets
   // constructed into must be aligned to this value.
-  static constexpr size_t kAlign = std::max<size_t>({kMinAlign, 1});
+  static constexpr size_t kAlign = std::max<size_t>({
+      kMinAlign,
+      1,
+  });
 
   // Offset into this object to measure the alignment at.
   static constexpr size_t kAlignOffset = sizeof(::flatbuffers::soffset_t);
@@ -64,16 +67,14 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // The buffer provided to these constructors should be aligned to kAlign
   // and kSize in length.
   // The parent/allocator may not be nullptr.
-  MinimallyAlignedTableStatic(std::span<uint8_t> buffer,
-                              ::aos::fbs::ResizeableObject *parent)
+  MinimallyAlignedTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
              reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
-  MinimallyAlignedTableStatic(std::span<uint8_t> buffer,
-                              ::aos::fbs::Allocator *allocator)
+  MinimallyAlignedTableStatic(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator)
       : Table(buffer, allocator) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
@@ -108,15 +109,21 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // The pointer may be invalidated by mutations/movements of the underlying
   // buffer. Returns nullptr if the field is not set.
   uint8_t *mutable_field() {
-    return has_field() ? MutableGet<uint8_t>(kInlineAbsoluteOffset_field)
-                       : nullptr;
+    return has_field()
+               ? MutableGet<uint8_t>(kInlineAbsoluteOffset_field)
+               : nullptr;
   }
 
-  // Clears the field field. This will cause has_field() to return false.
-  void clear_field() { ClearField(kInlineAbsoluteOffset_field, 1, 4); }
+  // Clears the field field. This will cause
+  // has_field() to return false.
+  void clear_field() {
+    ClearField(kInlineAbsoluteOffset_field, 1, 4);
+  }
 
   // Returns true if the field field is set and can be accessed.
-  bool has_field() const { return AsFlatbuffer().has_field(); }
+  bool has_field() const {
+    return AsFlatbuffer().has_field();
+  }
 
   // Returns the field field if set, or its schema default otherwise.
   uint8_t field_or_default() const {
@@ -124,7 +131,9 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   }
 
   // Clears every field of the table, removing any existing state.
-  void Clear() { clear_field(); }
+  void Clear() {
+    clear_field();
+  }
 
   // Copies the contents of the provided flatbuffer into this flatbuffer,
   // returning true on success.
@@ -132,7 +141,6 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // objects.
   [[nodiscard]] bool FromFlatbuffer([[maybe_unused]] const Flatbuffer &other) {
     Clear();
-
     if (other.has_field()) {
       set_field(other.field());
     }
@@ -173,9 +181,9 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   MinimallyAlignedTableStatic(MinimallyAlignedTableStatic &&) = default;
   friend struct ::aos::fbs::internal::TableMover<MinimallyAlignedTableStatic>;
 
-  // Offset from the start of the buffer to the inline data for the field field.
+  // Offset from the start of the buffer to the inline data for the field
+  // field.
   static constexpr size_t kInlineAbsoluteOffset_field = 4;
-
   // This is an inline scalar/enum with a default, define kDefault_<name>.
   static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
 
@@ -228,7 +236,11 @@ class SubTableStatic : public ::aos::fbs::Table {
       kInlineDataSize, alignof(::flatbuffers::voffset_t));
   // Required alignment of this object. The buffer that this object gets
   // constructed into must be aligned to this value.
-  static constexpr size_t kAlign = std::max<size_t>({kMinAlign, 4, 2});
+  static constexpr size_t kAlign = std::max<size_t>({
+      kMinAlign,
+      4,
+      2,
+  });
 
   // Offset into this object to measure the alignment at.
   static constexpr size_t kAlignOffset = sizeof(::flatbuffers::soffset_t);
@@ -257,8 +269,7 @@ class SubTableStatic : public ::aos::fbs::Table {
   // The buffer provided to these constructors should be aligned to kAlign
   // and kSize in length.
   // The parent/allocator may not be nullptr.
-  SubTableStatic(std::span<uint8_t> buffer,
-                 ::aos::fbs::ResizeableObject *parent)
+  SubTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
@@ -272,8 +283,9 @@ class SubTableStatic : public ::aos::fbs::Table {
              reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
-  SubTableStatic(std::span<uint8_t> buffer,
-                 ::std::unique_ptr<::aos::fbs::Allocator> allocator)
+  SubTableStatic(
+      std::span<uint8_t> buffer,
+      ::std::unique_ptr<::aos::fbs::Allocator> allocator)
       : Table(buffer, ::std::move(allocator)) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
@@ -291,24 +303,34 @@ class SubTableStatic : public ::aos::fbs::Table {
 
   // Returns the value of baz if set; nullopt otherwise.
   std::optional<float> baz() const {
-    return has_baz() ? std::make_optional(Get<float>(kInlineAbsoluteOffset_baz))
-                     : std::nullopt;
+    return has_baz()
+               ? std::make_optional(Get<float>(kInlineAbsoluteOffset_baz))
+               : std::nullopt;
   }
   // Returns a pointer to modify the baz field.
   // The pointer may be invalidated by mutations/movements of the underlying
   // buffer. Returns nullptr if the field is not set.
   float *mutable_baz() {
-    return has_baz() ? MutableGet<float>(kInlineAbsoluteOffset_baz) : nullptr;
+    return has_baz()
+               ? MutableGet<float>(kInlineAbsoluteOffset_baz)
+               : nullptr;
   }
 
-  // Clears the baz field. This will cause has_baz() to return false.
-  void clear_baz() { ClearField(kInlineAbsoluteOffset_baz, 4, 8); }
+  // Clears the baz field. This will cause
+  // has_baz() to return false.
+  void clear_baz() {
+    ClearField(kInlineAbsoluteOffset_baz, 4, 8);
+  }
 
   // Returns true if the baz field is set and can be accessed.
-  bool has_baz() const { return AsFlatbuffer().has_baz(); }
+  bool has_baz() const {
+    return AsFlatbuffer().has_baz();
+  }
 
   // Returns the baz field if set, or its schema default otherwise.
-  float baz_or_default() const { return has_baz() ? *baz() : kDefault_baz; }
+  float baz_or_default() const {
+    return has_baz() ? *baz() : kDefault_baz;
+  }
 
   // Sets the foo field, causing it to be populated if it is not already.
   // This will populate the field even if the specified value is the default.
@@ -326,17 +348,26 @@ class SubTableStatic : public ::aos::fbs::Table {
   // The pointer may be invalidated by mutations/movements of the underlying
   // buffer. Returns nullptr if the field is not set.
   int16_t *mutable_foo() {
-    return has_foo() ? MutableGet<int16_t>(kInlineAbsoluteOffset_foo) : nullptr;
+    return has_foo()
+               ? MutableGet<int16_t>(kInlineAbsoluteOffset_foo)
+               : nullptr;
   }
 
-  // Clears the foo field. This will cause has_foo() to return false.
-  void clear_foo() { ClearField(kInlineAbsoluteOffset_foo, 2, 4); }
+  // Clears the foo field. This will cause
+  // has_foo() to return false.
+  void clear_foo() {
+    ClearField(kInlineAbsoluteOffset_foo, 2, 4);
+  }
 
   // Returns true if the foo field is set and can be accessed.
-  bool has_foo() const { return AsFlatbuffer().has_foo(); }
+  bool has_foo() const {
+    return AsFlatbuffer().has_foo();
+  }
 
   // Returns the foo field if set, or its schema default otherwise.
-  int16_t foo_or_default() const { return has_foo() ? *foo() : kDefault_foo; }
+  int16_t foo_or_default() const {
+    return has_foo() ? *foo() : kDefault_foo;
+  }
 
   // Clears every field of the table, removing any existing state.
   void Clear() {
@@ -350,7 +381,6 @@ class SubTableStatic : public ::aos::fbs::Table {
   // objects.
   [[nodiscard]] bool FromFlatbuffer([[maybe_unused]] const Flatbuffer &other) {
     Clear();
-
     if (other.has_baz()) {
       set_baz(other.baz());
     }
@@ -381,6 +411,7 @@ class SubTableStatic : public ::aos::fbs::Table {
 
     set_baz(other.baz);
 
+
     set_foo(other.foo);
 
     return true;
@@ -397,15 +428,14 @@ class SubTableStatic : public ::aos::fbs::Table {
   SubTableStatic(SubTableStatic &&) = default;
   friend struct ::aos::fbs::internal::TableMover<SubTableStatic>;
 
-  // Offset from the start of the buffer to the inline data for the baz field.
+  // Offset from the start of the buffer to the inline data for the field
+  // baz.
   static constexpr size_t kInlineAbsoluteOffset_baz = 4;
-
   // This is an inline scalar/enum with a default, define kDefault_<name>.
   static constexpr float kDefault_baz = static_cast<float>(0);
-
-  // Offset from the start of the buffer to the inline data for the foo field.
+  // Offset from the start of the buffer to the inline data for the field
+  // foo.
   static constexpr size_t kInlineAbsoluteOffset_foo = 8;
-
   // This is an inline scalar/enum with a default, define kDefault_<name>.
   static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
 
@@ -458,20 +488,22 @@ class TestTableStatic : public ::aos::fbs::Table {
       kInlineDataSize, alignof(::flatbuffers::voffset_t));
   // Required alignment of this object. The buffer that this object gets
   // constructed into must be aligned to this value.
-  static constexpr size_t kAlign = std::max<size_t>(
-      {kMinAlign, 8,
-       ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kAlign,
-       ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kAlign,
-       ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false,
-                          0>::kAlign,
-       ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlign,
-       ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kAlign,
-       ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlign,
-       ::aos::fbs::String<0>::kAlign,
-       ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlign,
-       aos::fbs::testing::included::IncludedTableStatic::kAlign,
-       aos::fbs::testing::SubTableStatic::kAlign,
-       ::aos::fbs::String<20>::kAlign, 4});
+  static constexpr size_t kAlign = std::max<size_t>({
+      kMinAlign,
+      8,
+      ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kAlign,
+      ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kAlign,
+      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kAlign,
+      ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlign,
+      ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kAlign,
+      ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlign,
+      ::aos::fbs::String<0>::kAlign,
+      ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlign,
+      aos::fbs::testing::included::IncludedTableStatic::kAlign,
+      aos::fbs::testing::SubTableStatic::kAlign,
+      ::aos::fbs::String<20>::kAlign,
+      4,
+  });
 
   // Offset into this object to measure the alignment at.
   static constexpr size_t kAlignOffset = sizeof(::flatbuffers::soffset_t);
@@ -500,8 +532,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // The buffer provided to these constructors should be aligned to kAlign
   // and kSize in length.
   // The parent/allocator may not be nullptr.
-  TestTableStatic(std::span<uint8_t> buffer,
-                  ::aos::fbs::ResizeableObject *parent)
+  TestTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
@@ -515,8 +546,9 @@ class TestTableStatic : public ::aos::fbs::Table {
              reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
-  TestTableStatic(std::span<uint8_t> buffer,
-                  ::std::unique_ptr<::aos::fbs::Allocator> allocator)
+  TestTableStatic(
+      std::span<uint8_t> buffer,
+      ::std::unique_ptr<::aos::fbs::Allocator> allocator)
       : Table(buffer, ::std::move(allocator)) {
     CHECK_EQ(buffer.size(), kSize);
     CHECK_EQ(0u,
@@ -529,46 +561,44 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Sets the substruct field, causing it to be populated if it is not already.
   // This will populate the field even if the specified value is the default.
   void set_substruct(const aos::fbs::testing::SubStruct &value) {
-    SetField<aos::fbs::testing::SubStruct>(kInlineAbsoluteOffset_substruct, 12,
-                                           value);
+    SetField<aos::fbs::testing::SubStruct>(kInlineAbsoluteOffset_substruct, 12, value);
   }
 
   // Returns the value of substruct if set; nullopt otherwise.
   std::optional<aos::fbs::testing::SubStruct> substruct() const {
     return has_substruct()
-               ? std::make_optional(Get<aos::fbs::testing::SubStruct>(
-                     kInlineAbsoluteOffset_substruct))
+               ? std::make_optional(Get<aos::fbs::testing::SubStruct>(kInlineAbsoluteOffset_substruct))
                : std::nullopt;
   }
   // Returns a pointer to modify the substruct field.
   // The pointer may be invalidated by mutations/movements of the underlying
   // buffer. Returns nullptr if the field is not set.
   aos::fbs::testing::SubStruct *mutable_substruct() {
-    return has_substruct() ? MutableGet<aos::fbs::testing::SubStruct>(
-                                 kInlineAbsoluteOffset_substruct)
-                           : nullptr;
+    return has_substruct()
+               ? MutableGet<aos::fbs::testing::SubStruct>(kInlineAbsoluteOffset_substruct)
+               : nullptr;
   }
 
-  // Clears the substruct field. This will cause has_substruct() to return
-  // false.
+  // Clears the substruct field. This will cause
+  // has_substruct() to return false.
   void clear_substruct() {
     ClearField(kInlineAbsoluteOffset_substruct, 16, 12);
   }
 
   // Returns true if the substruct field is set and can be accessed.
-  bool has_substruct() const { return AsFlatbuffer().has_substruct(); }
+  bool has_substruct() const {
+    return AsFlatbuffer().has_substruct();
+  }
 
   // Creates an empty object for the vector_of_structs field, which you can
   // then populate/modify as desired.
   // The field must not be populated yet.
-  ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *
-  add_vector_of_structs() {
+  ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *add_vector_of_structs() {
     CHECK(!vector_of_structs_.has_value());
     constexpr size_t kVtableIndex = 18;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true,
-                                     0>::kPreallocatedSize == 0) {
+    if constexpr (::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_vector_of_structs;
       std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
@@ -597,41 +627,35 @@ class TestTableStatic : public ::aos::fbs::Table {
       vector_of_structs_.emplace(
           BufferForObject(
               object_absolute_offset_vector_of_structs,
-              ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::
-                  RoundedLength(inserted_bytes.value().size())),
+              ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::RoundedLength(inserted_bytes.value().size())),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       vector_of_structs_.emplace(
-          BufferForObject(object_absolute_offset_vector_of_structs,
-                          ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3,
-                                             true, 0>::kSize),
+          BufferForObject(
+              object_absolute_offset_vector_of_structs,
+              ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_vector_of_structs, kVtableIndex,
-        object_absolute_offset_vector_of_structs -
-            kInlineAbsoluteOffset_vector_of_structs);
+        kInlineAbsoluteOffset_vector_of_structs,
+        kVtableIndex,
+        object_absolute_offset_vector_of_structs - kInlineAbsoluteOffset_vector_of_structs);
     return &vector_of_structs_.value().t;
   }
 
-  // Returns a pointer to the vector_of_structs field, if set. nullptr
-  // otherwise.
-  const ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *
-  vector_of_structs() const {
-    return vector_of_structs_.has_value() ? &vector_of_structs_.value().t
-                                          : nullptr;
+  // Returns a pointer to the vector_of_structs field, if set. nullptr otherwise.
+  const ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>* vector_of_structs() const {
+    return vector_of_structs_.has_value() ? &vector_of_structs_.value().t : nullptr;
   }
-  ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *
-  mutable_vector_of_structs() {
-    return vector_of_structs_.has_value() ? &vector_of_structs_.value().t
-                                          : nullptr;
+  ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *mutable_vector_of_structs() {
+    return vector_of_structs_.has_value() ? &vector_of_structs_.value().t : nullptr;
   }
 
-  // Clears the vector_of_structs field. This will cause has_vector_of_structs()
-  // to return false.
+  // Clears the vector_of_structs field. This will cause
+  // has_vector_of_structs() to return false.
   void clear_vector_of_structs() {
     vector_of_structs_.reset();
     ClearField(kInlineAbsoluteOffset_vector_of_structs, 4, 18);
@@ -642,17 +666,15 @@ class TestTableStatic : public ::aos::fbs::Table {
     return AsFlatbuffer().has_vector_of_structs();
   }
 
-  // Creates an empty object for the unspecified_length_vector_of_strings field,
-  // which you can then populate/modify as desired. The field must not be
-  // populated yet.
-  ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *
-  add_unspecified_length_vector_of_strings() {
+  // Creates an empty object for the unspecified_length_vector_of_strings field, which you can
+  // then populate/modify as desired.
+  // The field must not be populated yet.
+  ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *add_unspecified_length_vector_of_strings() {
     CHECK(!unspecified_length_vector_of_strings_.has_value());
     constexpr size_t kVtableIndex = 28;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<::aos::fbs::String<0>, 0, false,
-                                     0>::kPreallocatedSize == 0) {
+    if constexpr (::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_unspecified_length_vector_of_strings;
       std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
@@ -674,8 +696,7 @@ class TestTableStatic : public ::aos::fbs::Table {
       // although it does mean that the order in which objects appear in memory
       // may vary depending on the order in which they are constructed (if they
       // start out sharing a start pointer).
-      object_absolute_offset_unspecified_length_vector_of_strings =
-          object_absolute_offset;
+      object_absolute_offset_unspecified_length_vector_of_strings = object_absolute_offset;
 
       // Construct the *Static object that we will use for managing this
       // subtable.
@@ -697,36 +718,26 @@ class TestTableStatic : public ::aos::fbs::Table {
     SetField<::flatbuffers::uoffset_t>(
         kInlineAbsoluteOffset_unspecified_length_vector_of_strings,
         kVtableIndex,
-        object_absolute_offset_unspecified_length_vector_of_strings -
-            kInlineAbsoluteOffset_unspecified_length_vector_of_strings);
+        object_absolute_offset_unspecified_length_vector_of_strings - kInlineAbsoluteOffset_unspecified_length_vector_of_strings);
     return &unspecified_length_vector_of_strings_.value().t;
   }
 
-  // Returns a pointer to the unspecified_length_vector_of_strings field, if
-  // set. nullptr otherwise.
-  const ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *
-  unspecified_length_vector_of_strings() const {
-    return unspecified_length_vector_of_strings_.has_value()
-               ? &unspecified_length_vector_of_strings_.value().t
-               : nullptr;
+  // Returns a pointer to the unspecified_length_vector_of_strings field, if set. nullptr otherwise.
+  const ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>* unspecified_length_vector_of_strings() const {
+    return unspecified_length_vector_of_strings_.has_value() ? &unspecified_length_vector_of_strings_.value().t : nullptr;
   }
-  ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *
-  mutable_unspecified_length_vector_of_strings() {
-    return unspecified_length_vector_of_strings_.has_value()
-               ? &unspecified_length_vector_of_strings_.value().t
-               : nullptr;
+  ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *mutable_unspecified_length_vector_of_strings() {
+    return unspecified_length_vector_of_strings_.has_value() ? &unspecified_length_vector_of_strings_.value().t : nullptr;
   }
 
   // Clears the unspecified_length_vector_of_strings field. This will cause
   // has_unspecified_length_vector_of_strings() to return false.
   void clear_unspecified_length_vector_of_strings() {
     unspecified_length_vector_of_strings_.reset();
-    ClearField(kInlineAbsoluteOffset_unspecified_length_vector_of_strings, 4,
-               28);
+    ClearField(kInlineAbsoluteOffset_unspecified_length_vector_of_strings, 4, 28);
   }
 
-  // Returns true if the unspecified_length_vector_of_strings field is set and
-  // can be accessed.
+  // Returns true if the unspecified_length_vector_of_strings field is set and can be accessed.
   bool has_unspecified_length_vector_of_strings() const {
     return AsFlatbuffer().has_unspecified_length_vector_of_strings();
   }
@@ -734,21 +745,18 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Creates an empty object for the vector_of_tables field, which you can
   // then populate/modify as desired.
   // The field must not be populated yet.
-  ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *
-  add_vector_of_tables() {
+  ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *add_vector_of_tables() {
     CHECK(!vector_of_tables_.has_value());
     constexpr size_t kVtableIndex = 20;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3,
-                                     false, 0>::kPreallocatedSize == 0) {
+    if constexpr (::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_vector_of_tables;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3,
-                                         false, 0>::kSize,
-                      ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -769,41 +777,37 @@ class TestTableStatic : public ::aos::fbs::Table {
       // Construct the *Static object that we will use for managing this
       // subtable.
       vector_of_tables_.emplace(
-          BufferForObject(object_absolute_offset_vector_of_tables,
-                          ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic,
-                                             3, false, 0>::kSize),
+          BufferForObject(
+              object_absolute_offset_vector_of_tables,
+              ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kSize),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       vector_of_tables_.emplace(
-          BufferForObject(object_absolute_offset_vector_of_tables,
-                          ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic,
-                                             3, false, 0>::kSize),
+          BufferForObject(
+              object_absolute_offset_vector_of_tables,
+              ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_vector_of_tables, kVtableIndex,
-        object_absolute_offset_vector_of_tables -
-            kInlineAbsoluteOffset_vector_of_tables);
+        kInlineAbsoluteOffset_vector_of_tables,
+        kVtableIndex,
+        object_absolute_offset_vector_of_tables - kInlineAbsoluteOffset_vector_of_tables);
     return &vector_of_tables_.value().t;
   }
 
   // Returns a pointer to the vector_of_tables field, if set. nullptr otherwise.
-  const ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *
-  vector_of_tables() const {
-    return vector_of_tables_.has_value() ? &vector_of_tables_.value().t
-                                         : nullptr;
+  const ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>* vector_of_tables() const {
+    return vector_of_tables_.has_value() ? &vector_of_tables_.value().t : nullptr;
   }
-  ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *
-  mutable_vector_of_tables() {
-    return vector_of_tables_.has_value() ? &vector_of_tables_.value().t
-                                         : nullptr;
+  ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *mutable_vector_of_tables() {
+    return vector_of_tables_.has_value() ? &vector_of_tables_.value().t : nullptr;
   }
 
-  // Clears the vector_of_tables field. This will cause has_vector_of_tables()
-  // to return false.
+  // Clears the vector_of_tables field. This will cause
+  // has_vector_of_tables() to return false.
   void clear_vector_of_tables() {
     vector_of_tables_.reset();
     ClearField(kInlineAbsoluteOffset_vector_of_tables, 4, 20);
@@ -822,14 +826,13 @@ class TestTableStatic : public ::aos::fbs::Table {
     constexpr size_t kVtableIndex = 16;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<int32_t, 3, true, 64>::kPreallocatedSize ==
-                  0) {
+    if constexpr (::aos::fbs::Vector<int32_t, 3, true, 64>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_vector_aligned;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::Vector<int32_t, 3, true, 64>::kSize,
-                      ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::Vector<int32_t, 3, true, 64>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -852,35 +855,35 @@ class TestTableStatic : public ::aos::fbs::Table {
       vector_aligned_.emplace(
           BufferForObject(
               object_absolute_offset_vector_aligned,
-              ::aos::fbs::Vector<int32_t, 3, true, 64>::RoundedLength(
-                  inserted_bytes.value().size())),
+              ::aos::fbs::Vector<int32_t, 3, true, 64>::RoundedLength(inserted_bytes.value().size())),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       vector_aligned_.emplace(
-          BufferForObject(object_absolute_offset_vector_aligned,
-                          ::aos::fbs::Vector<int32_t, 3, true, 64>::kSize),
+          BufferForObject(
+              object_absolute_offset_vector_aligned,
+              ::aos::fbs::Vector<int32_t, 3, true, 64>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_vector_aligned, kVtableIndex,
-        object_absolute_offset_vector_aligned -
-            kInlineAbsoluteOffset_vector_aligned);
+        kInlineAbsoluteOffset_vector_aligned,
+        kVtableIndex,
+        object_absolute_offset_vector_aligned - kInlineAbsoluteOffset_vector_aligned);
     return &vector_aligned_.value().t;
   }
 
   // Returns a pointer to the vector_aligned field, if set. nullptr otherwise.
-  const ::aos::fbs::Vector<int32_t, 3, true, 64> *vector_aligned() const {
+  const ::aos::fbs::Vector<int32_t, 3, true, 64>* vector_aligned() const {
     return vector_aligned_.has_value() ? &vector_aligned_.value().t : nullptr;
   }
   ::aos::fbs::Vector<int32_t, 3, true, 64> *mutable_vector_aligned() {
     return vector_aligned_.has_value() ? &vector_aligned_.value().t : nullptr;
   }
 
-  // Clears the vector_aligned field. This will cause has_vector_aligned() to
-  // return false.
+  // Clears the vector_aligned field. This will cause
+  // has_vector_aligned() to return false.
   void clear_vector_aligned() {
     vector_aligned_.reset();
     ClearField(kInlineAbsoluteOffset_vector_aligned, 4, 16);
@@ -894,14 +897,12 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Creates an empty object for the vector_of_strings field, which you can
   // then populate/modify as desired.
   // The field must not be populated yet.
-  ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *
-  add_vector_of_strings() {
+  ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *add_vector_of_strings() {
     CHECK(!vector_of_strings_.has_value());
     constexpr size_t kVtableIndex = 10;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<::aos::fbs::String<10>, 3, false,
-                                     0>::kPreallocatedSize == 0) {
+    if constexpr (::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_vector_of_strings;
       std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
@@ -943,27 +944,22 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_vector_of_strings, kVtableIndex,
-        object_absolute_offset_vector_of_strings -
-            kInlineAbsoluteOffset_vector_of_strings);
+        kInlineAbsoluteOffset_vector_of_strings,
+        kVtableIndex,
+        object_absolute_offset_vector_of_strings - kInlineAbsoluteOffset_vector_of_strings);
     return &vector_of_strings_.value().t;
   }
 
-  // Returns a pointer to the vector_of_strings field, if set. nullptr
-  // otherwise.
-  const ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *
-  vector_of_strings() const {
-    return vector_of_strings_.has_value() ? &vector_of_strings_.value().t
-                                          : nullptr;
+  // Returns a pointer to the vector_of_strings field, if set. nullptr otherwise.
+  const ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>* vector_of_strings() const {
+    return vector_of_strings_.has_value() ? &vector_of_strings_.value().t : nullptr;
   }
-  ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *
-  mutable_vector_of_strings() {
-    return vector_of_strings_.has_value() ? &vector_of_strings_.value().t
-                                          : nullptr;
+  ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *mutable_vector_of_strings() {
+    return vector_of_strings_.has_value() ? &vector_of_strings_.value().t : nullptr;
   }
 
-  // Clears the vector_of_strings field. This will cause has_vector_of_strings()
-  // to return false.
+  // Clears the vector_of_strings field. This will cause
+  // has_vector_of_strings() to return false.
   void clear_vector_of_strings() {
     vector_of_strings_.reset();
     ClearField(kInlineAbsoluteOffset_vector_of_strings, 4, 10);
@@ -982,14 +978,13 @@ class TestTableStatic : public ::aos::fbs::Table {
     constexpr size_t kVtableIndex = 6;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<int32_t, 3, true, 0>::kPreallocatedSize ==
-                  0) {
+    if constexpr (::aos::fbs::Vector<int32_t, 3, true, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_vector_of_scalars;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::Vector<int32_t, 3, true, 0>::kSize,
-                      ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::Vector<int32_t, 3, true, 0>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1012,38 +1007,35 @@ class TestTableStatic : public ::aos::fbs::Table {
       vector_of_scalars_.emplace(
           BufferForObject(
               object_absolute_offset_vector_of_scalars,
-              ::aos::fbs::Vector<int32_t, 3, true, 0>::RoundedLength(
-                  inserted_bytes.value().size())),
+              ::aos::fbs::Vector<int32_t, 3, true, 0>::RoundedLength(inserted_bytes.value().size())),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       vector_of_scalars_.emplace(
-          BufferForObject(object_absolute_offset_vector_of_scalars,
-                          ::aos::fbs::Vector<int32_t, 3, true, 0>::kSize),
+          BufferForObject(
+              object_absolute_offset_vector_of_scalars,
+              ::aos::fbs::Vector<int32_t, 3, true, 0>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_vector_of_scalars, kVtableIndex,
-        object_absolute_offset_vector_of_scalars -
-            kInlineAbsoluteOffset_vector_of_scalars);
+        kInlineAbsoluteOffset_vector_of_scalars,
+        kVtableIndex,
+        object_absolute_offset_vector_of_scalars - kInlineAbsoluteOffset_vector_of_scalars);
     return &vector_of_scalars_.value().t;
   }
 
-  // Returns a pointer to the vector_of_scalars field, if set. nullptr
-  // otherwise.
-  const ::aos::fbs::Vector<int32_t, 3, true, 0> *vector_of_scalars() const {
-    return vector_of_scalars_.has_value() ? &vector_of_scalars_.value().t
-                                          : nullptr;
+  // Returns a pointer to the vector_of_scalars field, if set. nullptr otherwise.
+  const ::aos::fbs::Vector<int32_t, 3, true, 0>* vector_of_scalars() const {
+    return vector_of_scalars_.has_value() ? &vector_of_scalars_.value().t : nullptr;
   }
   ::aos::fbs::Vector<int32_t, 3, true, 0> *mutable_vector_of_scalars() {
-    return vector_of_scalars_.has_value() ? &vector_of_scalars_.value().t
-                                          : nullptr;
+    return vector_of_scalars_.has_value() ? &vector_of_scalars_.value().t : nullptr;
   }
 
-  // Clears the vector_of_scalars field. This will cause has_vector_of_scalars()
-  // to return false.
+  // Clears the vector_of_scalars field. This will cause
+  // has_vector_of_scalars() to return false.
   void clear_vector_of_scalars() {
     vector_of_scalars_.reset();
     ClearField(kInlineAbsoluteOffset_vector_of_scalars, 4, 6);
@@ -1054,8 +1046,9 @@ class TestTableStatic : public ::aos::fbs::Table {
     return AsFlatbuffer().has_vector_of_scalars();
   }
 
-  // Creates an empty object for the unspecified_length_string field, which you
-  // can then populate/modify as desired. The field must not be populated yet.
+  // Creates an empty object for the unspecified_length_string field, which you can
+  // then populate/modify as desired.
+  // The field must not be populated yet.
   ::aos::fbs::String<0> *add_unspecified_length_string() {
     CHECK(!unspecified_length_string_.has_value());
     constexpr size_t kVtableIndex = 26;
@@ -1064,9 +1057,10 @@ class TestTableStatic : public ::aos::fbs::Table {
     if constexpr (::aos::fbs::String<0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_unspecified_length_string;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::String<0>::kSize, ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::String<0>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1087,37 +1081,33 @@ class TestTableStatic : public ::aos::fbs::Table {
       // Construct the *Static object that we will use for managing this
       // subtable.
       unspecified_length_string_.emplace(
-          BufferForObject(object_absolute_offset_unspecified_length_string,
-                          ::aos::fbs::String<0>::RoundedLength(
-                              inserted_bytes.value().size())),
+          BufferForObject(
+              object_absolute_offset_unspecified_length_string,
+              ::aos::fbs::String<0>::RoundedLength(inserted_bytes.value().size())),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       unspecified_length_string_.emplace(
-          BufferForObject(object_absolute_offset_unspecified_length_string,
-                          ::aos::fbs::String<0>::kSize),
+          BufferForObject(
+              object_absolute_offset_unspecified_length_string,
+              ::aos::fbs::String<0>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_unspecified_length_string, kVtableIndex,
-        object_absolute_offset_unspecified_length_string -
-            kInlineAbsoluteOffset_unspecified_length_string);
+        kInlineAbsoluteOffset_unspecified_length_string,
+        kVtableIndex,
+        object_absolute_offset_unspecified_length_string - kInlineAbsoluteOffset_unspecified_length_string);
     return &unspecified_length_string_.value().t;
   }
 
-  // Returns a pointer to the unspecified_length_string field, if set. nullptr
-  // otherwise.
-  const ::aos::fbs::String<0> *unspecified_length_string() const {
-    return unspecified_length_string_.has_value()
-               ? &unspecified_length_string_.value().t
-               : nullptr;
+  // Returns a pointer to the unspecified_length_string field, if set. nullptr otherwise.
+  const ::aos::fbs::String<0>* unspecified_length_string() const {
+    return unspecified_length_string_.has_value() ? &unspecified_length_string_.value().t : nullptr;
   }
   ::aos::fbs::String<0> *mutable_unspecified_length_string() {
-    return unspecified_length_string_.has_value()
-               ? &unspecified_length_string_.value().t
-               : nullptr;
+    return unspecified_length_string_.has_value() ? &unspecified_length_string_.value().t : nullptr;
   }
 
   // Clears the unspecified_length_string field. This will cause
@@ -1127,27 +1117,26 @@ class TestTableStatic : public ::aos::fbs::Table {
     ClearField(kInlineAbsoluteOffset_unspecified_length_string, 4, 26);
   }
 
-  // Returns true if the unspecified_length_string field is set and can be
-  // accessed.
+  // Returns true if the unspecified_length_string field is set and can be accessed.
   bool has_unspecified_length_string() const {
     return AsFlatbuffer().has_unspecified_length_string();
   }
 
-  // Creates an empty object for the unspecified_length_vector field, which you
-  // can then populate/modify as desired. The field must not be populated yet.
+  // Creates an empty object for the unspecified_length_vector field, which you can
+  // then populate/modify as desired.
+  // The field must not be populated yet.
   ::aos::fbs::Vector<uint8_t, 0, true, 0> *add_unspecified_length_vector() {
     CHECK(!unspecified_length_vector_.has_value());
     constexpr size_t kVtableIndex = 24;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (::aos::fbs::Vector<uint8_t, 0, true, 0>::kPreallocatedSize ==
-                  0) {
+    if constexpr (::aos::fbs::Vector<uint8_t, 0, true, 0>::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_unspecified_length_vector;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::Vector<uint8_t, 0, true, 0>::kSize,
-                      ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::Vector<uint8_t, 0, true, 0>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1170,37 +1159,31 @@ class TestTableStatic : public ::aos::fbs::Table {
       unspecified_length_vector_.emplace(
           BufferForObject(
               object_absolute_offset_unspecified_length_vector,
-              ::aos::fbs::Vector<uint8_t, 0, true, 0>::RoundedLength(
-                  inserted_bytes.value().size())),
+              ::aos::fbs::Vector<uint8_t, 0, true, 0>::RoundedLength(inserted_bytes.value().size())),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       unspecified_length_vector_.emplace(
-          BufferForObject(object_absolute_offset_unspecified_length_vector,
-                          ::aos::fbs::Vector<uint8_t, 0, true, 0>::kSize),
+          BufferForObject(
+              object_absolute_offset_unspecified_length_vector,
+              ::aos::fbs::Vector<uint8_t, 0, true, 0>::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_unspecified_length_vector, kVtableIndex,
-        object_absolute_offset_unspecified_length_vector -
-            kInlineAbsoluteOffset_unspecified_length_vector);
+        kInlineAbsoluteOffset_unspecified_length_vector,
+        kVtableIndex,
+        object_absolute_offset_unspecified_length_vector - kInlineAbsoluteOffset_unspecified_length_vector);
     return &unspecified_length_vector_.value().t;
   }
 
-  // Returns a pointer to the unspecified_length_vector field, if set. nullptr
-  // otherwise.
-  const ::aos::fbs::Vector<uint8_t, 0, true, 0> *unspecified_length_vector()
-      const {
-    return unspecified_length_vector_.has_value()
-               ? &unspecified_length_vector_.value().t
-               : nullptr;
+  // Returns a pointer to the unspecified_length_vector field, if set. nullptr otherwise.
+  const ::aos::fbs::Vector<uint8_t, 0, true, 0>* unspecified_length_vector() const {
+    return unspecified_length_vector_.has_value() ? &unspecified_length_vector_.value().t : nullptr;
   }
   ::aos::fbs::Vector<uint8_t, 0, true, 0> *mutable_unspecified_length_vector() {
-    return unspecified_length_vector_.has_value()
-               ? &unspecified_length_vector_.value().t
-               : nullptr;
+    return unspecified_length_vector_.has_value() ? &unspecified_length_vector_.value().t : nullptr;
   }
 
   // Clears the unspecified_length_vector field. This will cause
@@ -1210,8 +1193,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     ClearField(kInlineAbsoluteOffset_unspecified_length_vector, 4, 24);
   }
 
-  // Returns true if the unspecified_length_vector field is set and can be
-  // accessed.
+  // Returns true if the unspecified_length_vector field is set and can be accessed.
   bool has_unspecified_length_vector() const {
     return AsFlatbuffer().has_unspecified_length_vector();
   }
@@ -1224,14 +1206,13 @@ class TestTableStatic : public ::aos::fbs::Table {
     constexpr size_t kVtableIndex = 22;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
-    if constexpr (aos::fbs::testing::included::IncludedTableStatic::
-                      kPreallocatedSize == 0) {
+    if constexpr (aos::fbs::testing::included::IncludedTableStatic::kPreallocatedSize == 0) {
       const size_t object_absolute_offset =
           object_absolute_offset_included_table;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      aos::fbs::testing::included::IncludedTableStatic::kSize,
-                      ::aos::fbs::SetZero::kYes);
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          aos::fbs::testing::included::IncludedTableStatic::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1267,23 +1248,22 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_included_table, kVtableIndex,
-        object_absolute_offset_included_table -
-            kInlineAbsoluteOffset_included_table);
+        kInlineAbsoluteOffset_included_table,
+        kVtableIndex,
+        object_absolute_offset_included_table - kInlineAbsoluteOffset_included_table);
     return &included_table_.value().t;
   }
 
   // Returns a pointer to the included_table field, if set. nullptr otherwise.
-  const aos::fbs::testing::included::IncludedTableStatic *included_table()
-      const {
+  const aos::fbs::testing::included::IncludedTableStatic* included_table() const {
     return included_table_.has_value() ? &included_table_.value().t : nullptr;
   }
   aos::fbs::testing::included::IncludedTableStatic *mutable_included_table() {
     return included_table_.has_value() ? &included_table_.value().t : nullptr;
   }
 
-  // Clears the included_table field. This will cause has_included_table() to
-  // return false.
+  // Clears the included_table field. This will cause
+  // has_included_table() to return false.
   void clear_included_table() {
     included_table_.reset();
     ClearField(kInlineAbsoluteOffset_included_table, 4, 22);
@@ -1303,10 +1283,12 @@ class TestTableStatic : public ::aos::fbs::Table {
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
     if constexpr (aos::fbs::testing::SubTableStatic::kPreallocatedSize == 0) {
-      const size_t object_absolute_offset = object_absolute_offset_subtable;
+      const size_t object_absolute_offset =
+          object_absolute_offset_subtable;
       std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
           buffer().data() + object_absolute_offset,
-          aos::fbs::testing::SubTableStatic::kSize, ::aos::fbs::SetZero::kYes);
+          aos::fbs::testing::SubTableStatic::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1327,40 +1309,46 @@ class TestTableStatic : public ::aos::fbs::Table {
       // Construct the *Static object that we will use for managing this
       // subtable.
       subtable_.emplace(
-          BufferForObject(object_absolute_offset_subtable,
-                          aos::fbs::testing::SubTableStatic::kSize),
+          BufferForObject(
+              object_absolute_offset_subtable,
+              aos::fbs::testing::SubTableStatic::kSize),
           this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
       subtable_.emplace(
-          BufferForObject(object_absolute_offset_subtable,
-                          aos::fbs::testing::SubTableStatic::kSize),
+          BufferForObject(
+              object_absolute_offset_subtable,
+              aos::fbs::testing::SubTableStatic::kSize),
           this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_subtable, kVtableIndex,
+        kInlineAbsoluteOffset_subtable,
+        kVtableIndex,
         object_absolute_offset_subtable - kInlineAbsoluteOffset_subtable);
     return &subtable_.value().t;
   }
 
   // Returns a pointer to the subtable field, if set. nullptr otherwise.
-  const aos::fbs::testing::SubTableStatic *subtable() const {
+  const aos::fbs::testing::SubTableStatic* subtable() const {
     return subtable_.has_value() ? &subtable_.value().t : nullptr;
   }
   aos::fbs::testing::SubTableStatic *mutable_subtable() {
     return subtable_.has_value() ? &subtable_.value().t : nullptr;
   }
 
-  // Clears the subtable field. This will cause has_subtable() to return false.
+  // Clears the subtable field. This will cause
+  // has_subtable() to return false.
   void clear_subtable() {
     subtable_.reset();
     ClearField(kInlineAbsoluteOffset_subtable, 4, 14);
   }
 
   // Returns true if the subtable field is set and can be accessed.
-  bool has_subtable() const { return AsFlatbuffer().has_subtable(); }
+  bool has_subtable() const {
+    return AsFlatbuffer().has_subtable();
+  }
 
   // Creates an empty object for the string field, which you can
   // then populate/modify as desired.
@@ -1371,10 +1359,12 @@ class TestTableStatic : public ::aos::fbs::Table {
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
     if constexpr (::aos::fbs::String<20>::kPreallocatedSize == 0) {
-      const size_t object_absolute_offset = object_absolute_offset_string;
-      std::optional<std::span<uint8_t>> inserted_bytes =
-          InsertBytes(buffer().data() + object_absolute_offset,
-                      ::aos::fbs::String<20>::kSize, ::aos::fbs::SetZero::kYes);
+      const size_t object_absolute_offset =
+          object_absolute_offset_string;
+      std::optional<std::span<uint8_t>> inserted_bytes = InsertBytes(
+          buffer().data() + object_absolute_offset,
+          ::aos::fbs::String<20>::kSize,
+          ::aos::fbs::SetZero::kYes);
       if (!inserted_bytes.has_value()) {
         return nullptr;
       }
@@ -1394,40 +1384,47 @@ class TestTableStatic : public ::aos::fbs::Table {
 
       // Construct the *Static object that we will use for managing this
       // subtable.
-      string_.emplace(BufferForObject(object_absolute_offset_string,
-                                      ::aos::fbs::String<20>::RoundedLength(
-                                          inserted_bytes.value().size())),
-                      this);
+      string_.emplace(
+          BufferForObject(
+              object_absolute_offset_string,
+              ::aos::fbs::String<20>::RoundedLength(inserted_bytes.value().size())),
+          this);
     } else {
       // Construct the *Static object that we will use for managing this
       // subtable.
-      string_.emplace(BufferForObject(object_absolute_offset_string,
-                                      ::aos::fbs::String<20>::kSize),
-                      this);
+      string_.emplace(
+          BufferForObject(
+              object_absolute_offset_string,
+              ::aos::fbs::String<20>::kSize),
+          this);
     }
     // Actually set the appropriate fields in the flatbuffer memory itself.
     SetField<::flatbuffers::uoffset_t>(
-        kInlineAbsoluteOffset_string, kVtableIndex,
+        kInlineAbsoluteOffset_string,
+        kVtableIndex,
         object_absolute_offset_string - kInlineAbsoluteOffset_string);
     return &string_.value().t;
   }
 
   // Returns a pointer to the string field, if set. nullptr otherwise.
-  const ::aos::fbs::String<20> *string() const {
+  const ::aos::fbs::String<20>* string() const {
     return string_.has_value() ? &string_.value().t : nullptr;
   }
   ::aos::fbs::String<20> *mutable_string() {
     return string_.has_value() ? &string_.value().t : nullptr;
   }
 
-  // Clears the string field. This will cause has_string() to return false.
+  // Clears the string field. This will cause
+  // has_string() to return false.
   void clear_string() {
     string_.reset();
     ClearField(kInlineAbsoluteOffset_string, 4, 8);
   }
 
   // Returns true if the string field is set and can be accessed.
-  bool has_string() const { return AsFlatbuffer().has_string(); }
+  bool has_string() const {
+    return AsFlatbuffer().has_string();
+  }
 
   // Sets the scalar field, causing it to be populated if it is not already.
   // This will populate the field even if the specified value is the default.
@@ -1445,15 +1442,21 @@ class TestTableStatic : public ::aos::fbs::Table {
   // The pointer may be invalidated by mutations/movements of the underlying
   // buffer. Returns nullptr if the field is not set.
   int32_t *mutable_scalar() {
-    return has_scalar() ? MutableGet<int32_t>(kInlineAbsoluteOffset_scalar)
-                        : nullptr;
+    return has_scalar()
+               ? MutableGet<int32_t>(kInlineAbsoluteOffset_scalar)
+               : nullptr;
   }
 
-  // Clears the scalar field. This will cause has_scalar() to return false.
-  void clear_scalar() { ClearField(kInlineAbsoluteOffset_scalar, 4, 4); }
+  // Clears the scalar field. This will cause
+  // has_scalar() to return false.
+  void clear_scalar() {
+    ClearField(kInlineAbsoluteOffset_scalar, 4, 4);
+  }
 
   // Returns true if the scalar field is set and can be accessed.
-  bool has_scalar() const { return AsFlatbuffer().has_scalar(); }
+  bool has_scalar() const {
+    return AsFlatbuffer().has_scalar();
+  }
 
   // Returns the scalar field if set, or its schema default otherwise.
   int32_t scalar_or_default() const {
@@ -1483,14 +1486,13 @@ class TestTableStatic : public ::aos::fbs::Table {
   // objects.
   [[nodiscard]] bool FromFlatbuffer([[maybe_unused]] const Flatbuffer &other) {
     Clear();
-
     if (other.has_substruct()) {
       set_substruct(*other.substruct());
     }
 
     if (other.has_vector_of_structs()) {
-      ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>
-          *added_vector_of_structs = add_vector_of_structs();
+      ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *added_vector_of_structs =
+          add_vector_of_structs();
       CHECK(added_vector_of_structs != nullptr);
       if (!added_vector_of_structs->FromFlatbuffer(other.vector_of_structs())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1500,12 +1502,10 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.has_unspecified_length_vector_of_strings()) {
-      ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>
-          *added_unspecified_length_vector_of_strings =
-              add_unspecified_length_vector_of_strings();
+      ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *added_unspecified_length_vector_of_strings =
+          add_unspecified_length_vector_of_strings();
       CHECK(added_unspecified_length_vector_of_strings != nullptr);
-      if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(
-              other.unspecified_length_vector_of_strings())) {
+      if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(other.unspecified_length_vector_of_strings())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1513,8 +1513,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.has_vector_of_tables()) {
-      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>
-          *added_vector_of_tables = add_vector_of_tables();
+      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *added_vector_of_tables =
+          add_vector_of_tables();
       CHECK(added_vector_of_tables != nullptr);
       if (!added_vector_of_tables->FromFlatbuffer(other.vector_of_tables())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1535,8 +1535,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.has_vector_of_strings()) {
-      ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>
-          *added_vector_of_strings = add_vector_of_strings();
+      ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *added_vector_of_strings =
+          add_vector_of_strings();
       CHECK(added_vector_of_strings != nullptr);
       if (!added_vector_of_strings->FromFlatbuffer(other.vector_of_strings())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1560,8 +1560,7 @@ class TestTableStatic : public ::aos::fbs::Table {
       ::aos::fbs::String<0> *added_unspecified_length_string =
           add_unspecified_length_string();
       CHECK(added_unspecified_length_string != nullptr);
-      if (!added_unspecified_length_string->FromFlatbuffer(
-              other.unspecified_length_string())) {
+      if (!added_unspecified_length_string->FromFlatbuffer(other.unspecified_length_string())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1572,8 +1571,7 @@ class TestTableStatic : public ::aos::fbs::Table {
       ::aos::fbs::Vector<uint8_t, 0, true, 0> *added_unspecified_length_vector =
           add_unspecified_length_vector();
       CHECK(added_unspecified_length_vector != nullptr);
-      if (!added_unspecified_length_vector->FromFlatbuffer(
-              other.unspecified_length_vector())) {
+      if (!added_unspecified_length_vector->FromFlatbuffer(other.unspecified_length_vector())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1592,7 +1590,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.has_subtable()) {
-      aos::fbs::testing::SubTableStatic *added_subtable = add_subtable();
+      aos::fbs::testing::SubTableStatic *added_subtable =
+          add_subtable();
       CHECK(added_subtable != nullptr);
       if (!added_subtable->FromFlatbuffer(other.subtable())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1602,7 +1601,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.has_string()) {
-      ::aos::fbs::String<20> *added_string = add_string();
+      ::aos::fbs::String<20> *added_string =
+          add_string();
       CHECK(added_string != nullptr);
       if (!added_string->FromFlatbuffer(other.string())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1643,8 +1643,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     // being 0-length (this maintains consistency with the flatbuffer Pack()
     // behavior).
     {
-      ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>
-          *added_vector_of_structs = add_vector_of_structs();
+      ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *added_vector_of_structs =
+          add_vector_of_structs();
       CHECK(added_vector_of_structs != nullptr);
       if (!added_vector_of_structs->FromFlatbuffer(other.vector_of_structs)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1657,12 +1657,10 @@ class TestTableStatic : public ::aos::fbs::Table {
     // being 0-length (this maintains consistency with the flatbuffer Pack()
     // behavior).
     {
-      ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>
-          *added_unspecified_length_vector_of_strings =
-              add_unspecified_length_vector_of_strings();
+      ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *added_unspecified_length_vector_of_strings =
+          add_unspecified_length_vector_of_strings();
       CHECK(added_unspecified_length_vector_of_strings != nullptr);
-      if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(
-              other.unspecified_length_vector_of_strings)) {
+      if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(other.unspecified_length_vector_of_strings)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1673,8 +1671,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     // being 0-length (this maintains consistency with the flatbuffer Pack()
     // behavior).
     {
-      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>
-          *added_vector_of_tables = add_vector_of_tables();
+      ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *added_vector_of_tables =
+          add_vector_of_tables();
       CHECK(added_vector_of_tables != nullptr);
       if (!added_vector_of_tables->FromFlatbuffer(other.vector_of_tables)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1701,8 +1699,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     // being 0-length (this maintains consistency with the flatbuffer Pack()
     // behavior).
     {
-      ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>
-          *added_vector_of_strings = add_vector_of_strings();
+      ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *added_vector_of_strings =
+          add_vector_of_strings();
       CHECK(added_vector_of_strings != nullptr);
       if (!added_vector_of_strings->FromFlatbuffer(other.vector_of_strings)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1732,8 +1730,7 @@ class TestTableStatic : public ::aos::fbs::Table {
       ::aos::fbs::String<0> *added_unspecified_length_string =
           add_unspecified_length_string();
       CHECK(added_unspecified_length_string != nullptr);
-      if (!added_unspecified_length_string->FromFlatbuffer(
-              other.unspecified_length_string)) {
+      if (!added_unspecified_length_string->FromFlatbuffer(other.unspecified_length_string)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1747,8 +1744,7 @@ class TestTableStatic : public ::aos::fbs::Table {
       ::aos::fbs::Vector<uint8_t, 0, true, 0> *added_unspecified_length_vector =
           add_unspecified_length_vector();
       CHECK(added_unspecified_length_vector != nullptr);
-      if (!added_unspecified_length_vector->FromFlatbuffer(
-              other.unspecified_length_vector)) {
+      if (!added_unspecified_length_vector->FromFlatbuffer(other.unspecified_length_vector)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
         return false;
@@ -1767,7 +1763,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     }
 
     if (other.subtable) {
-      aos::fbs::testing::SubTableStatic *added_subtable = add_subtable();
+      aos::fbs::testing::SubTableStatic *added_subtable =
+          add_subtable();
       CHECK(added_subtable != nullptr);
       if (!added_subtable->FromFlatbuffer(*other.subtable)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1780,7 +1777,8 @@ class TestTableStatic : public ::aos::fbs::Table {
     // being 0-length (this maintains consistency with the flatbuffer Pack()
     // behavior).
     {
-      ::aos::fbs::String<20> *added_string = add_string();
+      ::aos::fbs::String<20> *added_string =
+          add_string();
       CHECK(added_string != nullptr);
       if (!added_string->FromFlatbuffer(other.string)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
@@ -1788,6 +1786,7 @@ class TestTableStatic : public ::aos::fbs::Table {
         return false;
       }
     }
+
 
     set_scalar(other.scalar);
 
@@ -1805,8 +1804,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   TestTableStatic(TestTableStatic &&) = default;
   friend struct ::aos::fbs::internal::TableMover<TestTableStatic>;
 
-  // Offset from the start of the buffer to the inline data for the substruct
-  // field.
+  // Offset from the start of the buffer to the inline data for the field
+  // substruct.
   static constexpr size_t kInlineAbsoluteOffset_substruct = 4;
 
   // Members relating to the vector_of_structs field.
@@ -1821,11 +1820,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetvector_of_structs =
-      ::aos::fbs::AlignOffset(
-          (kVtableStart + kVtableSize) - kAlignOffset,
-          ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kAlign,
-          ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true,
-                             0>::kAlignOffset) +
+      ::aos::fbs::AlignOffset((kVtableStart + kVtableSize) - kAlignOffset,
+                              ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kAlign, ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_vector_of_structs =
       kDefaultObjectAbsoluteOffsetvector_of_structs;
@@ -1844,23 +1840,15 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
-  static constexpr size_t
-      kDefaultObjectAbsoluteOffsetunspecified_length_vector_of_strings =
-          ::aos::fbs::AlignOffset(
-              kDefaultObjectAbsoluteOffsetvector_of_structs +
-                  ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true,
-                                     0>::kPreallocatedSize -
-                  kAlignOffset,
-              ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kAlign,
-              ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false,
-                                 0>::kAlignOffset) +
-          kAlignOffset;
+  static constexpr size_t kDefaultObjectAbsoluteOffsetunspecified_length_vector_of_strings =
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetvector_of_structs + ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kAlign, ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kAlignOffset) +
+      kAlignOffset;
   size_t object_absolute_offset_unspecified_length_vector_of_strings =
       kDefaultObjectAbsoluteOffsetunspecified_length_vector_of_strings;
   // Offset from the start of the buffer to the offset in the inline data for
   // this field.
-  static constexpr size_t
-      kInlineAbsoluteOffset_unspecified_length_vector_of_strings = 24;
+  static constexpr size_t kInlineAbsoluteOffset_unspecified_length_vector_of_strings = 24;
 
   // Members relating to the vector_of_tables field.
   //
@@ -1874,15 +1862,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetvector_of_tables =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetunspecified_length_vector_of_strings +
-              ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false,
-                                 0>::kPreallocatedSize -
-              kAlignOffset,
-          ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false,
-                             0>::kAlign,
-          ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false,
-                             0>::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetunspecified_length_vector_of_strings + ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kAlign, ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_vector_of_tables =
       kDefaultObjectAbsoluteOffsetvector_of_tables;
@@ -1902,13 +1883,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetvector_aligned =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetvector_of_tables +
-              ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false,
-                                 0>::kPreallocatedSize -
-              kAlignOffset,
-          ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlign,
-          ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetvector_of_tables + ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlign, ::aos::fbs::Vector<int32_t, 3, true, 64>::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_vector_aligned =
       kDefaultObjectAbsoluteOffsetvector_aligned;
@@ -1928,13 +1904,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetvector_of_strings =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetvector_aligned +
-              ::aos::fbs::Vector<int32_t, 3, true, 64>::kPreallocatedSize -
-              kAlignOffset,
-          ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kAlign,
-          ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false,
-                             0>::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetvector_aligned + ::aos::fbs::Vector<int32_t, 3, true, 64>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kAlign, ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_vector_of_strings =
       kDefaultObjectAbsoluteOffsetvector_of_strings;
@@ -1947,20 +1918,15 @@ class TestTableStatic : public ::aos::fbs::Table {
   // *Static object used for managing this subtable. Will be nullopt
   // when the field is not populated.
   // We use the TableMover to be able to make this object moveable.
-  std::optional<
-      ::aos::fbs::internal::TableMover<::aos::fbs::Vector<int32_t, 3, true, 0>>>
+  std::optional<::aos::fbs::internal::TableMover<
+      ::aos::fbs::Vector<int32_t, 3, true, 0>>>
       vector_of_scalars_;
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetvector_of_scalars =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetvector_of_strings +
-              ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false,
-                                 0>::kPreallocatedSize -
-              kAlignOffset,
-          ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlign,
-          ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetvector_of_strings + ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlign, ::aos::fbs::Vector<int32_t, 3, true, 0>::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_vector_of_scalars =
       kDefaultObjectAbsoluteOffsetvector_of_scalars;
@@ -1973,20 +1939,16 @@ class TestTableStatic : public ::aos::fbs::Table {
   // *Static object used for managing this subtable. Will be nullopt
   // when the field is not populated.
   // We use the TableMover to be able to make this object moveable.
-  std::optional<::aos::fbs::internal::TableMover<::aos::fbs::String<0>>>
+  std::optional<::aos::fbs::internal::TableMover<
+      ::aos::fbs::String<0>>>
       unspecified_length_string_;
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
-  static constexpr size_t
-      kDefaultObjectAbsoluteOffsetunspecified_length_string =
-          ::aos::fbs::AlignOffset(
-              kDefaultObjectAbsoluteOffsetvector_of_scalars +
-                  ::aos::fbs::Vector<int32_t, 3, true, 0>::kPreallocatedSize -
-                  kAlignOffset,
-              ::aos::fbs::String<0>::kAlign,
-              ::aos::fbs::String<0>::kAlignOffset) +
-          kAlignOffset;
+  static constexpr size_t kDefaultObjectAbsoluteOffsetunspecified_length_string =
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetvector_of_scalars + ::aos::fbs::Vector<int32_t, 3, true, 0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::String<0>::kAlign, ::aos::fbs::String<0>::kAlignOffset) +
+      kAlignOffset;
   size_t object_absolute_offset_unspecified_length_string =
       kDefaultObjectAbsoluteOffsetunspecified_length_string;
   // Offset from the start of the buffer to the offset in the inline data for
@@ -1998,20 +1960,16 @@ class TestTableStatic : public ::aos::fbs::Table {
   // *Static object used for managing this subtable. Will be nullopt
   // when the field is not populated.
   // We use the TableMover to be able to make this object moveable.
-  std::optional<
-      ::aos::fbs::internal::TableMover<::aos::fbs::Vector<uint8_t, 0, true, 0>>>
+  std::optional<::aos::fbs::internal::TableMover<
+      ::aos::fbs::Vector<uint8_t, 0, true, 0>>>
       unspecified_length_vector_;
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
-  static constexpr size_t
-      kDefaultObjectAbsoluteOffsetunspecified_length_vector =
-          ::aos::fbs::AlignOffset(
-              kDefaultObjectAbsoluteOffsetunspecified_length_string +
-                  ::aos::fbs::String<0>::kPreallocatedSize - kAlignOffset,
-              ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlign,
-              ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlignOffset) +
-          kAlignOffset;
+  static constexpr size_t kDefaultObjectAbsoluteOffsetunspecified_length_vector =
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetunspecified_length_string + ::aos::fbs::String<0>::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlign, ::aos::fbs::Vector<uint8_t, 0, true, 0>::kAlignOffset) +
+      kAlignOffset;
   size_t object_absolute_offset_unspecified_length_vector =
       kDefaultObjectAbsoluteOffsetunspecified_length_vector;
   // Offset from the start of the buffer to the offset in the inline data for
@@ -2030,12 +1988,8 @@ class TestTableStatic : public ::aos::fbs::Table {
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetincluded_table =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetunspecified_length_vector +
-              ::aos::fbs::Vector<uint8_t, 0, true, 0>::kPreallocatedSize -
-              kAlignOffset,
-          aos::fbs::testing::included::IncludedTableStatic::kAlign,
-          aos::fbs::testing::included::IncludedTableStatic::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetunspecified_length_vector + ::aos::fbs::Vector<uint8_t, 0, true, 0>::kPreallocatedSize - kAlignOffset,
+                              aos::fbs::testing::included::IncludedTableStatic::kAlign, aos::fbs::testing::included::IncludedTableStatic::kAlignOffset) +
       kAlignOffset;
   size_t object_absolute_offset_included_table =
       kDefaultObjectAbsoluteOffsetincluded_table;
@@ -2048,21 +2002,18 @@ class TestTableStatic : public ::aos::fbs::Table {
   // *Static object used for managing this subtable. Will be nullopt
   // when the field is not populated.
   // We use the TableMover to be able to make this object moveable.
-  std::optional<
-      ::aos::fbs::internal::TableMover<aos::fbs::testing::SubTableStatic>>
+  std::optional<::aos::fbs::internal::TableMover<
+      aos::fbs::testing::SubTableStatic>>
       subtable_;
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetsubtable =
-      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetincluded_table +
-                                  aos::fbs::testing::included::
-                                      IncludedTableStatic::kPreallocatedSize -
-                                  kAlignOffset,
-                              aos::fbs::testing::SubTableStatic::kAlign,
-                              aos::fbs::testing::SubTableStatic::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetincluded_table + aos::fbs::testing::included::IncludedTableStatic::kPreallocatedSize - kAlignOffset,
+                              aos::fbs::testing::SubTableStatic::kAlign, aos::fbs::testing::SubTableStatic::kAlignOffset) +
       kAlignOffset;
-  size_t object_absolute_offset_subtable = kDefaultObjectAbsoluteOffsetsubtable;
+  size_t object_absolute_offset_subtable =
+      kDefaultObjectAbsoluteOffsetsubtable;
   // Offset from the start of the buffer to the offset in the inline data for
   // this field.
   static constexpr size_t kInlineAbsoluteOffset_subtable = 56;
@@ -2072,28 +2023,24 @@ class TestTableStatic : public ::aos::fbs::Table {
   // *Static object used for managing this subtable. Will be nullopt
   // when the field is not populated.
   // We use the TableMover to be able to make this object moveable.
-  std::optional<::aos::fbs::internal::TableMover<::aos::fbs::String<20>>>
+  std::optional<::aos::fbs::internal::TableMover<
+      ::aos::fbs::String<20>>>
       string_;
   // Offset from the start of the buffer to the start of the actual
   // data for this field. Will be updated even when the table is not
   // populated, so that we know where to construct it when requested.
   static constexpr size_t kDefaultObjectAbsoluteOffsetstring =
-      ::aos::fbs::AlignOffset(
-          kDefaultObjectAbsoluteOffsetsubtable +
-              aos::fbs::testing::SubTableStatic::kPreallocatedSize -
-              kAlignOffset,
-          ::aos::fbs::String<20>::kAlign,
-          ::aos::fbs::String<20>::kAlignOffset) +
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetsubtable + aos::fbs::testing::SubTableStatic::kPreallocatedSize - kAlignOffset,
+                              ::aos::fbs::String<20>::kAlign, ::aos::fbs::String<20>::kAlignOffset) +
       kAlignOffset;
-  size_t object_absolute_offset_string = kDefaultObjectAbsoluteOffsetstring;
+  size_t object_absolute_offset_string =
+      kDefaultObjectAbsoluteOffsetstring;
   // Offset from the start of the buffer to the offset in the inline data for
   // this field.
   static constexpr size_t kInlineAbsoluteOffset_string = 60;
-
-  // Offset from the start of the buffer to the inline data for the scalar
-  // field.
+  // Offset from the start of the buffer to the inline data for the field
+  // scalar.
   static constexpr size_t kInlineAbsoluteOffset_scalar = 64;
-
   // This is an inline scalar/enum with a default, define kDefault_<name>.
   static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
 
@@ -2119,7 +2066,8 @@ class TestTableStatic : public ::aos::fbs::Table {
         &object_absolute_offset_unspecified_length_vector,
         &object_absolute_offset_included_table,
         &object_absolute_offset_subtable,
-        &object_absolute_offset_string};
+        &object_absolute_offset_string,
+    };
     // Actual subobjects; note that the pointers will be invalid when the
     // field is not populated.
     const std::array<::aos::fbs::ResizeableObject *, 11> subobject_objects{
@@ -2133,7 +2081,8 @@ class TestTableStatic : public ::aos::fbs::Table {
         &unspecified_length_vector_->t,
         &included_table_->t,
         &subtable_->t,
-        &string_->t};
+        &string_->t,
+    };
     // Absolute offsets from the start of the buffer to where the inline
     // entry is for each table. These offsets do not need to change at
     // runtime (because memory is never inserted into the start of
@@ -2150,7 +2099,8 @@ class TestTableStatic : public ::aos::fbs::Table {
         kInlineAbsoluteOffset_unspecified_length_vector,
         kInlineAbsoluteOffset_included_table,
         kInlineAbsoluteOffset_subtable,
-        kInlineAbsoluteOffset_string};
+        kInlineAbsoluteOffset_string,
+    };
     object.inline_entry =
         MutableGet<::flatbuffers::uoffset_t>(subobject_inline_offsets[index]);
     object.object =
@@ -2164,9 +2114,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // size, but will always start at this size and so the initial buffer must
   // match this size.
   static constexpr size_t kSize =
-      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetstring +
-                                  ::aos::fbs::String<20>::kPreallocatedSize -
-                                  kAlignOffset,
+      ::aos::fbs::AlignOffset(kDefaultObjectAbsoluteOffsetstring + ::aos::fbs::String<20>::kPreallocatedSize - kAlignOffset,
                               kAlign, kAlignOffset) +
       kAlignOffset;
   // Always statically allocate memory for tables (set for consistency with
