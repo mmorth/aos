@@ -1,4 +1,4 @@
-#load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+load("//tools/build_rules:clean_dep.bzl", "clean_dep")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -37,22 +37,22 @@ config_setting(
 
 config_setting(
     name = "cpu_roborio",
-    constraint_values = ["@//tools/platforms/hardware:roborio"],
+    constraint_values = [clean_dep("//tools/platforms/hardware:roborio")],
 )
 
 config_setting(
     name = "cpu_cortex_m4f",
-    constraint_values = ["@//tools/platforms/hardware:cortex_m4f"],
+    constraint_values = [clean_dep("//tools/platforms/hardware:cortex_m4f")],
 )
 
 config_setting(
     name = "cpu_cortex_m0plus",
-    constraint_values = ["@//tools/platforms/hardware:cortex_m0plus"],
+    constraint_values = [clean_dep("//tools/platforms/hardware:cortex_m0plus")],
 )
 
 config_setting(
     name = "cpu_cortex-m4f-imu",
-    constraint_values = ["@//tools/platforms/hardware:cortex-m4f-imu"],
+    constraint_values = [clean_dep("//tools/platforms/hardware:cortex-m4f-imu")],
 )
 
 # TODO(phil): Re-enable this with proper support.
