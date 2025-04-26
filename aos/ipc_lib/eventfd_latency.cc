@@ -59,7 +59,8 @@ void SenderThread(int fd) {
     const monotonic_clock::time_point monotonic_now = monotonic_clock::now();
     char sent_time_buffer[8];
     memcpy(sent_time_buffer, &monotonic_now, sizeof(sent_time_buffer));
-    PCHECK(write(fd, sent_time_buffer, sizeof(sent_time_buffer)));
+    PCHECK(write(fd, sent_time_buffer, sizeof(sent_time_buffer)) ==
+           sizeof(sent_time_buffer));
 
     if (monotonic_now > end_time) {
       break;
@@ -71,7 +72,8 @@ void SenderThread(int fd) {
     const monotonic_clock::time_point stop_time(chrono::nanoseconds(1));
     char sent_time_buffer[8];
     memcpy(sent_time_buffer, &stop_time, sizeof(sent_time_buffer));
-    PCHECK(write(fd, sent_time_buffer, sizeof(sent_time_buffer)));
+    PCHECK(write(fd, sent_time_buffer, sizeof(sent_time_buffer)) ==
+           sizeof(sent_time_buffer));
   }
   UnsetCurrentThreadRealtimePriority();
 }
@@ -150,14 +152,14 @@ int Main(int /*argc*/, char ** /*argv*/) {
   });
 
   int fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
-  PCHECK(fd);
+  PCHECK(fd >= 0);
 
   ::std::thread st([&fd]() { SenderThread(fd); });
 
   ReceiverThread(fd);
   st.join();
 
-  PCHECK(close(fd));
+  PCHECK(close(fd) == 0);
 
   t.join();
   return 0;

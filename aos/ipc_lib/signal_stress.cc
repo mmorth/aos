@@ -76,7 +76,7 @@ void SenderThread() {
         static_cast<uint64_t>(monotonic_now.time_since_epoch().count()) &
         0xfffffffful);
 
-    PCHECK(sigqueue(pid, kSignalNumber, s));
+    PCHECK(sigqueue(pid, kSignalNumber, s) == 0);
 
     if (monotonic_now > end_time) {
       break;
@@ -86,7 +86,7 @@ void SenderThread() {
   {
     sigval s;
     s.sival_int = 0;
-    PCHECK(sigqueue(pid, kQuitSignalNumber, s));
+    PCHECK(sigqueue(pid, kQuitSignalNumber, s) == 0);
   }
   UnsetCurrentThreadRealtimePriority();
 }
@@ -101,7 +101,7 @@ void ReceiverThread() {
   sigaddset(&x, kSignalNumber);
   sigaddset(&x, kQuitSignalNumber);
 
-  PCHECK(signalfd_fd = signalfd(-1, &x, SFD_NONBLOCK | SFD_CLOEXEC));
+  PCHECK((signalfd_fd = signalfd(-1, &x, SFD_NONBLOCK | SFD_CLOEXEC)) >= 0);
   chrono::nanoseconds max_wakeup_latency = chrono::nanoseconds(0);
 
   chrono::nanoseconds sum_latency = chrono::nanoseconds(0);
@@ -169,7 +169,7 @@ void ReceiverThread() {
           static_cast<int>(average_latency.count() / 1000),
           static_cast<int>(average_latency.count() % 1000));
 
-  PCHECK(close(signalfd_fd));
+  PCHECK(close(signalfd_fd) == 0);
 }
 
 int Main(int /*argc*/, char ** /*argv*/) {
