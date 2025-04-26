@@ -677,6 +677,7 @@ cc_test(
     deps = [
         ":status",
         "//aos:realtime",
+        "//aos:sanitizers",
         "//aos/testing:googletest",
         "//aos/testing:path",
     ],

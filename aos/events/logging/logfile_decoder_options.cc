@@ -1,12 +1,21 @@
 #include "aos/events/logging/logfile_decoder_options.h"
 
 #include "aos/events/logging/snappy_encoder.h"
+#include "aos/sanitizers.h"
 
 #if defined(__x86_64__)
-#define ENABLE_LZMA (!__has_feature(memory_sanitizer))
+#if !defined(AOS_SANITIZE_MEMORY)
+#define ENABLE_LZMA 1
+#else
+#define ENABLE_LZMA 0
+#endif
 #define ENABLE_S3 1
 #elif defined(__aarch64__)
-#define ENABLE_LZMA (!__has_feature(memory_sanitizer))
+#if !defined(AOS_SANITIZE_MEMORY)
+#define ENABLE_LZMA 1
+#else
+#define ENABLE_LZMA 0
+#endif
 #define ENABLE_S3 0
 #else
 #define ENABLE_LZMA 0

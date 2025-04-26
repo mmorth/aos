@@ -14,6 +14,7 @@
 #include "aos/init.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/realtime.h"
+#include "aos/sanitizers.h"
 #include "aos/util/phased_loop.h"
 
 // TODO(austin): If someone runs a SimulatedEventLoop on a RT thread with
@@ -201,7 +202,7 @@ class SimulatedChannel {
   void FreeBufferIndex(int i) {
     // This extra checking has a large performance hit with sanitizers that
     // track memory accesses, so just skip it.
-#if !__has_feature(memory_sanitizer) && !__has_feature(address_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
     DCHECK(std::find(available_buffer_indices_.begin(),
                      available_buffer_indices_.end(),
                      i) == available_buffer_indices_.end())

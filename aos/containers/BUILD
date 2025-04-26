@@ -64,6 +64,7 @@ cc_test(
     deps = [
         ":inlined_vector",
         "//aos:realtime",
+        "//aos:sanitizers",
         "//aos/testing:googletest",
         "@com_google_absl//absl/flags:reflection",
     ],

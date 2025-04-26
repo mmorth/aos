@@ -158,6 +158,7 @@ cc_library(
     deps = [
         ":file_operations",
         ":snappy_encoder",
+        "//aos:sanitizers",
     ] + select({
         "//tools:cpu_k8": [
             ":s3_fetcher",

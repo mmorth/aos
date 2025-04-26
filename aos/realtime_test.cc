@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 
 #include "aos/init.h"
+#include "aos/sanitizers.h"
 
 ABSL_DECLARE_FLAG(bool, die_on_malloc);
 
@@ -81,7 +82,7 @@ TEST(RealtimeTest, ScopedRealtimeRestorer) {
 }
 
 // Malloc hooks don't work with asan/msan.
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
 
 // Tests that CHECK statements give real error messages rather than die on
 // malloc.
@@ -213,7 +214,7 @@ TEST(RealtimeDeathTest, SetAffinityErrorMessage) {
 GTEST_API_ int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
   absl::SetFlag(&FLAGS_die_on_malloc, true);
 #endif
 

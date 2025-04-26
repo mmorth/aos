@@ -7,6 +7,7 @@
 
 #include "aos/macros.h"
 #include "aos/realtime.h"
+#include "aos/sanitizers.h"
 #include "aos/testing/path.h"
 
 namespace aos::testing {
@@ -55,7 +56,7 @@ TEST_F(ErrorTest, ExitCode) {
 }
 
 // Malloc hooks don't work with asan/msan.
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
 // Tests that we do indeed malloc (and catch it) on an extra-long error message
 // (this is mostly intended to ensure that the test setup is working correctly).
 TEST(ErrorDeathTest, BlowsUpOnRealtimeAllocation) {

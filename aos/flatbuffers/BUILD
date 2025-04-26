@@ -49,6 +49,7 @@ cc_test(
         ":base",
         ":static_flatbuffers",
         ":test_fbs",
+        "//aos:sanitizers",
         "//aos/testing:googletest",
         "@aos//aos:realtime",
     ],
