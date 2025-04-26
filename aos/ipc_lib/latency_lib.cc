@@ -38,6 +38,7 @@ void TimerThread(const monotonic_clock::time_point end_time,
       break;
     }
   }
+  UnsetCurrentThreadRealtimePriority();
   AOS_LOG(INFO, "Max wakeup latency: %d.%d microseconds\n",
           static_cast<int>(max_wakeup_latency.count() / 1000),
           static_cast<int>(max_wakeup_latency.count() % 1000));

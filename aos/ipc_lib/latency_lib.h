@@ -20,21 +20,22 @@ class Tracing {
     SetContentsOrDie("/sys/kernel/debug/tracing/events/enable", "1\n");
     fd_ = open("/sys/kernel/debug/tracing/tracing_on",
                O_WRONLY | O_TRUNC | O_CLOEXEC, 0);
-    PCHECK(fd_);
+    PCHECK(fd_ != -1);
   }
 
   ~Tracing() { close(fd_); }
 
-  void Start() { PCHECK(write(fd_, "1\n", 2)); }
+  void Start() { PCHECK(write(fd_, "1\n", 2) == 2); }
 
-  void Stop() { PCHECK(write(fd_, "0\n", 2)); }
+  void Stop() { PCHECK(write(fd_, "0\n", 2) == 2); }
 
  private:
   void SetContentsOrDie(const char *filename, const char *data) {
     int fd = open(filename, O_WRONLY | O_TRUNC | O_CLOEXEC);
-    PCHECK(fd);
-    PCHECK(write(fd, data, strlen(data)));
-    PCHECK(close(fd));
+    PCHECK(fd != -1);
+    size_t len = strlen(data);
+    PCHECK(write(fd, data, len) == static_cast<int>(len));
+    PCHECK(close(fd) == 0);
   }
 
   int fd_;

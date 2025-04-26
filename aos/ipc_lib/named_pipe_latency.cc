@@ -66,7 +66,8 @@ void SenderThread() {
     char sent_time_buffer[8];
     memcpy(sent_time_buffer, &monotonic_now, sizeof(sent_time_buffer));
     PCHECK(write(pipefd, static_cast<void *>(sent_time_buffer),
-                 sizeof(sent_time_buffer)));
+                 sizeof(sent_time_buffer)) ==
+           static_cast<int>(sizeof(sent_time_buffer)));
 
     if (monotonic_now > end_time) {
       break;
@@ -77,11 +78,12 @@ void SenderThread() {
     char sent_time_buffer[8];
     memset(sent_time_buffer, 0, sizeof(sent_time_buffer));
     PCHECK(write(pipefd, static_cast<void *>(sent_time_buffer),
-                 sizeof(sent_time_buffer)));
+                 sizeof(sent_time_buffer)) ==
+           static_cast<int>(sizeof(sent_time_buffer)));
   }
   UnsetCurrentThreadRealtimePriority();
 
-  PCHECK(close(pipefd));
+  PCHECK(close(pipefd) == 0);
 }
 
 void ReceiverThread() {
@@ -151,7 +153,7 @@ void ReceiverThread() {
       static_cast<int>(average_latency.count() / 1000),
       static_cast<int>(average_latency.count() % 1000));
 
-  PCHECK(close(pipefd));
+  PCHECK(close(pipefd) == 0);
 }
 
 int Main(int /*argc*/, char ** /*argv*/) {
