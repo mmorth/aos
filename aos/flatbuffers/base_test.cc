@@ -13,6 +13,7 @@
 #include "aos/flatbuffers/builder.h"
 #include "aos/flatbuffers/test_static.h"
 #include "aos/realtime.h"
+#include "aos/sanitizers.h"
 
 ABSL_DECLARE_FLAG(bool, die_on_malloc);
 
@@ -335,7 +336,7 @@ TEST_F(AlignedVectorAllocatorDeathTest, ResizeBufferFailsInRealtimeMode) {
   AllocateInitialBuffer(initial_size);
 
 // Malloc hooks don't work with asan/msan.
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
 
   {  // Verify we can enable DieOnMalloc.
     aos::ScopedRealtime realtime;
@@ -414,7 +415,7 @@ TEST_F(StaticFlatbufferDeathTest, FromFlatbufferFailsInRealtimeMode) {
   CreateTestTable(4);
 
 // Malloc hooks don't work with asan/msan.
-#if !__has_feature(address_sanitizer) && !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY) && !defined(AOS_SANITIZE_ADDRESS)
 
   {  // Verify we can enable DieOnMalloc.
     aos::ScopedRealtime realtime;

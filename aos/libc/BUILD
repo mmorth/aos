@@ -26,6 +26,7 @@ cc_test(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":aos_strsignal",
+        "//aos:sanitizers",
         "//aos/testing:googletest",
     ],
 )

@@ -726,6 +726,7 @@ cc_test(
     deps = [
         ":init",
         ":realtime",
+        "//aos:sanitizers",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",

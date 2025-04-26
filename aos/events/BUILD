@@ -573,6 +573,7 @@ cc_library(
         ":simple_channel",
         "//aos:init",
         "//aos:realtime",
+        "//aos:sanitizers",
         "//aos/events/logging:boot_timestamp",
         "//aos/events/logging:logger_fbs",
         "//aos/ipc_lib:index",

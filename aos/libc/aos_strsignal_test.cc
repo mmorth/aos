@@ -9,6 +9,8 @@
 
 #include "gtest/gtest.h"
 
+#include "aos/sanitizers.h"
+
 namespace aos::libc::testing {
 
 // Tries a couple of easy ones.
@@ -29,7 +31,7 @@ class SignalNameTester {
 };
 
 // msan doesn't seem to like strsignal().
-#if !__has_feature(memory_sanitizer)
+#if !defined(AOS_SANITIZE_MEMORY)
 // Tests that all the signals give the same result as strsignal(3).
 TEST(StrsignalTest, All) {
   // Sigh, strsignal allocates a buffer that uses pthread local storage.  This
