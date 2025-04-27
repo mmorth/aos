@@ -139,7 +139,9 @@ const std::string IncludePathForFbs(
   // (note that we could muck around with the paths on the bazel side to instead
   // get a cc_library with the correct include paths specified, although it is
   // not clear that that would be any simpler than the extra else-if).
-  if (fbs_file == "reflection/reflection.fbs") {
+  if (fbs_file == "reflection/reflection.fbs" ||
+      fbs_file.ends_with("external/" AOS_REPO_NAME
+                         "/aos/flatbuffers/reflection/reflection.fbs")) {
     if (include_suffix == "generated") {
       return "flatbuffers/reflection_generated.h";
     } else if (include_suffix == "static") {

@@ -1,11 +1,13 @@
 load("@com_github_google_flatbuffers//:build_defs.bzl", "flatbuffer_cc_library")
 load("//aos:flatbuffers.bzl", "cc_static_flatbuffer")
 load("//aos/flatbuffers:generate.bzl", "static_flatbuffer")
+load("//tools/build_rules:clean_dep.bzl", "aos_repo_name")
 
 cc_library(
     name = "static_flatbuffers",
     srcs = ["static_flatbuffers.cc"],
     hdrs = ["static_flatbuffers.h"],
+    local_defines = ["AOS_REPO_NAME=\\\"" + aos_repo_name() + "\\\""],
     deps = [
         ":attributes",
         ":static_table",

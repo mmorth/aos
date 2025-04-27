@@ -77,31 +77,55 @@ def _flatbuffer_library_compile_impl(ctx):
             outs.append(out)
             out_dir = out.dirname
 
+        input_dir = src.dirname
+
+        external_folder = None
+        if input_dir.startswith("external/"):
+            second_slash_index = input_dir.find("/", len("external/"))
+
+            # Handle flatbuffers in the root of the repo.  Don't want to strip off the last character...
+            if second_slash_index == -1:
+                external_folder = input_dir
+            else:
+                external_folder = input_dir[0:second_slash_index]
+
         for f in ctx.files.includes:
             root = f.owner.workspace_root
             if root and root not in workspaces:
                 workspaces.append(root)
 
-        arguments = [ctx.executable._flatc.path]
+        # For flatbuffers built in external repos, we don't want "external/foo" in the path.
+        # That will trigger #include "external/foo/bar_generated.h".  To fix that, cd into
+        # external/foo, and then add ../../ in front of all paths.
+        if external_folder != None:
+            prefix = "../../"
+        else:
+            prefix = ""
+
+        arguments = [prefix + ctx.executable._flatc.path]
         for path in ctx.attr.include_paths + workspaces:
             for subpath in ["", ctx.bin_dir.path + "/"]:
                 arguments.append("-I")
-                arguments.append(subpath + path)
+                arguments.append(prefix + subpath + path)
         arguments.append("-I")
-        arguments.append("%s.runfiles/com_github_google_flatbuffers" % ctx.executable._flatc.path)
+        arguments.append(prefix + "%s.runfiles/com_github_google_flatbuffers" % ctx.executable._flatc.path)
         arguments.extend(ctx.attr.flatc_args)
         arguments.extend(ctx.attr.language_flags)
         arguments.extend([
             "-o",
-            out_dir,
+            prefix + out_dir,
         ])
-        arguments.append(src.path)
-        commands.append(arguments)
+        arguments.append(prefix + src.path)
+        if external_folder != None:
+            commands.append("(cd " + external_folder + " && " + " ".join(arguments) + ")")
+        else:
+            commands.append(" ".join(arguments))
+
     ctx.actions.run_shell(
         outputs = outs,
         inputs = ctx.files.srcs + ctx.files.includes,
         tools = [ctx.executable._flatc],
-        command = " && ".join([" ".join(arguments) for arguments in commands]),
+        command = " && ".join(commands),
         mnemonic = "Flatc",
         progress_message = "Generating flatbuffer files for %{input}:",
     )
