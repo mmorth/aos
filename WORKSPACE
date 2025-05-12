@@ -1017,6 +1017,13 @@ http_file(
     urls = ["https://realtimeroboticsgroup.org/build-dependencies/small_sample_logfile2.fbs"],
 )
 
+http_file(
+    name = "coral_image_thriftycam_2025",
+    downloaded_file_path = "image.bfbs",
+    sha256 = "b746bda7db8a6233a74c59c35f3c9d5e343cd9f9c580c897013e8dff7c492eed",
+    urls = ["https://realtimeroboticsgroup.org/build-dependencies/coral_image_thriftycam_2025.bfbs"],
+)
+
 http_archive(
     name = "drivetrain_replay",
     build_file_content = """
