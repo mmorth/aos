@@ -1,7 +1,3 @@
-#include <networktables/DoubleArrayTopic.h>
-#include <networktables/FloatTopic.h>
-#include <networktables/NetworkTableInstance.h>
-
 #include <condition_variable>
 #include <iostream>
 #include <mutex>
@@ -14,6 +10,11 @@
 #include "absl/strings/str_join.h"
 
 #include "aos/init.h"
+#include "frc/kinematics/ChassisSpeeds.h"
+#include "networktables/DoubleArrayTopic.h"
+#include "networktables/FloatTopic.h"
+#include "networktables/NetworkTableInstance.h"
+#include "networktables/StructTopic.h"
 
 ABSL_FLAG(bool, topics, false, "Prints out a list of topics available.");
 ABSL_FLAG(std::string, float_topic, "", "");
@@ -31,12 +32,12 @@ ABSL_FLAG(unsigned int, nt_max_log_level, UINT_MAX,
 namespace frc::vision {
 
 int Main() {
+  std::mutex connection_mutex;
+  std::condition_variable connection_notify;
+
   nt::NetworkTableInstance instance = nt::NetworkTableInstance::GetDefault();
   instance.SetServer(absl::GetFlag(FLAGS_server));
   instance.StartClient4("aos_cli_client");
-
-  std::mutex connection_mutex;
-  std::condition_variable connection_notify;
 
   instance.AddLogger(absl::GetFlag(FLAGS_nt_min_log_level),
                      absl::GetFlag(FLAGS_nt_max_log_level),
@@ -114,6 +115,25 @@ int Main() {
       std::this_thread::sleep_for(std::chrono::seconds(1));
       std::cout << absl::StrJoin(subscriber.Get(), ", ") << "\n";
       std::cout << topic.GetTypeString();
+    } else if (absl::GetFlag(FLAGS_type) == "struct:ChassisSpeeds") {
+      nt::StructTopic<frc::ChassisSpeeds> topic =
+          instance.GetStructTopic<frc::ChassisSpeeds>(
+              absl::GetFlag(FLAGS_topic));
+      nt::StructSubscriber<frc::ChassisSpeeds> subscriber =
+          topic.Subscribe(frc::ChassisSpeeds{0_mps, 0_mps, 0_rad_per_s});
+      instance.AddListener(
+          subscriber, nt::EventFlags::kValueAll,
+          [&subscriber](const nt::Event & /*event*/) {
+            std::vector<nt::Timestamped<frc::ChassisSpeeds>> values =
+                subscriber.ReadQueue();
+            for (const nt::Timestamped<frc::ChassisSpeeds> &value : values) {
+              LOG(INFO) << "At " << value.serverTime
+                        << " Got: " << value.value.vx.value() << ", "
+                        << value.value.vy.value() << ", "
+                        << value.value.omega.value();
+            }
+          });
+      std::this_thread::sleep_for(std::chrono::seconds(100));
     } else {
       LOG(FATAL) << "Unsupported type " << absl::GetFlag(FLAGS_type);
     }
