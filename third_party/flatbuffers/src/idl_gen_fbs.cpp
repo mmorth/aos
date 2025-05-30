@@ -341,7 +341,6 @@ static std::string GenerateFBS(const Parser &parser,
     GenNameSpace(*struct_def.defined_namespace, &schema, &last_namespace);
     GenComment(struct_def.doc_comment, &schema, nullptr);
     schema += "table " + struct_def.name + " {\n";
-    size_t field_id = 0;
     for (auto field_it = struct_def.fields.vec.begin();
          field_it != struct_def.fields.vec.end(); ++field_it) {
       auto &field = **field_it;
