@@ -26,7 +26,7 @@ exports_files(glob([
 license(
     name = "libunwind_license",
     package_name = "libunwind",
-    license_text = "@//third_party/licenses:libunwind/LICENSE.txt",
+    license_text = "@aos//third_party/licenses:libunwind/LICENSE.txt",
     license_kinds = [
         # https://github.com/libunwind/libunwind/blob/master/LICENSE
         "@rules_license//licenses/spdx:MIT",
