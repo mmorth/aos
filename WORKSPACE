@@ -280,7 +280,10 @@ register_toolchains(
 http_archive(
     name = "com_google_absl",
     patch_args = ["-p1"],
-    patches = ["//third_party/abseil:abseil.patch"],
+    patches = [
+        "//third_party/abseil:0001-Add-hooks-for-using-abseil-with-AOS.patch",
+        "//third_party/abseil:0002-Suppress-the-stack-trace-on-SIGABRT.patch",
+    ],
     sha256 = "733726b8c3a6d39a4120d7e45ea8b41a434cdacde401cba500f14236c49b39dc",
     strip_prefix = "abseil-cpp-20240116.2",
     url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz",

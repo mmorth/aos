@@ -248,6 +248,21 @@ autocxx_library(
     ],
 )
 
+cc_test(
+    name = "stacktrace_test",
+    srcs = [
+        "stacktrace_test.cc",
+    ],
+    copts = ["-Wno-error=attributes"],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = [
+        ":realtime",
+        "//aos/testing:googletest",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+    ],
+)
+
 cc_library(
     name = "realtime",
     srcs = [
