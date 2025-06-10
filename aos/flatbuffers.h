@@ -3,6 +3,7 @@
 
 #include <array>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -76,6 +77,8 @@ class FixedAllocator : public FixedAllocatorBase {
 class PreallocatedAllocator : public FixedAllocatorBase {
  public:
   PreallocatedAllocator(void *data, size_t size) : data_(data), size_(size) {}
+  PreallocatedAllocator(std::span<uint8_t> data)
+      : data_(data.data()), size_(data.size()) {}
   PreallocatedAllocator(const PreallocatedAllocator &) = delete;
   PreallocatedAllocator(PreallocatedAllocator &&other)
       : data_(other.data_), size_(other.size_) {
