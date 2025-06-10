@@ -243,11 +243,11 @@ void ConfigIsValid(const aos::Configuration *config,
         for (const auto &node : *logger_set.loggers()) {
           logger_nodes.push_back(node.str());
         }
-        loggers = MakeLoggersForNodes(&factory, logger_nodes, log_path,
+        loggers = MakeLoggersForNodes(&factory, logger_nodes, log_path, {},
                                       do_skip_timing_report);
       } else {
-        loggers =
-            MakeLoggersForAllNodes(&factory, log_path, do_skip_timing_report);
+        loggers = MakeLoggersForAllNodes(&factory, log_path, {},
+                                         do_skip_timing_report);
       }
 
       std::vector<std::unique_ptr<EventLoop>> test_loops;
