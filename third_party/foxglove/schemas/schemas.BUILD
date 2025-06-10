@@ -7,8 +7,10 @@ package(default_applicable_licenses = [":license"])
 
 license(
     name = "license",
+    package_name = "Foxglove Schemas",
     license_kinds = ["@rules_license//licenses/spdx:MIT"],
     license_text = "LICENSE.md",
+    package_version = "7658786f354af2fab053b7151b364dd751c0c0f",
 )
 
 FLATC_ARGS = [arg for arg in DEFAULT_FLATC_ARGS if arg != "--require-explicit-ids"]
