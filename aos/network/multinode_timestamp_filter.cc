@@ -1470,7 +1470,7 @@ InterpolatedTimeConverter::QueueNextTimestamp() {
       next_time = NextTimestamp();
   if (!next_time.has_value()) {
     VLOG(1) << "Error in processing timestamps.";
-    return Error::MakeUnexpected(next_time.error());
+    return MakeError(next_time.error());
   }
   if (!next_time.value().has_value()) {
     VLOG(1) << "Last timestamp, calling it quits";
@@ -3137,7 +3137,7 @@ MultiNodeNoncausalOffsetEstimator::NextTimestamp() {
     // Ok, now solve for the minimum time on each channel.
     auto next_solution = NextSolution(&problem, last_monotonics_);
     if (!next_solution.has_value()) {
-      return Error::MakeUnexpectedError("Unable to solve timestamp problem.");
+      return MakeError("Unable to solve timestamp problem.");
     }
     std::vector<BootTimestamp> result_times =
         std::move(std::get<1>(next_solution.value()));
@@ -3251,14 +3251,12 @@ MultiNodeNoncausalOffsetEstimator::NextTimestamp() {
           UpdateSolution(std::move(result_times));
           WriteFilter(next_filter, sample);
           if (!FlushAndClose(false)) {
-            return Error::MakeUnexpectedError(
-                "Unable to flush timestamp debug information.");
+            return MakeError("Unable to flush timestamp debug information.");
           }
           LOG(ERROR)
               << "Found a solution before the last returned solution on node "
               << solution_node_index;
-          return Error::MakeUnexpectedError(
-              "Timestamp solving error---see above.");
+          return MakeError("Timestamp solving error---see above.");
         case TimeComparison::kEq:
           WriteFilter(next_filter, sample);
           return NextTimestamp();
@@ -3283,13 +3281,11 @@ MultiNodeNoncausalOffsetEstimator::NextTimestamp() {
           UpdateSolution(std::move(result_times));
           WriteFilter(next_filter, sample);
           if (!FlushAndClose(false)) {
-            return Error::MakeUnexpectedError(
-                "Unable to flush timestamp debug information.");
+            return MakeError("Unable to flush timestamp debug information.");
           }
           LOG(ERROR) << "Please investigate.  Use --max_invalid_distance_ns="
                      << invalid_distance.count() << " to ignore this.";
-          return Error::MakeUnexpectedError(
-              "Timestamp solving error---see above.");
+          return MakeError("Timestamp solving error---see above.");
         } break;
       }
     }

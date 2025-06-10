@@ -18,10 +18,10 @@ class ErrorTest : public ::testing::Test {
 
 // Tests that we can construct an errored status in realtime code.
 TEST_F(ErrorTest, RealtimeError) {
-  std::optional<Error> error;
+  std::optional<ErrorType> error;
   {
     aos::ScopedRealtime realtime;
-    error = Error::MakeError("Hello, World!");
+    error = ErrorType("Hello, World!");
   }
   const int line = __LINE__ - 2;
   ASSERT_TRUE(error.has_value());
@@ -49,10 +49,10 @@ TEST_F(ErrorTest, RealtimeError) {
 // Tests that the ResultExitCode() function will correctly transform a Result<>
 // object into an exit code suitable for exiting a program.
 TEST_F(ErrorTest, ExitCode) {
-  static_assert(0 == static_cast<int>(Error::StatusCode::kOk));
-  EXPECT_EQ(static_cast<int>(Error::StatusCode::kOk), ResultExitCode(Ok()));
-  EXPECT_EQ(static_cast<int>(Error::StatusCode::kError),
-            ResultExitCode(Error::MakeUnexpectedError("")));
+  static_assert(0 == static_cast<int>(ErrorType::StatusCode::kOk));
+  EXPECT_EQ(static_cast<int>(ErrorType::StatusCode::kOk), ResultExitCode(Ok()));
+  EXPECT_EQ(static_cast<int>(ErrorType::StatusCode::kError),
+            ResultExitCode(MakeError("")));
 }
 
 // Malloc hooks don't work with asan/msan.
@@ -60,12 +60,12 @@ TEST_F(ErrorTest, ExitCode) {
 // Tests that we do indeed malloc (and catch it) on an extra-long error message
 // (this is mostly intended to ensure that the test setup is working correctly).
 TEST(ErrorDeathTest, BlowsUpOnRealtimeAllocation) {
-  std::string message(" ", Error::kStaticMessageLength + 1);
+  std::string message(" ", ErrorType::kStaticMessageLength + 1);
   EXPECT_DEATH(
       {
         aos::ScopedRealtime realtime;
         aos::CheckRealtime();
-        Error foo = Error::MakeError(message);
+        ErrorType foo = ErrorType(message);
       },
       "Malloced");
 }
@@ -74,16 +74,17 @@ TEST(ErrorDeathTest, BlowsUpOnRealtimeAllocation) {
 
 // Tests that we can use arbitrarily-sized string literals for error messages.
 TEST_F(ErrorTest, StringLiteralError) {
-  std::optional<Error> error;
+  std::optional<ErrorType> error;
   const char *message =
       "Hellllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll"
       "llllllllllllllloooooooooooooooooooooooooooooooooooooooooooo, "
       "World!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       "!!!!!!!!!!!!!!";
-  ASSERT_LT(Error::kStaticMessageLength, strlen(message));
+  ASSERT_LT(ErrorType::kStaticMessageLength, strlen(message));
   {
     aos::ScopedRealtime realtime;
-    error = Error::MakeStringLiteralError(message);
+    auto unexpected = MakeStringLiteralError(message);
+    error = unexpected.value();
   }
   ASSERT_TRUE(error.has_value());
   EXPECT_EQ(message, error->message());
@@ -95,16 +96,15 @@ TEST_F(ErrorTest, StringLiteralError) {
 
 // Tests that the CheckExpected() call works as intended.
 TEST(ErrorDeathTest, CheckExpected) {
-  tl::expected<int, Error> expected;
+  tl::expected<int, ErrorType> expected;
   expected.emplace(118);
   EXPECT_EQ(118, CheckExpected(expected))
       << "Should have gotten out the emplaced value on no error.";
-  expected = Error::MakeUnexpectedError("Hello, World!");
+  expected = MakeError("Hello, World!");
   EXPECT_DEATH(CheckExpected(expected), "Hello, World!")
       << "An error message including the error string should have been printed "
          "on death.";
-  EXPECT_DEATH(CheckExpected<void>(Error::MakeUnexpectedError("void expected")),
-               "void expected")
+  EXPECT_DEATH(CheckExpected<void>(MakeError("void expected")), "void expected")
       << "A void expected should work with CheckExpected().";
 }
 
@@ -124,8 +124,7 @@ TEST_F(ErrorTest, ReturnResultIfErrorNoExtraCopies) {
     AOS_RETURN_IF_ERROR(test_value);
     executed = true;
     // next, confirm that we do actually return early on an unexpected.
-    AOS_RETURN_IF_ERROR(
-        Result<void>(Error::MakeUnexpectedError("Hello, World!")));
+    AOS_RETURN_IF_ERROR(Result<void>(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());
@@ -138,8 +137,7 @@ TEST_F(ErrorTest, ReturnResultIfErrorNoExtraCopies) {
 // incorrectly.
 TEST_F(ErrorTest, ReturnResultHandlesLifetime) {
   const Result<void> result = []() -> Result<void> {
-    AOS_RETURN_IF_ERROR(
-        Result<void>(Error::MakeUnexpectedError("Hello, World!")));
+    AOS_RETURN_IF_ERROR(Result<void>(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());
@@ -170,8 +168,7 @@ TEST_F(ErrorTest, DeclareVariableNoExtraCopies) {
     executed = true;
     // next, confirm that we do actually return early on an unexpected.
     AOS_DECLARE_OR_RETURN_IF_ERROR(
-        never_reached,
-        Result<DisallowCopy>(Error::MakeUnexpectedError("Hello, World!")));
+        never_reached, Result<DisallowCopy>(MakeError("Hello, World!")));
     (void)never_reached;
     return {};
   }();
@@ -185,8 +182,8 @@ TEST_F(ErrorTest, DeclareVariableNoExtraCopies) {
 // AOS_DECLARE_OR_RETURN_IF_ERROR are handled incorrectly.
 TEST_F(ErrorTest, DeclareVariableLifetime) {
   const Result<void> result = []() -> Result<void> {
-    AOS_DECLARE_OR_RETURN_IF_ERROR(
-        tmp, Result<int>(Error::MakeUnexpectedError("Hello, World!")));
+    AOS_DECLARE_OR_RETURN_IF_ERROR(tmp,
+                                   Result<int>(MakeError("Hello, World!")));
     (void)tmp;
     return {};
   }();
@@ -219,8 +216,7 @@ TEST_F(ErrorTest, InitializeVariableNoExtraCopies) {
     DisallowCopy tmp2;
     // next, confirm that we do actually return early on an unexpected.
     AOS_GET_VALUE_OR_RETURN_ERROR(
-        tmp2,
-        Result<DisallowCopy>(Error::MakeUnexpectedError("Hello, World!")));
+        tmp2, Result<DisallowCopy>(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());
@@ -235,7 +231,7 @@ TEST_F(ErrorTest, InitializeVariableLifetime) {
   const Result<void> result = []() -> Result<void> {
     DisallowCopy tmp;
     AOS_GET_VALUE_OR_RETURN_ERROR(
-        tmp, Result<DisallowCopy>(Error::MakeUnexpectedError("Hello, World!")));
+        tmp, Result<DisallowCopy>(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());

@@ -304,7 +304,7 @@ void LogReader::State::QueueThreadUntil(BootTimestamp time) {
           if (!message.has_value()) {
             return util::ThreadedQueue<Result<TimestampedMessage>,
                                        BootTimestamp>::PushResult{
-                Error::MakeUnexpected(message.error()), /*more_to_push=*/false,
+                MakeError(message.error()), /*more_to_push=*/false,
                 /*done=*/true};
           }
           // Upon reaching the end of the log, exit.
@@ -324,7 +324,7 @@ void LogReader::State::QueueThreadUntil(BootTimestamp time) {
           if (!pop_result.has_value()) {
             return util::ThreadedQueue<Result<TimestampedMessage>,
                                        BootTimestamp>::PushResult{
-                Error::MakeUnexpected(pop_result.error()),
+                MakeError(pop_result.error()),
                 /*more_to_push=*/false,
                 /*done=*/true};
           }
@@ -332,7 +332,7 @@ void LogReader::State::QueueThreadUntil(BootTimestamp time) {
           if (!seed_result.has_value()) {
             return util::ThreadedQueue<Result<TimestampedMessage>,
                                        BootTimestamp>::PushResult{
-                Error::MakeUnexpected(pop_result.error()),
+                MakeError(pop_result.error()),
                 /*more_to_push=*/false,
                 /*done=*/true};
           }
@@ -1856,7 +1856,7 @@ Result<TimestampedMessage> LogReader::State::PopOldest() {
     CHECK(message.has_value()) << ": Unexpectedly ran out of messages.";
     // If there is an error during message reading, propagate it up.
     if (!message.value().has_value()) {
-      return Error::MakeUnexpected(message.value().error());
+      return MakeError(message.value().error());
     }
     message_queuer_->SetState(
         message.value().value().monotonic_event_time +
@@ -1901,7 +1901,7 @@ Result<BootTimestamp> LogReader::State::MultiThreadedOldestMessageTime() {
     return BootTimestamp::max_time();
   }
   if (!message.value().has_value()) {
-    return Error::MakeUnexpected(message.value().error());
+    return MakeError(message.value().error());
   }
   if (message.value().value().monotonic_event_time.boot == boot_count()) {
     ObserveNextMessage(message.value().value().monotonic_event_time.time,

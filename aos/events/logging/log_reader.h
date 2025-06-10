@@ -961,7 +961,7 @@ class LogReader {
       return;
     }
     if (exit_handle_) {
-      exit_handle_->Exit(Error::MakeUnexpected(result.error()));
+      exit_handle_->Exit(MakeError(result.error()));
     } else {
       CheckExpected(result);
     }

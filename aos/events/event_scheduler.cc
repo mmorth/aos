@@ -411,7 +411,7 @@ Result<void> EventSchedulerScheduler::RunMaybeRealtimeLoop(F loop_body) {
   const Result<std::tuple<distributed_clock::time_point, EventScheduler *>>
       oldest_event = OldestEvent();
   if (!oldest_event.has_value()) {
-    return Error::MakeUnexpected(oldest_event.error());
+    return MakeError(oldest_event.error());
   }
   distributed_clock::time_point last_distributed_clock =
       std::get<0>(oldest_event.value());

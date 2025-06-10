@@ -913,7 +913,7 @@ class TimestampMapper {
       }
       const Result<bool> queued_message = QueueMatched();
       if (!queued_message.has_value()) {
-        return Error::MakeUnexpected(queued_message.error());
+        return MakeError(queued_message.error());
       }
       if (!queued_message.value()) {
         return Ok();

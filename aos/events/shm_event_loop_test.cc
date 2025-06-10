@@ -318,7 +318,7 @@ TEST_P(ShmEventLoopTest, SuccessfulExitTest) {
   loop1->OnRun([this, &exit_handle]() {
     factory()->Exit();
     // The second Exit() call should get ignored.
-    exit_handle->Exit(aos::Error::MakeUnexpectedError("Hello, World!"));
+    exit_handle->Exit(MakeError("Hello, World!"));
   });
 
   EXPECT_TRUE(factory()->Run().has_value());

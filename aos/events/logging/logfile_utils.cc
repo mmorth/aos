@@ -1459,7 +1459,7 @@ PartsMessageReader::ReadMessage() {
       if (after_start_) {
         if (monotonic_sent_time <
             newest_timestamp_ - max_out_of_order_duration()) {
-          return Error::MakeUnexpectedError(
+          return MakeError(
               // TODO(james): Come up with some clever macro akin to LOG(INFO)
               // that makes it easier for people to use existing operator<<
               // patterns.
