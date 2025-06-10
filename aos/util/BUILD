@@ -117,6 +117,17 @@ cc_static_flatbuffer(
     target = ":log_conversion_metadata_fbs_reflection_out",
 )
 
+static_flatbuffer(
+    name = "live_metadata_fbs",
+    srcs = ["live_metadata.fbs"],
+)
+
+cc_static_flatbuffer(
+    name = "live_metadata_schema",
+    function = "aos::LiveMetadataSchema",
+    target = ":live_metadata_fbs_reflection_out",
+)
+
 cc_library(
     name = "mcap_logger",
     srcs = ["mcap_logger.cc"],
@@ -551,6 +562,8 @@ cc_library(
     srcs = ["foxglove_websocket_lib.cc"],
     hdrs = ["foxglove_websocket_lib.h"],
     deps = [
+        ":live_metadata_fbs",
+        ":live_metadata_schema",
         ":mcap_logger",
         "//aos:configuration_fbs",
         "//aos:configuration_schema",

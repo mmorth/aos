@@ -11,6 +11,7 @@
 #include "foxglove/websocket/websocket_server.hpp"
 
 #include "aos/events/event_loop.h"
+#include "aos/util/live_metadata_static.h"
 
 namespace aos {
 // This class implements a live AOS -> Foxglove Websocket Protocol connection,
@@ -90,6 +91,7 @@ class FoxgloveWebsocketServer {
 
   aos::EventLoop *event_loop_;
   FlatbufferDetachedBuffer<Configuration> stripped_configuration_;
+  fbs::Builder<LiveMetadataStatic> live_metadata_;
   const Serialization serialization_;
   const FetchPinnedChannels fetch_pinned_channels_;
   const CanonicalChannelNames canonical_channels_;

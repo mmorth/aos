@@ -30,6 +30,7 @@
 #include "aos/flatbuffers.h"
 #include "aos/json_to_flatbuffer.h"
 #include "aos/time/time.h"
+#include "aos/util/live_metadata_schema.h"
 #include "aos/util/mcap_logger.h"
 
 ABSL_FLAG(uint32_t, sorting_buffer_ms, 100,
@@ -78,6 +79,15 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
     : event_loop_(event_loop),
       stripped_configuration_(
           configuration::StripConfiguration(event_loop_->configuration())),
+      live_metadata_([this] {
+        fbs::Builder<LiveMetadataStatic> builder;
+        fbs::String<0> *foo = ABSL_DIE_IF_NULL(builder->add_node());
+        const std::string_view node_name =
+            event_loop_->node()->name()->string_view();
+        CHECK(foo->reserve(node_name.size()));
+        foo->SetString(node_name);
+        return builder;
+      }()),
       serialization_(serialization),
       fetch_pinned_channels_(fetch_pinned_channels),
       canonical_channels_(canonical_channels),
@@ -116,24 +126,48 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
   // The current motivation here is to make a live system more similar to
   // looking at an MCAP file.
   if (serialization_ == Serialization::kFlatbuffer) {
-    // Add the AOS configuration under the "configuration" channel. This matches
-    // what the McapLogger does.
-    absl::Span<const uint8_t> configuration_schema = ConfigurationSchema();
-    const std::vector<ChannelId> ids =
-        server_.addChannels({foxglove::ChannelWithoutId{
-            .topic = "configuration",
-            .encoding = "flatbuffer",
-            .schemaName = Configuration::GetFullyQualifiedName(),
-            .schema = absl::Base64Escape(
-                {reinterpret_cast<const char *>(configuration_schema.data()),
-                 configuration_schema.size()}),
-            .schemaEncoding = std::nullopt}});
-    CHECK_EQ(ids.size(), 1u);
-    special_channels_.emplace(ids[0],
-                              SpecialChannelState{
-                                  .message = stripped_configuration_.span(),
-                                  .pending_sends = {},
-                              });
+    {
+      // Add the AOS configuration under the "configuration" channel. This
+      // matches what the McapLogger does.
+      absl::Span<const uint8_t> configuration_schema = ConfigurationSchema();
+      const std::vector<ChannelId> ids =
+          server_.addChannels({foxglove::ChannelWithoutId{
+              .topic = "configuration",
+              .encoding = "flatbuffer",
+              .schemaName = Configuration::GetFullyQualifiedName(),
+              .schema = absl::Base64Escape(
+                  {reinterpret_cast<const char *>(configuration_schema.data()),
+                   configuration_schema.size()}),
+              .schemaEncoding = std::nullopt}});
+      CHECK_EQ(ids.size(), 1u);
+      special_channels_.emplace(ids[0],
+                                SpecialChannelState{
+                                    .message = stripped_configuration_.span(),
+                                    .pending_sends = {},
+                                });
+    }
+    {
+      // Add the channel that tells the client about the system it connected to.
+      absl::Span<const uint8_t> live_metadata_schema = LiveMetadataSchema();
+      const std::vector<ChannelId> ids =
+          server_.addChannels({foxglove::ChannelWithoutId{
+              .topic = "live_metadata",
+              .encoding = "flatbuffer",
+              .schemaName = LiveMetadata::GetFullyQualifiedName(),
+              .schema = absl::Base64Escape(
+                  {reinterpret_cast<const char *>(live_metadata_schema.data()),
+                   live_metadata_schema.size()}),
+              .schemaEncoding = std::nullopt}});
+      CHECK_EQ(ids.size(), 1u);
+      special_channels_.emplace(
+          ids[0],
+          SpecialChannelState{
+              .message = static_cast<const FlatbufferSpan<LiveMetadata> &>(
+                             live_metadata_.AsFlatbufferSpan())
+                             .span(),
+              .pending_sends = {},
+          });
+    }
   }
 
   // Add all the channels that we want foxglove to be able to look at.
