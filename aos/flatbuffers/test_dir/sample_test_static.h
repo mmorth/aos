@@ -59,6 +59,10 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
+  
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
+        
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
@@ -184,8 +188,6 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the inline data for the field
   // field.
   static constexpr size_t kInlineAbsoluteOffset_field = 4;
-  // This is an inline scalar/enum with a default, define kDefault_<name>.
-  static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
 
   // This object has no non-inline subobjects, so we don't have to do anything
   // special.
@@ -261,6 +263,13 @@ class SubTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
+  
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr float kDefault_baz = static_cast<float>(0);
+        
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
+        
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
@@ -431,13 +440,9 @@ class SubTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the inline data for the field
   // baz.
   static constexpr size_t kInlineAbsoluteOffset_baz = 4;
-  // This is an inline scalar/enum with a default, define kDefault_<name>.
-  static constexpr float kDefault_baz = static_cast<float>(0);
   // Offset from the start of the buffer to the inline data for the field
   // foo.
   static constexpr size_t kInlineAbsoluteOffset_foo = 8;
-  // This is an inline scalar/enum with a default, define kDefault_<name>.
-  static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
 
   // This object has no non-inline subobjects, so we don't have to do anything
   // special.
@@ -524,6 +529,10 @@ class TestTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
+  
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
+        
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
@@ -2041,8 +2050,6 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Offset from the start of the buffer to the inline data for the field
   // scalar.
   static constexpr size_t kInlineAbsoluteOffset_scalar = 64;
-  // This is an inline scalar/enum with a default, define kDefault_<name>.
-  static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
 
   size_t NumberOfSubObjects() const final { return 11; }
   using ::aos::fbs::ResizeableObject::SubObject;

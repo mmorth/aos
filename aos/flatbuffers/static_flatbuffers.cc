@@ -721,25 +721,30 @@ std::string MakeAccessors(const FieldData &field,
                          : MakeOffsetDataAccessors(field);
 }
 
+std::string MakePublicConstants(const FieldData &field) {
+  if (field.is_inline) {
+    if (field.default_value_expression.has_value()) {
+      return absl::StrFormat(R"code(
+    // This is an inline scalar/enum with a default, define kDefault_<name>.
+    static constexpr %s kDefault_%s = %s;
+        )code",
+                             field.full_type, field.name,
+                             field.default_value_expression.value());
+    }
+  }
+  return {};
+}
+
 std::string MakeMembers(const FieldData &field,
                         std::string_view offset_data_absolute_offset,
                         size_t inline_absolute_offset) {
   if (field.is_inline) {
-    std::string code_str = absl::StrFormat(
+    return absl::StrFormat(
         R"code(  // Offset from the start of the buffer to the inline data for the field
   // %s.
   static constexpr size_t %s = %d;
 )code",
         field.name, InlineAbsoluteOffsetName(field), inline_absolute_offset);
-
-    if (field.default_value_expression.has_value()) {
-      code_str += absl::StrFormat(
-          R"code(  // This is an inline scalar/enum with a default, define kDefault_<name>.
-  static constexpr %s kDefault_%s = %s;
-)code",
-          field.full_type, field.name, field.default_value_expression.value());
-    }
-    return code_str;
   } else {
     return absl::StrFormat(
         R"code(
@@ -1035,6 +1040,7 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
       "(kVtableStart + kVtableSize)";
   std::string offset_data_relative_offset = offset_data_start_expression;
   std::vector<std::string> accessors;
+  std::vector<std::string> public_constants;
   std::vector<std::string> members;
   std::set<std::string> includes = {
       MakeInclude("aos/flatbuffers/static_table.h"),
@@ -1070,6 +1076,7 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
     }
     const std::string offset_data_absolute_offset = offset_data_relative_offset;
     accessors.emplace_back(MakeAccessors(field, inline_absolute_offset));
+    public_constants.emplace_back(MakePublicConstants(field));
     members.emplace_back(MakeMembers(field, offset_data_absolute_offset,
                                      inline_absolute_offset));
 
@@ -1130,9 +1137,10 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
+  %s
 )code",
       inline_data_size, object->fields()->size(), alignment, nominal_min_align,
-      offset_data_start_expression);
+      offset_data_start_expression, absl::StrJoin(public_constants, ""));
   const std::string_view fbs_type_name = object->name()->string_view();
   const std::string type_namespace = FlatbufferNameToCppName(
       fbs_type_name.substr(0, fbs_type_name.find_last_of(".")));
