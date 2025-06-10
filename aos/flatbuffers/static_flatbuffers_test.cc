@@ -199,6 +199,20 @@ TEST_F(StaticFlatbuffersTest, UnsupportedSchema) {
       GetObjectByName(schema, "aos.fbs.testing.MissingSubStringLength"));
 }
 
+// Validates that we can set an empty string on a string field.
+TEST_F(StaticFlatbuffersTest, EmptyString) {
+  Builder<TestTableStatic> builder;
+  TestTableStatic *object = builder.get();
+
+  String<20> *string = object->add_string();
+  ASSERT_TRUE(string != nullptr);
+  string->SetString("");
+  EXPECT_EQ(string->string_view(), "");
+
+  string->SetString(std::string_view{});
+  EXPECT_EQ(string->string_view(), "");
+}
+
 // Tests that we can go through and manually build up a big flatbuffer and that
 // it stays valid at all points.
 TEST_F(StaticFlatbuffersTest, ManuallyConstructFlatbuffer) {
