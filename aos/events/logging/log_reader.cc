@@ -582,14 +582,8 @@ Status LogReader::NonFatalRegisterWithoutStarting(
   if (configuration::NodesCount(event_loop_factory_->configuration()) > 1u) {
     for (size_t i = 0; i < logged_configuration()->channels()->size(); ++i) {
       const Channel *channel = logged_configuration()->channels()->Get(i);
-      const Node *node = configuration::GetNode(
-          configuration(), channel->source_node()->string_view());
 
-      State *state =
-          states_[configuration::GetNodeIndex(configuration(), node)].get();
-
-      const Channel *remapped_channel =
-          config_remapper_.RemapChannel(state->event_loop(), node, channel);
+      const Channel *remapped_channel = config_remapper_.RemapChannel(channel);
 
       event_loop_factory_->DisableForwarding(remapped_channel);
     }
@@ -822,7 +816,6 @@ Result<void> LogReader::RegisterDuringStartup(EventLoop *event_loop,
     }
 
     const Channel *channel = config_remapper_.RemapChannel(
-        event_loop, node,
         logged_configuration()->channels()->Get(logged_channel_index));
 
     const bool logged = channel->logger() != LoggerConfig::NOT_LOGGED;
@@ -1358,10 +1351,8 @@ std::vector<const Channel *> LogReader::RemappedChannels() const {
   return config_remapper_.RemappedChannels();
 }
 
-const Channel *LogReader::RemapChannel(const EventLoop *event_loop,
-                                       const Node *node,
-                                       const Channel *channel) {
-  return config_remapper_.RemapChannel(event_loop, node, channel);
+const Channel *LogReader::RemapChannel(const Channel *channel) {
+  return config_remapper_.RemapChannel(channel);
 }
 
 LogReader::State::State(

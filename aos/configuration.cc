@@ -1512,21 +1512,37 @@ const Channel *GetChannel(const Configuration *config, std::string_view name,
   }
 }
 
+namespace {
 size_t ChannelIndex(const Configuration *configuration,
-                    const Channel *channel) {
+                    const std::string_view name, const std::string_view type) {
   CHECK(configuration->channels() != nullptr) << ": No channels";
 
-  const auto c = std::lower_bound(
-      configuration->channels()->cbegin(), configuration->channels()->cend(),
-      std::make_pair(channel->name()->string_view(),
-                     channel->type()->string_view()),
-      CompareChannels);
+  const auto c = std::lower_bound(configuration->channels()->cbegin(),
+                                  configuration->channels()->cend(),
+                                  std::make_pair(name, type), CompareChannels);
   CHECK(c != configuration->channels()->cend())
-      << ": Channel pointer not found in configuration()->channels()";
-  CHECK(*c == channel)
       << ": Channel pointer not found in configuration()->channels()";
 
   return std::distance(configuration->channels()->cbegin(), c);
+}
+}  // namespace
+
+size_t ChannelIndex(const Configuration *configuration,
+                    const Channel *channel) {
+  const size_t index =
+      ChannelIndex(configuration, channel->name()->string_view(),
+                   channel->type()->string_view());
+
+  CHECK(configuration->channels()->Get(index) == channel)
+      << ": Channel pointer not found in configuration()->channels()";
+
+  return index;
+}
+
+const Channel *GetFullySpecifiedChannel(const Configuration *config,
+                                        const std::string_view name,
+                                        const std::string_view type) {
+  return config->channels()->Get(ChannelIndex(config, name, type));
 }
 
 std::string CleanedChannelToString(const Channel *channel) {

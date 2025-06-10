@@ -418,8 +418,7 @@ class LogReader {
   [[nodiscard]] Status RegisterDuringStartup(EventLoop *event_loop,
                                              const Node *node);
 
-  const Channel *RemapChannel(const EventLoop *event_loop, const Node *node,
-                              const Channel *channel);
+  const Channel *RemapChannel(const Channel *channel);
 
   // Checks if any states have their event loops initialized which indicates
   // events have been scheduled
