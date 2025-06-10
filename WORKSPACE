@@ -1285,26 +1285,6 @@ http_archive(
     url = "https://github.com/foxglove/schemas/archive/7a3e077b88142ac46bb4e2616f83dc029b45352e.tar.gz",
 )
 
-# This contains the *compiled* foxglove studio. This can be reproduced by:
-# 1. Cloning https://github.com/foxglove/studio
-# 2. Building the code (yarn install; yarn web:build:prod)
-# 3. tar'ing the web/.webpack folder (e.g., tar czvf foxglove-1456f4a4cb6f4c6c7e50e020ba9918dba9e04b96.tar.gz --directory=web/.webpack/ .)
-# These files can be hosted locally to provide an offline foxglove server.
-# Foxglove may be served on any port and may be nested at a subpath
-# (e.g., at hostname:8000/foxglove behind a proxy).
-http_archive(
-    name = "foxglove_studio",
-    build_file_content = """
-filegroup(
-    name = "foxglove_studio",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)""",
-    sha256 = "d02f4ca629e6dcf2b65557a0353871ce0025e70715214de4e6ec7e9f862de420",
-    url =
-        "https://realtimeroboticsgroup.org/build-dependencies/foxglove-1456f4a4cb6f4c6c7e50e020ba9918dba9e04b96.tar.gz",
-)
-
 #
 # https://www.st.com/en/embedded-software/stsw-img009.html#overview
 http_archive(
