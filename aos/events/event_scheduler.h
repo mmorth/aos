@@ -361,6 +361,14 @@ class EventSchedulerScheduler {
   // stopping applications while running.
   Result<void> TemporarilyStopAndRun(std::function<void()> fn);
 
+  // Adds a callback to be invoked just before an event is handled.
+  void set_on_event(
+      std::function<void(
+          std::tuple<distributed_clock::time_point, const EventScheduler *>)>
+          callback) {
+    on_event_ = std::move(callback);
+  }
+
  private:
   [[nodiscard]] Result<void> Reboot();
 
@@ -393,6 +401,10 @@ class EventSchedulerScheduler {
 
   double replay_rate_ = std::numeric_limits<double>::infinity();
   internal::EPoll epoll_;
+
+  std::function<void(
+      std::tuple<distributed_clock::time_point, const EventScheduler *>)>
+      on_event_;
 };
 
 inline distributed_clock::time_point EventScheduler::distributed_now() const {

@@ -347,6 +347,10 @@ Result<void> EventSchedulerScheduler::RunFor(
     // push time forwards
     now_ = std::get<0>(oldest_event);
 
+    if (on_event_) {
+      on_event_(oldest_event);
+    }
+
     return std::get<1>(oldest_event)->CallOldestEvent();
   });
 

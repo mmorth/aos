@@ -30,9 +30,10 @@ class SimulatedChannel;
 class NodeEventLoopFactory;
 class SimulatedEventLoop;
 class SimulatedFactoryExitHandle;
+class SimulatedEventLoopLogSink;
 namespace message_bridge {
 class SimulatedMessageBridge;
-}
+}  // namespace message_bridge
 
 // There are 2 concepts needed to support multi-node simulations.
 //  1) The node.  This is implemented with NodeEventLoopFactory.
@@ -180,6 +181,10 @@ class SimulatedEventLoopFactory {
   // Returns the contents of exit_status_ (or a successful Result<> if
   // exit_status_ is nullopt), and clears the exit status.
   Result<void> GetAndClearExitStatus();
+
+  // Creates a new log sink depending on whether --use_simulated_clocks_for_logs
+  // is set.
+  std::unique_ptr<SimulatedEventLoopLogSink> MaybeCreateSimulatedLogSink();
 
   const Configuration *const configuration_;
   EventSchedulerScheduler scheduler_scheduler_;
