@@ -2,7 +2,9 @@
 #define AOS_FLATBUFFERS_H_
 
 #include <array>
+#include <optional>
 #include <string_view>
+#include <vector>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
@@ -13,6 +15,9 @@
 #include "aos/ipc_lib/data_alignment.h"
 #include "aos/macros.h"
 #include "aos/util/file.h"
+#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+#include "aos/realtime.h"
+#endif
 
 namespace aos {
 
@@ -287,39 +292,79 @@ template <typename T, size_t Size>
 class FlatbufferFixedAllocatorArray final
     : public NonSizePrefixedFlatbuffer<T> {
  public:
-  FlatbufferFixedAllocatorArray() : buffer_(), allocator_(&buffer_[0], Size) {}
+  FlatbufferFixedAllocatorArray()
+      :
+#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+        // See the comments in Reset() for why we're using a vector here when
+        // running with sanitizers.
+        buffer_(std::make_optional<std::vector<uint8_t>>(Size)),
+#else
+        buffer_(std::make_optional<std::array<uint8_t, Size>>()),
+#endif
+        allocator_(
+            std::make_optional<PreallocatedAllocator>(buffer_->data(), Size)) {
+  }
 
   FlatbufferFixedAllocatorArray(const FlatbufferFixedAllocatorArray &) = delete;
   void operator=(const NonSizePrefixedFlatbuffer<T> &) = delete;
 
   void CopyFrom(const NonSizePrefixedFlatbuffer<T> &other) {
-    CHECK(!allocator_.is_allocated()) << ": May not overwrite while building";
+    DCHECK(buffer_.has_value());
+    DCHECK(allocator_.has_value());
+    CHECK(!allocator_->is_allocated()) << ": May not overwrite while building";
     CHECK_LE(other.span().size(), Size)
         << ": Source flatbuffer is larger than the target.";
-    memcpy(buffer_.begin(), other.span().data(), other.span().size());
-    data_ = buffer_.begin();
+    memcpy(buffer_->begin(), other.span().data(), other.span().size());
+    data_ = buffer_->data();
     size_ = other.span().size();
   }
 
+  // Resets the internal memory. This invalidates the references previously
+  // acquired via `message()` or `mutable_message()`.
   void Reset() {
-    CHECK(!allocator_.is_allocated() || data_ != nullptr)
+    DCHECK(buffer_.has_value());
+    DCHECK(allocator_.has_value());
+    CHECK(!allocator_->is_allocated() || data_ != nullptr)
         << ": May not reset while building";
-    fbb_ = flatbuffers::FlatBufferBuilder(Size, &allocator_);
+#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+    // Since the user can get a raw pointer to the flatbuffer contained in the
+    // allocator, it's possible that the user holds on to this pointer across
+    // calls to `Reset()`. Depending on how the user ends up using pointer,
+    // undefined behaviour can be invoked. That's not ideal. We really want to
+    // make it more obvious that pointers should not be held on to across
+    // `Reset()` calls. Unfortunately, the various sanitizers don't have support
+    // for arena-style custom memory allocators. To work around that, we
+    // forcibly instantiate a whole new buffer object. It has to live on the
+    // heap so that the sanitizers can track invalid pointers properly.
+    fbb_ = flatbuffers::FlatBufferBuilder{};
+    allocator_.reset();
+    {
+      aos::ScopedNotRealtime not_realtime;
+      buffer_ = std::make_optional<std::vector<uint8_t>>(Size);
+    }
+    allocator_ =
+        std::make_optional<PreallocatedAllocator>(buffer_->data(), Size);
+#endif
+    fbb_ = flatbuffers::FlatBufferBuilder(Size, &*allocator_);
     fbb_.ForceDefaults(true);
     data_ = nullptr;
     size_ = 0;
   }
 
   flatbuffers::FlatBufferBuilder *fbb() {
-    CHECK(!allocator_.allocated())
+    DCHECK(buffer_.has_value());
+    DCHECK(allocator_.has_value());
+    CHECK(!allocator_->allocated())
         << ": Array backed flatbuffer can only be built once";
-    fbb_ = flatbuffers::FlatBufferBuilder(Size, &allocator_);
+    fbb_ = flatbuffers::FlatBufferBuilder(Size, &*allocator_);
     fbb_.ForceDefaults(true);
     return &fbb_;
   }
 
   void Finish(flatbuffers::Offset<T> root) {
-    CHECK(allocator_.allocated()) << ": Cannot finish if not building";
+    DCHECK(buffer_.has_value());
+    DCHECK(allocator_.has_value());
+    CHECK(allocator_->allocated()) << ": Cannot finish if not building";
     fbb_.Finish(root);
     data_ = fbb_.GetBufferPointer();
     size_ = fbb_.GetSize();
@@ -334,8 +379,14 @@ class FlatbufferFixedAllocatorArray final
   }
 
  private:
-  std::array<uint8_t, Size> buffer_;
-  PreallocatedAllocator allocator_;
+#if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
+  // See the comments in Reset() for why we're using a vector here when running
+  // with sanitizers.
+  std::optional<std::vector<uint8_t>> buffer_;
+#else
+  std::optional<std::array<uint8_t, Size>> buffer_;
+#endif
+  std::optional<PreallocatedAllocator> allocator_;
   flatbuffers::FlatBufferBuilder fbb_;
   uint8_t *data_ = nullptr;
   size_t size_ = 0;

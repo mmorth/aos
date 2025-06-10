@@ -564,7 +564,10 @@ cc_library(
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-    ],
+    ] + select({
+        "//tools:has_sanitizer": [":realtime"],
+        "//conditions:default": [],
+    }),
 )
 
 rust_library(
@@ -770,6 +773,7 @@ cc_test(
         ":flatbuffers",
         ":json_to_flatbuffer",
         ":json_to_flatbuffer_fbs",
+        ":realtime",
         "//aos/testing:googletest",
         "//aos/testing:tmpdir",
     ],
