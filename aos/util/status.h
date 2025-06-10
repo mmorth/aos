@@ -4,7 +4,7 @@
 #include <source_location>
 #include <string_view>
 
-#include "absl/log/log.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "tl/expected.hpp"
 
@@ -125,7 +125,7 @@ T CheckExpected(const Result<T> &expected) {
   if (expected.has_value()) {
     return expected.value();
   }
-  LOG(FATAL) << expected.error().ToString();
+  ABSL_LOG(FATAL) << expected.error().ToString();
 }
 
 template <>

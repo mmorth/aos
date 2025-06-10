@@ -81,8 +81,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "@com_github_google_flatbuffers//:flatbuffers",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )
 
@@ -246,8 +245,7 @@ cc_library(
     target_compatible_with = ["@platforms//os:linux"],
     deps = [
         "//aos/time",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )
 
@@ -414,8 +412,8 @@ cc_library(
         "//aos:sanitizers",
         "//aos/scoped:scoped_fd",
         "@com_github_google_flatbuffers//:flatbuffers",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
     ],
@@ -466,8 +464,7 @@ cc_library(
         ":process_info_fbs",
         "//aos/containers:ring_buffer",
         "//aos/events:event_loop",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -705,7 +702,7 @@ cc_library(
     deps = [
         "//aos/containers:inlined_vector",
         "@com_github_tartanllama_expected",
-        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings:str_format",
     ],
 )

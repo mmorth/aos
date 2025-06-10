@@ -1,6 +1,6 @@
 #include "aos/util/status.h"
 
-#include "absl/log/log.h"
+#include "absl/log/absl_log.h"
 
 #include "aos/containers/inlined_vector.h"
 
@@ -65,7 +65,7 @@ void CheckExpected<void>(const Status &expected) {
   if (expected.has_value()) {
     return;
   }
-  LOG(FATAL) << expected.error().ToString();
+  ABSL_LOG(FATAL) << expected.error().ToString();
 }
 
 int ResultExitCode(const Status &expected) {

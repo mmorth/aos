@@ -60,6 +60,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//aos/time",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
     ],
 )
 

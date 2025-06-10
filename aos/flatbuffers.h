@@ -7,8 +7,8 @@
 #include <string_view>
 #include <vector>
 
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/types/span.h"
 #include "flatbuffers/flatbuffers.h"  // IWYU pragma: export
 
@@ -25,15 +25,15 @@ namespace aos {
 // This class is a base class for all sizes of array backed allocators.
 class FixedAllocatorBase : public flatbuffers::Allocator {
  public:
-  ~FixedAllocatorBase() override { CHECK(!is_allocated_); }
+  ~FixedAllocatorBase() override { ABSL_CHECK(!is_allocated_); }
 
   // TODO(austin): Read the contract for these.
   uint8_t *allocate(size_t) override;
 
   void deallocate(uint8_t *allocated_data, size_t allocated_size) override {
-    DCHECK_LE(allocated_size, size());
-    DCHECK_EQ(allocated_data, data());
-    CHECK(is_allocated_);
+    ABSL_DCHECK_LE(allocated_size, size());
+    ABSL_DCHECK_EQ(allocated_data, data());
+    ABSL_CHECK(is_allocated_);
     is_allocated_ = false;
   }
 
@@ -45,7 +45,7 @@ class FixedAllocatorBase : public flatbuffers::Allocator {
   virtual size_t size() const = 0;
 
   void Reset() {
-    CHECK(!is_allocated_);
+    ABSL_CHECK(!is_allocated_);
     is_allocated_ = false;
   }
   bool is_allocated() const { return is_allocated_; }
@@ -82,25 +82,25 @@ class PreallocatedAllocator : public FixedAllocatorBase {
   PreallocatedAllocator(const PreallocatedAllocator &) = delete;
   PreallocatedAllocator(PreallocatedAllocator &&other)
       : data_(other.data_), size_(other.size_) {
-    CHECK(!is_allocated()) << ": May not overwrite in-use allocator";
-    CHECK(!other.is_allocated());
+    ABSL_CHECK(!is_allocated()) << ": May not overwrite in-use allocator";
+    ABSL_CHECK(!other.is_allocated());
   }
 
   PreallocatedAllocator &operator=(const PreallocatedAllocator &) = delete;
   PreallocatedAllocator &operator=(PreallocatedAllocator &&other) {
-    CHECK(!is_allocated()) << ": May not overwrite in-use allocator";
-    CHECK(!other.is_allocated());
+    ABSL_CHECK(!is_allocated()) << ": May not overwrite in-use allocator";
+    ABSL_CHECK(!other.is_allocated());
     data_ = other.data_;
     size_ = other.size_;
     return *this;
   }
 
   uint8_t *data() final {
-    CHECK(data_ != nullptr);
+    ABSL_CHECK(data_ != nullptr);
     return reinterpret_cast<uint8_t *>(data_);
   }
   const uint8_t *data() const final {
-    CHECK(data_ != nullptr);
+    ABSL_CHECK(data_ != nullptr);
     return reinterpret_cast<const uint8_t *>(data_);
   }
   size_t size() const final { return size_; }
@@ -186,7 +186,7 @@ class FlatbufferSpan : public NonSizePrefixedFlatbuffer<T> {
   virtual ~FlatbufferSpan() override {}
 
   absl::Span<uint8_t> span() override {
-    LOG(FATAL) << "Unimplemented";
+    ABSL_LOG(FATAL) << "Unimplemented";
     return absl::Span<uint8_t>(nullptr, 0);
   }
   absl::Span<const uint8_t> span() const override { return data_; }
@@ -205,7 +205,7 @@ class FlatbufferVector : public NonSizePrefixedFlatbuffer<T> {
   // Builds a Flatbuffer by copying the data from the other flatbuffer.
   FlatbufferVector(const NonSizePrefixedFlatbuffer<T> &other) {
     data_.resize(other.span().size());
-    CHECK(other.span().data());
+    ABSL_CHECK(other.span().data());
     memcpy(data_.data(), other.span().data(), data_.size());
   }
 
@@ -312,10 +312,11 @@ class FlatbufferFixedAllocatorArray final
   void operator=(const NonSizePrefixedFlatbuffer<T> &) = delete;
 
   void CopyFrom(const NonSizePrefixedFlatbuffer<T> &other) {
-    DCHECK(buffer_.has_value());
-    DCHECK(allocator_.has_value());
-    CHECK(!allocator_->is_allocated()) << ": May not overwrite while building";
-    CHECK_LE(other.span().size(), Size)
+    ABSL_DCHECK(buffer_.has_value());
+    ABSL_DCHECK(allocator_.has_value());
+    ABSL_CHECK(!allocator_->is_allocated())
+        << ": May not overwrite while building";
+    ABSL_CHECK_LE(other.span().size(), Size)
         << ": Source flatbuffer is larger than the target.";
     memcpy(buffer_->begin(), other.span().data(), other.span().size());
     data_ = buffer_->data();
@@ -325,9 +326,9 @@ class FlatbufferFixedAllocatorArray final
   // Resets the internal memory. This invalidates the references previously
   // acquired via `message()` or `mutable_message()`.
   void Reset() {
-    DCHECK(buffer_.has_value());
-    DCHECK(allocator_.has_value());
-    CHECK(!allocator_->is_allocated() || data_ != nullptr)
+    ABSL_DCHECK(buffer_.has_value());
+    ABSL_DCHECK(allocator_.has_value());
+    ABSL_CHECK(!allocator_->is_allocated() || data_ != nullptr)
         << ": May not reset while building";
 #if __has_feature(memory_sanitizer) || __has_feature(address_sanitizer)
     // Since the user can get a raw pointer to the flatbuffer contained in the
@@ -355,9 +356,9 @@ class FlatbufferFixedAllocatorArray final
   }
 
   flatbuffers::FlatBufferBuilder *fbb() {
-    DCHECK(buffer_.has_value());
-    DCHECK(allocator_.has_value());
-    CHECK(!allocator_->allocated())
+    ABSL_DCHECK(buffer_.has_value());
+    ABSL_DCHECK(allocator_.has_value());
+    ABSL_CHECK(!allocator_->allocated())
         << ": Array backed flatbuffer can only be built once";
     fbb_ = flatbuffers::FlatBufferBuilder(Size, &*allocator_);
     fbb_.ForceDefaults(true);
@@ -365,13 +366,13 @@ class FlatbufferFixedAllocatorArray final
   }
 
   void Finish(flatbuffers::Offset<T> root) {
-    DCHECK(buffer_.has_value());
-    DCHECK(allocator_.has_value());
-    CHECK(allocator_->allocated()) << ": Cannot finish if not building";
+    ABSL_DCHECK(buffer_.has_value());
+    ABSL_DCHECK(allocator_.has_value());
+    ABSL_CHECK(allocator_->allocated()) << ": Cannot finish if not building";
     fbb_.Finish(root);
     data_ = fbb_.GetBufferPointer();
     size_ = fbb_.GetSize();
-    DCHECK_LE(size_, Size);
+    ABSL_DCHECK_LE(size_, Size);
   }
 
   absl::Span<uint8_t> span() override {
@@ -424,7 +425,7 @@ class SizePrefixedFlatbufferDetachedBuffer final
   // Builds a Flatbuffer by taking ownership of the buffer.
   SizePrefixedFlatbufferDetachedBuffer(flatbuffers::DetachedBuffer &&buffer)
       : buffer_(::std::move(buffer)) {
-    CHECK_GE(buffer_.size(), sizeof(flatbuffers::uoffset_t));
+    ABSL_CHECK_GE(buffer_.size(), sizeof(flatbuffers::uoffset_t));
   }
 
   // Builds a flatbuffer by taking ownership of the buffer from the other
@@ -548,7 +549,7 @@ class SizePrefixedFlatbufferSpan : public SizePrefixedFlatbuffer<T> {
   ~SizePrefixedFlatbufferSpan() override {}
 
   absl::Span<uint8_t> span() override {
-    LOG(FATAL) << "Unimplemented";
+    ABSL_LOG(FATAL) << "Unimplemented";
     return absl::Span<uint8_t>(nullptr, 0);
   }
   absl::Span<const uint8_t> span() const override { return data_; }

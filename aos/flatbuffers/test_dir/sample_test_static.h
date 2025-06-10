@@ -74,25 +74,25 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // The parent/allocator may not be nullptr.
   MinimallyAlignedTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   MinimallyAlignedTableStatic(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator)
       : Table(buffer, allocator) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   MinimallyAlignedTableStatic(
       std::span<uint8_t> buffer,
       ::std::unique_ptr<::aos::fbs::Allocator> allocator)
       : Table(buffer, ::std::move(allocator)) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
 
@@ -155,7 +155,7 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // Equivalent to FromFlatbuffer(const Flatbuffer&); this overload is provided
   // to ease implementation of the aos::fbs::Vector internals.
   [[nodiscard]] bool FromFlatbuffer(const Flatbuffer *other) {
-    CHECK(other != nullptr);
+    ABSL_CHECK(other != nullptr);
     return FromFlatbuffer(*other);
   }
 
@@ -194,7 +194,7 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   // special.
   size_t NumberOfSubObjects() const final { return 0; }
   using ::aos::fbs::ResizeableObject::SubObject;
-  SubObject GetSubObject(size_t) final { LOG(FATAL) << "No subobjects."; }
+  SubObject GetSubObject(size_t) final { ABSL_LOG(FATAL) << "No subobjects."; }
 
  public:
   // Nominal size of this object, in bytes. The object may grow beyond this
@@ -283,25 +283,25 @@ class SubTableStatic : public ::aos::fbs::Table {
   // The parent/allocator may not be nullptr.
   SubTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   SubTableStatic(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator)
       : Table(buffer, allocator) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   SubTableStatic(
       std::span<uint8_t> buffer,
       ::std::unique_ptr<::aos::fbs::Allocator> allocator)
       : Table(buffer, ::std::move(allocator)) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
 
@@ -406,7 +406,7 @@ class SubTableStatic : public ::aos::fbs::Table {
   // Equivalent to FromFlatbuffer(const Flatbuffer&); this overload is provided
   // to ease implementation of the aos::fbs::Vector internals.
   [[nodiscard]] bool FromFlatbuffer(const Flatbuffer *other) {
-    CHECK(other != nullptr);
+    ABSL_CHECK(other != nullptr);
     return FromFlatbuffer(*other);
   }
 
@@ -451,7 +451,7 @@ class SubTableStatic : public ::aos::fbs::Table {
   // special.
   size_t NumberOfSubObjects() const final { return 0; }
   using ::aos::fbs::ResizeableObject::SubObject;
-  SubObject GetSubObject(size_t) final { LOG(FATAL) << "No subobjects."; }
+  SubObject GetSubObject(size_t) final { ABSL_LOG(FATAL) << "No subobjects."; }
 
  public:
   // Nominal size of this object, in bytes. The object may grow beyond this
@@ -547,25 +547,25 @@ class TestTableStatic : public ::aos::fbs::Table {
   // The parent/allocator may not be nullptr.
   TestTableStatic(std::span<uint8_t> buffer, ::aos::fbs::ResizeableObject *parent)
       : Table(buffer, parent) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   TestTableStatic(std::span<uint8_t> buffer, ::aos::fbs::Allocator *allocator)
       : Table(buffer, allocator) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
   TestTableStatic(
       std::span<uint8_t> buffer,
       ::std::unique_ptr<::aos::fbs::Allocator> allocator)
       : Table(buffer, ::std::move(allocator)) {
-    CHECK_EQ(buffer.size(), kSize);
-    CHECK_EQ(0u,
-             reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
+    ABSL_CHECK_EQ(buffer.size(), kSize);
+    ABSL_CHECK_EQ(0u,
+                  reinterpret_cast<size_t>(buffer.data() + kAlignOffset) % kAlign);
     PopulateVtable();
   }
 
@@ -607,7 +607,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *add_vector_of_structs() {
-    CHECK(!vector_of_structs_.has_value());
+    ABSL_CHECK(!vector_of_structs_.has_value());
     constexpr size_t kVtableIndex = 18;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -683,7 +683,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *add_unspecified_length_vector_of_strings() {
-    CHECK(!unspecified_length_vector_of_strings_.has_value());
+    ABSL_CHECK(!unspecified_length_vector_of_strings_.has_value());
     constexpr size_t kVtableIndex = 28;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -759,7 +759,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *add_vector_of_tables() {
-    CHECK(!vector_of_tables_.has_value());
+    ABSL_CHECK(!vector_of_tables_.has_value());
     constexpr size_t kVtableIndex = 20;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -835,7 +835,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<int32_t, 3, true, 64> *add_vector_aligned() {
-    CHECK(!vector_aligned_.has_value());
+    ABSL_CHECK(!vector_aligned_.has_value());
     constexpr size_t kVtableIndex = 16;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -911,7 +911,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *add_vector_of_strings() {
-    CHECK(!vector_of_strings_.has_value());
+    ABSL_CHECK(!vector_of_strings_.has_value());
     constexpr size_t kVtableIndex = 10;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -987,7 +987,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<int32_t, 3, true, 0> *add_vector_of_scalars() {
-    CHECK(!vector_of_scalars_.has_value());
+    ABSL_CHECK(!vector_of_scalars_.has_value());
     constexpr size_t kVtableIndex = 6;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1063,7 +1063,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::String<0> *add_unspecified_length_string() {
-    CHECK(!unspecified_length_string_.has_value());
+    ABSL_CHECK(!unspecified_length_string_.has_value());
     constexpr size_t kVtableIndex = 26;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1139,7 +1139,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::Vector<uint8_t, 0, true, 0> *add_unspecified_length_vector() {
-    CHECK(!unspecified_length_vector_.has_value());
+    ABSL_CHECK(!unspecified_length_vector_.has_value());
     constexpr size_t kVtableIndex = 24;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1215,7 +1215,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   aos::fbs::testing::included::IncludedTableStatic *add_included_table() {
-    CHECK(!included_table_.has_value());
+    ABSL_CHECK(!included_table_.has_value());
     constexpr size_t kVtableIndex = 22;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1291,7 +1291,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   aos::fbs::testing::SubTableStatic *add_subtable() {
-    CHECK(!subtable_.has_value());
+    ABSL_CHECK(!subtable_.has_value());
     constexpr size_t kVtableIndex = 14;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1367,7 +1367,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // then populate/modify as desired.
   // The field must not be populated yet.
   ::aos::fbs::String<20> *add_string() {
-    CHECK(!string_.has_value());
+    ABSL_CHECK(!string_.has_value());
     constexpr size_t kVtableIndex = 8;
     // If this object does not normally have its initial memory statically
     // allocated, allocate it now (this is used for zero-length vectors).
@@ -1506,7 +1506,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_vector_of_structs()) {
       ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *added_vector_of_structs =
           add_vector_of_structs();
-      CHECK(added_vector_of_structs != nullptr);
+      ABSL_CHECK(added_vector_of_structs != nullptr);
       if (!added_vector_of_structs->FromFlatbuffer(other.vector_of_structs())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1517,7 +1517,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_unspecified_length_vector_of_strings()) {
       ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *added_unspecified_length_vector_of_strings =
           add_unspecified_length_vector_of_strings();
-      CHECK(added_unspecified_length_vector_of_strings != nullptr);
+      ABSL_CHECK(added_unspecified_length_vector_of_strings != nullptr);
       if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(other.unspecified_length_vector_of_strings())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1528,7 +1528,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_vector_of_tables()) {
       ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *added_vector_of_tables =
           add_vector_of_tables();
-      CHECK(added_vector_of_tables != nullptr);
+      ABSL_CHECK(added_vector_of_tables != nullptr);
       if (!added_vector_of_tables->FromFlatbuffer(other.vector_of_tables())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1539,7 +1539,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_vector_aligned()) {
       ::aos::fbs::Vector<int32_t, 3, true, 64> *added_vector_aligned =
           add_vector_aligned();
-      CHECK(added_vector_aligned != nullptr);
+      ABSL_CHECK(added_vector_aligned != nullptr);
       if (!added_vector_aligned->FromFlatbuffer(other.vector_aligned())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1550,7 +1550,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_vector_of_strings()) {
       ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *added_vector_of_strings =
           add_vector_of_strings();
-      CHECK(added_vector_of_strings != nullptr);
+      ABSL_CHECK(added_vector_of_strings != nullptr);
       if (!added_vector_of_strings->FromFlatbuffer(other.vector_of_strings())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1561,7 +1561,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_vector_of_scalars()) {
       ::aos::fbs::Vector<int32_t, 3, true, 0> *added_vector_of_scalars =
           add_vector_of_scalars();
-      CHECK(added_vector_of_scalars != nullptr);
+      ABSL_CHECK(added_vector_of_scalars != nullptr);
       if (!added_vector_of_scalars->FromFlatbuffer(other.vector_of_scalars())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1572,7 +1572,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_unspecified_length_string()) {
       ::aos::fbs::String<0> *added_unspecified_length_string =
           add_unspecified_length_string();
-      CHECK(added_unspecified_length_string != nullptr);
+      ABSL_CHECK(added_unspecified_length_string != nullptr);
       if (!added_unspecified_length_string->FromFlatbuffer(other.unspecified_length_string())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1583,7 +1583,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_unspecified_length_vector()) {
       ::aos::fbs::Vector<uint8_t, 0, true, 0> *added_unspecified_length_vector =
           add_unspecified_length_vector();
-      CHECK(added_unspecified_length_vector != nullptr);
+      ABSL_CHECK(added_unspecified_length_vector != nullptr);
       if (!added_unspecified_length_vector->FromFlatbuffer(other.unspecified_length_vector())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1594,7 +1594,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_included_table()) {
       aos::fbs::testing::included::IncludedTableStatic *added_included_table =
           add_included_table();
-      CHECK(added_included_table != nullptr);
+      ABSL_CHECK(added_included_table != nullptr);
       if (!added_included_table->FromFlatbuffer(other.included_table())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1605,7 +1605,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_subtable()) {
       aos::fbs::testing::SubTableStatic *added_subtable =
           add_subtable();
-      CHECK(added_subtable != nullptr);
+      ABSL_CHECK(added_subtable != nullptr);
       if (!added_subtable->FromFlatbuffer(other.subtable())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1616,7 +1616,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.has_string()) {
       ::aos::fbs::String<20> *added_string =
           add_string();
-      CHECK(added_string != nullptr);
+      ABSL_CHECK(added_string != nullptr);
       if (!added_string->FromFlatbuffer(other.string())) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1633,7 +1633,7 @@ class TestTableStatic : public ::aos::fbs::Table {
   // Equivalent to FromFlatbuffer(const Flatbuffer&); this overload is provided
   // to ease implementation of the aos::fbs::Vector internals.
   [[nodiscard]] bool FromFlatbuffer(const Flatbuffer *other) {
-    CHECK(other != nullptr);
+    ABSL_CHECK(other != nullptr);
     return FromFlatbuffer(*other);
   }
 
@@ -1658,7 +1658,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<aos::fbs::testing::SubStruct, 3, true, 0> *added_vector_of_structs =
           add_vector_of_structs();
-      CHECK(added_vector_of_structs != nullptr);
+      ABSL_CHECK(added_vector_of_structs != nullptr);
       if (!added_vector_of_structs->FromFlatbuffer(other.vector_of_structs)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1672,7 +1672,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<::aos::fbs::String<0>, 0, false, 0> *added_unspecified_length_vector_of_strings =
           add_unspecified_length_vector_of_strings();
-      CHECK(added_unspecified_length_vector_of_strings != nullptr);
+      ABSL_CHECK(added_unspecified_length_vector_of_strings != nullptr);
       if (!added_unspecified_length_vector_of_strings->FromFlatbuffer(other.unspecified_length_vector_of_strings)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1686,7 +1686,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<aos::fbs::testing::SubTableStatic, 3, false, 0> *added_vector_of_tables =
           add_vector_of_tables();
-      CHECK(added_vector_of_tables != nullptr);
+      ABSL_CHECK(added_vector_of_tables != nullptr);
       if (!added_vector_of_tables->FromFlatbuffer(other.vector_of_tables)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1700,7 +1700,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<int32_t, 3, true, 64> *added_vector_aligned =
           add_vector_aligned();
-      CHECK(added_vector_aligned != nullptr);
+      ABSL_CHECK(added_vector_aligned != nullptr);
       if (!added_vector_aligned->FromFlatbuffer(other.vector_aligned)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1714,7 +1714,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<::aos::fbs::String<10>, 3, false, 0> *added_vector_of_strings =
           add_vector_of_strings();
-      CHECK(added_vector_of_strings != nullptr);
+      ABSL_CHECK(added_vector_of_strings != nullptr);
       if (!added_vector_of_strings->FromFlatbuffer(other.vector_of_strings)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1728,7 +1728,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<int32_t, 3, true, 0> *added_vector_of_scalars =
           add_vector_of_scalars();
-      CHECK(added_vector_of_scalars != nullptr);
+      ABSL_CHECK(added_vector_of_scalars != nullptr);
       if (!added_vector_of_scalars->FromFlatbuffer(other.vector_of_scalars)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1742,7 +1742,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::String<0> *added_unspecified_length_string =
           add_unspecified_length_string();
-      CHECK(added_unspecified_length_string != nullptr);
+      ABSL_CHECK(added_unspecified_length_string != nullptr);
       if (!added_unspecified_length_string->FromFlatbuffer(other.unspecified_length_string)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1756,7 +1756,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::Vector<uint8_t, 0, true, 0> *added_unspecified_length_vector =
           add_unspecified_length_vector();
-      CHECK(added_unspecified_length_vector != nullptr);
+      ABSL_CHECK(added_unspecified_length_vector != nullptr);
       if (!added_unspecified_length_vector->FromFlatbuffer(other.unspecified_length_vector)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1767,7 +1767,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.included_table) {
       aos::fbs::testing::included::IncludedTableStatic *added_included_table =
           add_included_table();
-      CHECK(added_included_table != nullptr);
+      ABSL_CHECK(added_included_table != nullptr);
       if (!added_included_table->FromFlatbuffer(*other.included_table)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1778,7 +1778,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     if (other.subtable) {
       aos::fbs::testing::SubTableStatic *added_subtable =
           add_subtable();
-      CHECK(added_subtable != nullptr);
+      ABSL_CHECK(added_subtable != nullptr);
       if (!added_subtable->FromFlatbuffer(*other.subtable)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).
@@ -1792,7 +1792,7 @@ class TestTableStatic : public ::aos::fbs::Table {
     {
       ::aos::fbs::String<20> *added_string =
           add_string();
-      CHECK(added_string != nullptr);
+      ABSL_CHECK(added_string != nullptr);
       if (!added_string->FromFlatbuffer(other.string)) {
         // Fail if we were unable to copy (e.g., if we tried to copy in a long
         // vector and do not have the space for it).

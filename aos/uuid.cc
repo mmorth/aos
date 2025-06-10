@@ -9,8 +9,7 @@
 #include <string_view>
 
 #include "absl/flags/flag.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
+#include "absl/log/absl_check.h"
 
 ABSL_FLAG(std::string, boot_uuid, "",
           "If set, override the boot UUID to have this value instead.");
@@ -41,9 +40,11 @@ void ToHex(const uint8_t *val, char *result, size_t count) {
 
 void FromHex(const char *val, uint8_t *result, size_t count) {
   while (count > 0) {
-    CHECK((val[0] >= '0' && val[0] <= '9') || (val[0] >= 'a' && val[0] <= 'f'))
+    ABSL_CHECK((val[0] >= '0' && val[0] <= '9') ||
+               (val[0] >= 'a' && val[0] <= 'f'))
         << ": Invalid hex '" << val[0] << "'";
-    CHECK((val[1] >= '0' && val[1] <= '9') || (val[1] >= 'a' && val[1] <= 'f'))
+    ABSL_CHECK((val[1] >= '0' && val[1] <= '9') ||
+               (val[1] >= 'a' && val[1] <= 'f'))
         << ": Invalid hex '" << val[1] << "'";
 
     uint8_t converted = 0;
@@ -84,7 +85,8 @@ std::mt19937 FullySeededRandomGenerator() {
   std::random_device random_device;
 // Older LLVM libstdc++'s just return 0 for the random device entropy.
 #if !defined(__clang__) || (__clang_major__ > 13)
-  CHECK_EQ(sizeof(std::random_device::result_type) * 8, random_device.entropy())
+  ABSL_CHECK_EQ(sizeof(std::random_device::result_type) * 8,
+                random_device.entropy())
       << ": Does your random_device actually support generating entropy?";
 #endif
   std::array<std::random_device::result_type, kSeedsRequired> random_data;
@@ -153,8 +155,8 @@ UUID UUID::FromString(const flatbuffers::String *str) {
 }
 
 UUID UUID::FromVector(const flatbuffers::Vector<uint8_t> *data) {
-  CHECK(data != nullptr);
-  CHECK_EQ(data->size(), kDataSize);
+  ABSL_CHECK(data != nullptr);
+  ABSL_CHECK_EQ(data->size(), kDataSize);
 
   UUID result;
   std::memcpy(result.data_.data(), data->Data(), kDataSize);
@@ -162,7 +164,7 @@ UUID UUID::FromVector(const flatbuffers::Vector<uint8_t> *data) {
 }
 
 UUID UUID::FromSpan(absl::Span<const uint8_t> data) {
-  CHECK_EQ(data.size(), kDataSize);
+  ABSL_CHECK_EQ(data.size(), kDataSize);
 
   UUID result;
   std::copy(data.begin(), data.end(), result.data_.begin());
@@ -170,12 +172,12 @@ UUID UUID::FromSpan(absl::Span<const uint8_t> data) {
 }
 
 UUID UUID::FromString(std::string_view str) {
-  CHECK_EQ(str.size(), kStringSize);
+  ABSL_CHECK_EQ(str.size(), kStringSize);
 
   UUID result;
   FromHex(str.data(), result.data_.data(), 4);
-  CHECK(str.data()[8] == '-' && str.data()[13] == '-' &&
-        str.data()[18] == '-' && str.data()[23] == '-')
+  ABSL_CHECK(str.data()[8] == '-' && str.data()[13] == '-' &&
+             str.data()[18] == '-' && str.data()[23] == '-')
       << ": Invalid uuid.";
   FromHex(str.data() + 9, result.data_.data() + 4, 2);
   FromHex(str.data() + 14, result.data_.data() + 6, 2);
@@ -191,11 +193,11 @@ UUID UUID::BootUUID() {
   }
 
   int fd = open("/proc/sys/kernel/random/boot_id", O_RDONLY);
-  PCHECK(fd != -1);
+  ABSL_PCHECK(fd != -1);
 
   std::array<char, kStringSize> data;
-  CHECK_EQ(static_cast<ssize_t>(kStringSize),
-           read(fd, data.begin(), kStringSize));
+  ABSL_CHECK_EQ(static_cast<ssize_t>(kStringSize),
+                read(fd, data.begin(), kStringSize));
   close(fd);
 
   return UUID::FromString(std::string_view(data.data(), data.size()));
