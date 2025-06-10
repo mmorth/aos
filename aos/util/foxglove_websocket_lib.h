@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <regex>
 #include <set>
 
 #include "foxglove/websocket/websocket_notls.hpp"
@@ -39,10 +40,16 @@ class FoxgloveWebsocketServer {
     // the channel names that are used in "real" applications.
     kShortened,
   };
+
+  // The client_topic_patterns is a list of regexes that are tested against
+  // foxglove topics (channel name plus type). When a topic matches, the
+  // foxglove client is allowed to send messages on that topic. Those messages
+  // will be be sent to the corresponding AOS channel.
   FoxgloveWebsocketServer(aos::EventLoop *event_loop, uint32_t port,
                           Serialization serialization,
                           FetchPinnedChannels fetch_pinned_channels,
-                          CanonicalChannelNames canonical_channels);
+                          CanonicalChannelNames canonical_channels,
+                          std::vector<std::regex> client_topic_patterns);
   ~FoxgloveWebsocketServer();
 
  private:
@@ -76,6 +83,9 @@ class FoxgloveWebsocketServer {
   std::unordered_map<ChannelId,
                      std::set<foxglove::ConnHandle, std::owner_less<>>>
       active_channels_;
+
+  // The sender for a specific topic.
+  std::map<std::string, std::unique_ptr<RawSender>> senders_;
 };
 }  // namespace aos
 #endif  // AOS_UTIL_FOXGLOVE_WEBSOCKET_LIB_H_
