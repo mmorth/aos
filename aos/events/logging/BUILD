@@ -458,6 +458,7 @@ cc_library(
     hdrs = [
         "log_namer.h",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":logfile_utils",
         ":logger_fbs",
