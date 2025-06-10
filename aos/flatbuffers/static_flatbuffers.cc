@@ -725,10 +725,11 @@ std::string MakePublicConstants(const FieldData &field) {
   if (field.is_inline) {
     if (field.default_value_expression.has_value()) {
       return absl::StrFormat(R"code(
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr %s kDefault_%s = %s;
-        )code",
-                             field.full_type, field.name,
+  // Default value for field %s (note that values with no explicitly-specified
+  // default values do not have `kDefault_*` values exposed).
+  static constexpr %s kDefault_%s = %s;
+)code",
+                             field.name, field.full_type, field.name,
                              field.default_value_expression.value());
     }
   }
@@ -1137,7 +1138,7 @@ GeneratedObject GenerateCodeForObject(const reflection::Schema *schema,
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
-  %s
+%s
 )code",
       inline_data_size, object->fields()->size(), alignment, nominal_min_align,
       offset_data_start_expression, absl::StrJoin(public_constants, ""));

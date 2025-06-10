@@ -59,10 +59,11 @@ class MinimallyAlignedTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
-  
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
-        
+
+  // Default value for field field (note that values with no explicitly-specified
+  // default values do not have `kDefault_*` values exposed).
+  static constexpr uint8_t kDefault_field = static_cast<uint8_t>(0);
+
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
@@ -263,13 +264,15 @@ class SubTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
-  
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr float kDefault_baz = static_cast<float>(0);
-        
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
-        
+
+  // Default value for field baz (note that values with no explicitly-specified
+  // default values do not have `kDefault_*` values exposed).
+  static constexpr float kDefault_baz = static_cast<float>(0);
+
+  // Default value for field foo (note that values with no explicitly-specified
+  // default values do not have `kDefault_*` values exposed).
+  static constexpr int16_t kDefault_foo = static_cast<int16_t>(0);
+
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
@@ -529,10 +532,11 @@ class TestTableStatic : public ::aos::fbs::Table {
   static const char *GetFullyQualifiedName() {
     return Flatbuffer::GetFullyQualifiedName();
   }
-  
-    // This is an inline scalar/enum with a default, define kDefault_<name>.
-    static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
-        
+
+  // Default value for field scalar (note that values with no explicitly-specified
+  // default values do not have `kDefault_*` values exposed).
+  static constexpr int32_t kDefault_scalar = static_cast<int32_t>(99);
+
 
   // Constructors for creating a flatbuffer object.
   // Users should typically use the Builder class to create these objects,
