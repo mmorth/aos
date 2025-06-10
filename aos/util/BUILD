@@ -48,16 +48,26 @@ py_library(
     ],
 )
 
-cc_binary(
-    name = "log_to_mcap",
-    srcs = ["log_to_mcap.cc"],
-    deps = [
+cc_library(
+    name = "log_to_mcap_lib",
+    srcs = ["log_to_mcap_lib.cc"],
+    hdrs = ["log_to_mcap_lib.h"],
+    implementation_deps = [
         ":clock_publisher",
         ":clock_timepoints_schema",
         ":mcap_logger",
         "//aos:configuration",
-        "//aos:init",
         "//aos/events/logging:log_reader",
+    ],
+)
+
+cc_binary(
+    name = "log_to_mcap",
+    srcs = ["log_to_mcap.cc"],
+    deps = [
+        ":log_to_mcap_lib",
+        "//aos:init",
+        "@com_google_absl//absl/log:check",
     ],
 )
 
