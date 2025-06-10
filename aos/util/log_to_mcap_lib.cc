@@ -66,7 +66,8 @@ std::function<bool(const Channel *)> GetChannelShouldBeDroppedTester() {
 }
 
 int ConvertLogToMcap(const std::vector<std::string> &log_paths,
-                     std::string output_path) {
+                     std::string output_path,
+                     std::function<void(logger::LogReader &)> setup_callback) {
   const std::vector<logger::LogFile> logfiles =
       logger::SortParts(logger::FindLogs(log_paths));
   CHECK(!logfiles.empty());
@@ -109,6 +110,9 @@ int ConvertLogToMcap(const std::vector<std::string> &log_paths,
 
   logger::LogReader reader(
       logfiles, config.has_value() ? &config.value().message() : nullptr);
+  if (setup_callback) {
+    setup_callback(reader);
+  }
   SimulatedEventLoopFactory factory(reader.configuration());
   reader.RegisterWithoutStarting(&factory);
 
