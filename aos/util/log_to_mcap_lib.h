@@ -1,10 +1,20 @@
 #ifndef AOS_UTIL_LOG_TO_MCAP_LIB_H_
 #define AOS_UTIL_LOG_TO_MCAP_LIB_H_
 
+#include <functional>
 #include <string>
 #include <vector>
 
+#include "aos/configuration_generated.h"
+
 namespace aos::util {
+
+// Returns a test function that checks if a channel will be dropped from the
+// final MCAP. This is called internally by ConvertLogToMcap. It can also be
+// useful to determine whether to register send callbacks or not. If the work in
+// those callbacks is expensive, then skipping that work can make log conversion
+// quite a bit faster.
+std::function<bool(const Channel *)> GetChannelShouldBeDroppedTester();
 
 // Converts an AOS log to an MCAP log that can be fed into Foxglove.
 //

@@ -43,6 +43,28 @@ ABSL_FLAG(std::vector<std::string>, drop_channels, {},
 
 namespace aos::util {
 
+std::function<bool(const Channel *)> GetChannelShouldBeDroppedTester() {
+  const std::vector<std::string> &dropped_channel_strings =
+      absl::GetFlag(FLAGS_drop_channels);
+
+  // Convert the strings to regex objects.
+  std::vector<std::regex> dropped_channels{dropped_channel_strings.begin(),
+                                           dropped_channel_strings.end()};
+
+  return [dropped_channels =
+              std::move(dropped_channels)](const aos::Channel *channel) {
+    // Convert the channel to an MCAP-style topic.
+    const std::string topic_name = absl::StrCat(
+        channel->name()->string_view(), " ", channel->type()->string_view());
+    // Check if the topic matches any of the regexes the user specified.
+    const auto topic_matches =
+        [topic_name = std::move(topic_name)](const std::regex &regex) {
+          return std::regex_match(topic_name, regex);
+        };
+    return std::ranges::any_of(dropped_channels, topic_matches);
+  };
+}
+
 int ConvertLogToMcap(const std::vector<std::string> &log_paths,
                      std::string output_path) {
   const std::vector<logger::LogFile> logfiles =
@@ -120,7 +142,7 @@ int ConvertLogToMcap(const std::vector<std::string> &log_paths,
             : McapLogger::CanonicalChannelNames::kShortened,
         absl::GetFlag(FLAGS_compress) ? McapLogger::Compression::kLz4
                                       : McapLogger::Compression::kNone,
-        absl::GetFlag(FLAGS_drop_channels));
+        GetChannelShouldBeDroppedTester());
     if (absl::GetFlag(FLAGS_include_clocks)) {
       clock_event_loop =
           reader.event_loop_factory()->MakeEventLoop("clock", node);
