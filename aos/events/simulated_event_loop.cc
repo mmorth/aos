@@ -254,7 +254,7 @@ class SimulatedFactoryExitHandle : public ExitHandle {
     --factory_->exit_handle_count_;
   }
 
-  void Exit(Result<void> status) override { factory_->Exit(status); }
+  void Exit(Status status) override { factory_->Exit(status); }
 
  private:
   SimulatedEventLoopFactory *const factory_;
@@ -1688,11 +1688,11 @@ void NodeEventLoopFactory::Shutdown() {
   channels_.clear();
 }
 
-Result<void> SimulatedEventLoopFactory::GetAndClearExitStatus() {
-  std::optional<Result<void>> exit_status;
+Status SimulatedEventLoopFactory::GetAndClearExitStatus() {
+  std::optional<Status> exit_status;
   // Clear the stored exit_status_ and extract it to be returned.
   exit_status_.swap(exit_status);
-  return exit_status.value_or(Result<void>{});
+  return exit_status.value_or(Status{});
 }
 
 std::unique_ptr<SimulatedEventLoopLogSink>
@@ -1709,13 +1709,13 @@ void SimulatedEventLoopFactory::RunFor(monotonic_clock::duration duration) {
   CheckExpected(NonFatalRunFor(duration));
 }
 
-Result<void> SimulatedEventLoopFactory::NonFatalRunFor(
+Status SimulatedEventLoopFactory::NonFatalRunFor(
     monotonic_clock::duration duration) {
   std::unique_ptr<SimulatedEventLoopLogSink> log_sink =
       MaybeCreateSimulatedLogSink();
 
   // This sets running to true too.
-  const Result<void> result = scheduler_scheduler_.RunFor(duration);
+  const Status result = scheduler_scheduler_.RunFor(duration);
   for (std::unique_ptr<NodeEventLoopFactory> &node : node_factories_) {
     if (node) {
       for (SimulatedEventLoop *loop : node->event_loops_) {

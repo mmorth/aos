@@ -120,11 +120,11 @@ struct DisallowCopy {
 TEST_F(ErrorTest, ReturnResultIfErrorNoExtraCopies) {
   Result<DisallowCopy> test_value = {};
   bool executed = false;
-  const Result<void> result = [&test_value, &executed]() -> Result<void> {
+  const Status result = [&test_value, &executed]() -> Status {
     AOS_RETURN_IF_ERROR(test_value);
     executed = true;
     // next, confirm that we do actually return early on an unexpected.
-    AOS_RETURN_IF_ERROR(Result<void>(MakeError("Hello, World!")));
+    AOS_RETURN_IF_ERROR(Status(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());
@@ -136,8 +136,8 @@ TEST_F(ErrorTest, ReturnResultIfErrorNoExtraCopies) {
 // the lifetime of any temporaries in AOS_RETURN_IF_ERROR are handled
 // incorrectly.
 TEST_F(ErrorTest, ReturnResultHandlesLifetime) {
-  const Result<void> result = []() -> Result<void> {
-    AOS_RETURN_IF_ERROR(Result<void>(MakeError("Hello, World!")));
+  const Status result = []() -> Status {
+    AOS_RETURN_IF_ERROR(Status(MakeError("Hello, World!")));
     return {};
   }();
   EXPECT_FALSE(result.has_value());

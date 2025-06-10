@@ -3917,7 +3917,7 @@ TEST_P(AbstractEventLoopTest, ExitHandleExitFailure) {
   });
   const int line = __LINE__ - 4;
 
-  Result<void> status = Run();
+  Status status = Run();
 
   EXPECT_TRUE(happened);
   EXPECT_FALSE(status.has_value());

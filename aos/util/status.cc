@@ -61,14 +61,14 @@ std::string ErrorType::ToString() const {
 }
 
 template <>
-void CheckExpected<void>(const Result<void> &expected) {
+void CheckExpected<void>(const Status &expected) {
   if (expected.has_value()) {
     return;
   }
   LOG(FATAL) << expected.error().ToString();
 }
 
-int ResultExitCode(const Result<void> &expected) {
+int ResultExitCode(const Status &expected) {
   return expected.has_value() ? static_cast<int>(ErrorType::StatusCode::kOk)
                               : expected.error().code();
 }

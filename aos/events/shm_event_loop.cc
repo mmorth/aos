@@ -436,9 +436,7 @@ class ShmExitHandle : public ExitHandle {
   // supporting it should be straightforwards.
   DISALLOW_COPY_AND_ASSIGN(ShmExitHandle);
 
-  void Exit(Result<void> status) override {
-    event_loop_->ExitWithStatus(status);
-  }
+  void Exit(Status status) override { event_loop_->ExitWithStatus(status); }
 
  private:
   ShmEventLoop *const event_loop_;
@@ -1060,7 +1058,7 @@ class SignalHandler {
   struct sigaction old_action_term_;
 };
 
-Result<void> ShmEventLoop::Run() {
+Status ShmEventLoop::Run() {
   CheckCurrentThread();
   SignalHandler::global()->Register(this);
 
@@ -1151,10 +1149,10 @@ Result<void> ShmEventLoop::Run() {
   timing_report_sender_.reset();
   ClearContext();
   std::unique_lock<aos::stl_mutex> locker(exit_status_mutex_);
-  std::optional<Result<void>> exit_status;
+  std::optional<Status> exit_status;
   // Clear the stored exit_status_ and extract it to be returned.
   exit_status_.swap(exit_status);
-  return exit_status.value_or(Result<void>{});
+  return exit_status.value_or(Status{});
 }
 
 void ShmEventLoop::Exit() {
@@ -1164,7 +1162,7 @@ void ShmEventLoop::Exit() {
   epoll_.Quit();
 }
 
-void ShmEventLoop::ExitWithStatus(Result<void> status) {
+void ShmEventLoop::ExitWithStatus(Status status) {
   // Only set the exit status if no other Exit*() call got here first.
   if (!observed_exit_.test_and_set()) {
     std::unique_lock<aos::stl_mutex> locker(exit_status_mutex_);

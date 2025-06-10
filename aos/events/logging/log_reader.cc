@@ -320,7 +320,7 @@ void LogReader::State::QueueThreadUntil(BootTimestamp time) {
           const util::ThreadedQueue<Result<TimestampedMessage>,
                                     BootTimestamp>::PushResult result{
               *message.value(), queue_until >= last_queued_message_, false};
-          const Result<void> pop_result = timestamp_mapper_->PopFront();
+          const Status pop_result = timestamp_mapper_->PopFront();
           if (!pop_result.has_value()) {
             return util::ThreadedQueue<Result<TimestampedMessage>,
                                        BootTimestamp>::PushResult{
@@ -328,7 +328,7 @@ void LogReader::State::QueueThreadUntil(BootTimestamp time) {
                 /*more_to_push=*/false,
                 /*done=*/true};
           }
-          const Result<void> seed_result = MaybeSeedSortedMessages();
+          const Status seed_result = MaybeSeedSortedMessages();
           if (!seed_result.has_value()) {
             return util::ThreadedQueue<Result<TimestampedMessage>,
                                        BootTimestamp>::PushResult{
@@ -460,7 +460,7 @@ void LogReader::RegisterWithoutStarting(
   CheckExpected(NonFatalRegisterWithoutStarting(event_loop_factory));
 }
 
-Result<void> LogReader::NonFatalRegisterWithoutStarting(
+Status LogReader::NonFatalRegisterWithoutStarting(
     SimulatedEventLoopFactory *event_loop_factory) {
   event_loop_factory_ = event_loop_factory;
   config_remapper_.set_configuration(event_loop_factory_->configuration());
@@ -757,7 +757,7 @@ void LogReader::Register(EventLoop *event_loop) {
   }
 }
 
-Result<void> LogReader::Register(EventLoop *event_loop, const Node *node) {
+Status LogReader::Register(EventLoop *event_loop, const Node *node) {
   State *state =
       states_[configuration::GetNodeIndex(configuration(), node)].get();
 

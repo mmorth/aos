@@ -394,7 +394,7 @@ class InterpolatedTimeConverter : public TimeConverter {
   // Queues timestamps util the last time in the queue matches the provided
   // function.
   template <typename F>
-  [[nodiscard]] Result<void> QueueUntil(F not_done) {
+  [[nodiscard]] Status QueueUntil(F not_done) {
     while (!at_end_ && (times_.empty() || not_done(times_.back()))) {
       AOS_RETURN_IF_ERROR(
           // Turn the Result<> into a Result<void> so the macro can work.

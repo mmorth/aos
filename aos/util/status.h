@@ -37,7 +37,7 @@ namespace aos {
 //
 // Users should typically use the Result<T> convenience method when returning
 // Errors from methods. In the case where the method would normally return void,
-// use Result<void>. Result<> is just a wrapper for tl::expected; when our
+// use Status. Result<> is just a wrapper for tl::expected; when our
 // compilers upgrade to support std::expected this should ease the transition,
 // in addition to just providing a convenience wrapper to encourage a standard
 // pattern of use.
@@ -108,9 +108,14 @@ class ErrorType {
 // tl::expected) then converting between expected's and Results becomes a lot
 // messier. In lieu of [[nodiscard]] being specified here, it is strongly
 // advised the functions returning Result<>'s---especially those returning
-// Result<void>---be marked [[nodiscard]].
+// Status---be marked [[nodiscard]].
 template <typename T>
 using Result = tl::expected<T, ErrorType>;
+
+// Status is a convenience type for functions that return Result<void>.
+template <typename T>
+using StatusOr = Result<T>;
+using Status = StatusOr<void>;
 
 // Dies fatally if the provided expected does not include the value T, printing
 // out an error message that includes the Error on the way out.
@@ -124,7 +129,7 @@ T CheckExpected(const Result<T> &expected) {
 }
 
 template <>
-void CheckExpected<void>(const Result<void> &expected);
+void CheckExpected<void>(const Status &expected);
 
 using Error = tl::unexpected<ErrorType>;
 
@@ -153,10 +158,10 @@ inline Error MakeError(
   return MakeError(ErrorType(message, std::move(source_location)));
 }
 
-// Convenience method to explicitly construct an "okay" Result<void>.
-inline Result<void> Ok() { return Result<void>{}; }
+// Convenience method to explicitly construct an "okay" Status.
+inline Status Ok() { return Status{}; }
 
-int ResultExitCode(const Result<void> &expected);
+int ResultExitCode(const Status &expected);
 
 inline std::ostream &operator<<(std::ostream &stream, const ErrorType &error) {
   stream << error.ToString();
@@ -173,8 +178,7 @@ std::ostream &operator<<(std::ostream &stream, const Result<T> &result) {
   return stream;
 }
 
-inline std::ostream &operator<<(std::ostream &stream,
-                                const Result<void> &result) {
+inline std::ostream &operator<<(std::ostream &stream, const Status &result) {
   if (result.has_value()) {
     stream << "<void>";
   } else {

@@ -59,7 +59,7 @@ class ShmEventLoopTestFactory : public EventLoopTestFactory {
     return loop;
   }
 
-  Result<void> Run() override {
+  Status Run() override {
     CHECK(primary_event_loop_ != nullptr);
     return primary_event_loop_->Run();
   }

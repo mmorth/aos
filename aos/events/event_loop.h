@@ -1096,7 +1096,7 @@ class ExitHandle {
   //
   // This means no more events will be processed, but any currently being
   // processed will finish.
-  virtual void Exit(Result<void> result) = 0;
+  virtual void Exit(Status result) = 0;
   // Overload for a successful exit---equivalent to if we specified a default
   // parameter for Exit(), except that autocxx does not understand default
   // arguments and so needs an explicit overload to keep rust happy

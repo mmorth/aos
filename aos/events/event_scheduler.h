@@ -172,7 +172,7 @@ class EventScheduler {
   Result<std::pair<distributed_clock::time_point, monotonic_clock::time_point>>
   OldestEvent();
   // Handles the next event.
-  [[nodiscard]] Result<void> CallOldestEvent();
+  [[nodiscard]] Status CallOldestEvent();
 
   // Converts a time to the distributed clock for scheduling and cross-node time
   // measurement.
@@ -215,9 +215,9 @@ class EventScheduler {
 
   // For implementing reboots.
   void Shutdown();
-  [[nodiscard]] Result<void> Startup();
+  [[nodiscard]] Status Startup();
 
-  [[nodiscard]] Result<void> MaybeRunOnStartup();
+  [[nodiscard]] Status MaybeRunOnStartup();
   void MaybeRunOnRun();
 
   constexpr monotonic_clock::time_point kInvalidCachedTime() {
@@ -317,7 +317,7 @@ class EventSchedulerScheduler {
   void AddEventScheduler(EventScheduler *scheduler);
 
   // Runs until there are no more events or Exit is called.
-  [[nodiscard]] Result<void> Run();
+  [[nodiscard]] Status Run();
 
   // Stops running.
   void Exit() { is_running_ = false; }
@@ -325,7 +325,7 @@ class EventSchedulerScheduler {
   // Runs for a duration on the distributed clock.  Time on the distributed
   // clock should be very representative of time on each node, but won't be
   // exactly the same.
-  [[nodiscard]] Result<void> RunFor(distributed_clock::duration duration);
+  [[nodiscard]] Status RunFor(distributed_clock::duration duration);
 
   // Sets the realtime replay rate. A value of 1.0 will cause the scheduler to
   // try to play events in realtime. 0.5 will run at half speed. Use infinity
@@ -359,7 +359,7 @@ class EventSchedulerScheduler {
   // Runs the provided callback now.  Stops everything, runs the callback, then
   // starts it all up again.  This lets us do operations like starting and
   // stopping applications while running.
-  Result<void> TemporarilyStopAndRun(std::function<void()> fn);
+  Status TemporarilyStopAndRun(std::function<void()> fn);
 
   // Adds a callback to be invoked just before an event is handled.
   void set_on_event(
@@ -370,10 +370,10 @@ class EventSchedulerScheduler {
   }
 
  private:
-  [[nodiscard]] Result<void> Reboot();
+  [[nodiscard]] Status Reboot();
 
   void MaybeRunStopped();
-  [[nodiscard]] Result<void> MaybeRunOnStartup();
+  [[nodiscard]] Status MaybeRunOnStartup();
 
   // Returns the next event time and scheduler on which to run it.
   Result<std::tuple<distributed_clock::time_point, EventScheduler *>>
@@ -383,7 +383,7 @@ class EventSchedulerScheduler {
   // return the next time at which it wants to be called, and set is_running_ to
   // false once we should stop.
   template <typename F>
-  [[nodiscard]] Result<void> RunMaybeRealtimeLoop(F loop_body);
+  [[nodiscard]] Status RunMaybeRealtimeLoop(F loop_body);
 
   // True if we are running.
   bool is_running_ = false;

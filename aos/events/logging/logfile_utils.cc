@@ -2002,7 +2002,7 @@ SplitTimestampBootMerger::SplitTimestampBootMerger(
   }
 }
 
-Result<void> SplitTimestampBootMerger::QueueTimestamps(
+Status SplitTimestampBootMerger::QueueTimestamps(
     std::function<void(TimestampedMessage *)> fn,
     const std::vector<size_t> &source_node) {
   if (!timestamp_boot_merger_) {
