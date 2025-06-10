@@ -60,14 +60,6 @@ std::string ErrorType::ToString() const {
                          source_info, code(), message());
 }
 
-template <>
-void CheckExpected<void>(const Status &expected) {
-  if (expected.has_value()) {
-    return;
-  }
-  ABSL_LOG(FATAL) << expected.error().ToString();
-}
-
 int ResultExitCode(const Status &expected) {
   return expected.has_value() ? static_cast<int>(ErrorType::StatusCode::kOk)
                               : expected.error().code();

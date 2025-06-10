@@ -104,7 +104,10 @@ TEST(ErrorDeathTest, CheckExpected) {
   EXPECT_DEATH(CheckExpected(expected), "Hello, World!")
       << "An error message including the error string should have been printed "
          "on death.";
-  EXPECT_DEATH(CheckExpected<void>(MakeError("void expected")), "void expected")
+  EXPECT_DEATH(CheckExpected(MakeError("void expected")), "void expected")
+      << "A void expected should work with CheckExpected().";
+  tl::expected<void, ErrorType> void_expected = MakeError("void expected");
+  EXPECT_DEATH(CheckExpected(void_expected), "void expected")
       << "A void expected should work with CheckExpected().";
 }
 
@@ -147,8 +150,8 @@ TEST_F(ErrorTest, ReturnResultHandlesLifetime) {
 // AOS_RETURN_IF_ERROR exactly one.
 TEST_F(ErrorTest, ReturnResultEvaluatesOnce) {
   int counter = 0;
-  const Result<void> result = [&counter]() -> Result<void> {
-    AOS_RETURN_IF_ERROR([&counter]() -> Result<void> {
+  const Result<> result = [&counter]() -> Result<> {
+    AOS_RETURN_IF_ERROR([&counter]() -> Result<> {
       counter++;
       return {};
     }());
@@ -162,7 +165,7 @@ TEST_F(ErrorTest, ReturnResultEvaluatesOnce) {
 TEST_F(ErrorTest, DeclareVariableNoExtraCopies) {
   Result<DisallowCopy> test_value = {};
   bool executed = false;
-  const Result<void> result = [&test_value, &executed]() -> Result<void> {
+  const Result<> result = [&test_value, &executed]() -> Result<> {
     AOS_DECLARE_OR_RETURN_IF_ERROR(expected, test_value);
     (void)expected;
     executed = true;
@@ -181,7 +184,7 @@ TEST_F(ErrorTest, DeclareVariableNoExtraCopies) {
 // validate if the lifetime of any temporaries in
 // AOS_DECLARE_OR_RETURN_IF_ERROR are handled incorrectly.
 TEST_F(ErrorTest, DeclareVariableLifetime) {
-  const Result<void> result = []() -> Result<void> {
+  const Result<> result = []() -> Result<> {
     AOS_DECLARE_OR_RETURN_IF_ERROR(tmp,
                                    Result<int>(MakeError("Hello, World!")));
     (void)tmp;
@@ -194,7 +197,7 @@ TEST_F(ErrorTest, DeclareVariableLifetime) {
 // AOS_DECLARE_OR_RETURN_IF_ERROR exactly one.
 TEST_F(ErrorTest, DeclareVariableEvaluatesOnce) {
   int counter = 0;
-  const Result<void> result = [&counter]() -> Result<void> {
+  const Result<> result = [&counter]() -> Result<> {
     AOS_DECLARE_OR_RETURN_IF_ERROR(tmp, [&counter]() -> Result<int> {
       counter++;
       return {};
@@ -209,7 +212,7 @@ TEST_F(ErrorTest, DeclareVariableEvaluatesOnce) {
 
 TEST_F(ErrorTest, InitializeVariableNoExtraCopies) {
   bool executed = false;
-  const Result<void> result = [&executed]() -> Result<void> {
+  const Result<> result = [&executed]() -> Result<> {
     DisallowCopy tmp;
     AOS_GET_VALUE_OR_RETURN_ERROR(tmp, Result<DisallowCopy>{});
     executed = true;
@@ -228,7 +231,7 @@ TEST_F(ErrorTest, InitializeVariableNoExtraCopies) {
 // help to validate if the lifetime of any temporaries in
 // AOS_GET_VALUE_OR_RETURN_ERROR are handled incorrectly.
 TEST_F(ErrorTest, InitializeVariableLifetime) {
-  const Result<void> result = []() -> Result<void> {
+  const Result<> result = []() -> Result<> {
     DisallowCopy tmp;
     AOS_GET_VALUE_OR_RETURN_ERROR(
         tmp, Result<DisallowCopy>(MakeError("Hello, World!")));
@@ -241,7 +244,7 @@ TEST_F(ErrorTest, InitializeVariableLifetime) {
 // AOS_GET_VALUE_OR_RETURN_ERROR exactly one.
 TEST_F(ErrorTest, InitializeVariableEvaluatesOnce) {
   int counter = 0;
-  const Result<void> result = [&counter]() -> Result<void> {
+  const Result<> result = [&counter]() -> Result<> {
     int tmp;
     AOS_GET_VALUE_OR_RETURN_ERROR(tmp, [&counter]() -> Result<int> {
       counter++;
@@ -254,4 +257,22 @@ TEST_F(ErrorTest, InitializeVariableEvaluatesOnce) {
   EXPECT_EQ(1, counter) << "The expression passed to AOS_RETURN_IF_ERROR "
                            "should have been evaluated exactly once.";
 }
+
+// Validates that the "value vs. error" functions do what we expect them to do.
+TEST_F(ErrorTest, ResultHasValue) {
+  Result<> result = Ok();
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.has_value());
+  EXPECT_TRUE(IsOk(result));
+  EXPECT_TRUE(HasValue(result));
+  EXPECT_FALSE(HasError(result));
+
+  result = MakeError("error");
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.has_value());
+  EXPECT_FALSE(IsOk(result));
+  EXPECT_FALSE(HasValue(result));
+  EXPECT_TRUE(HasError(result));
+}
+
 }  // namespace aos::testing

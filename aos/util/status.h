@@ -109,7 +109,7 @@ class ErrorType {
 // messier. In lieu of [[nodiscard]] being specified here, it is strongly
 // advised the functions returning Result<>'s---especially those returning
 // Status---be marked [[nodiscard]].
-template <typename T>
+template <typename T = void>
 using Result = tl::expected<T, ErrorType>;
 
 // Status is a convenience type for functions that return Result<void>.
@@ -117,21 +117,28 @@ template <typename T>
 using StatusOr = Result<T>;
 using Status = StatusOr<void>;
 
+using Error = tl::unexpected<ErrorType>;
+
 // Dies fatally if the provided expected does not include the value T, printing
 // out an error message that includes the Error on the way out.
 // Returns the stored value on success.
 template <typename T>
 T CheckExpected(const Result<T> &expected) {
   if (expected.has_value()) {
-    return expected.value();
+    if constexpr (std::is_same_v<T, void>) {
+      return;
+    } else {
+      return expected.value();
+    }
   }
   ABSL_LOG(FATAL) << expected.error().ToString();
 }
 
-template <>
-void CheckExpected<void>(const Status &expected);
-
-using Error = tl::unexpected<ErrorType>;
+// An overload for directly checking an error. The compiler doesn't
+// automatically use the templated version above in all instances.
+inline void CheckExpected(const Error &error) {
+  ABSL_LOG(FATAL) << error.value().ToString();
+}
 
 // Wraps an ErrorType with an unexpected<> so that a Result<> may be
 // constructed from the ErrorType.
@@ -160,6 +167,23 @@ inline Error MakeError(
 
 // Convenience method to explicitly construct an "okay" Status.
 inline Status Ok() { return Status{}; }
+
+// Convenience method to check for an "okay" status.
+inline bool IsOk(const Result<> &result) { return result.has_value(); }
+
+// This is a work around to `std::expected` not having a `has_error` member
+// function. It's often more readable to explicitly check for an error in the
+// code.
+template <typename T>
+bool HasError(const Result<T> &result) {
+  return !result.has_value();
+}
+
+// A complementary function to HasError above.
+template <typename T>
+bool HasValue(const Result<T> &result) {
+  return result.has_value();
+}
 
 int ResultExitCode(const Status &expected);
 
