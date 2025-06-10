@@ -777,6 +777,8 @@ cc_test(
         ":realtime",
         "//aos/testing:googletest",
         "//aos/testing:tmpdir",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
     ],
 )
 

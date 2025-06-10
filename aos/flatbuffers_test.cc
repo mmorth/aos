@@ -1,5 +1,6 @@
 #include "aos/flatbuffers.h"
 
+#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "gtest/gtest.h"
 
@@ -159,7 +160,7 @@ TEST(FlatbufferFixedAllocatorArrayDeathTest, DetectsUseAfterReset) {
   // Now accessing the old message we initially constructed should result in a
   // failure.
   EXPECT_DEATH(
-      { LOG(INFO) << "config1->foo_int() = " << config1->foo_int(); },
+      { ABSL_LOG(INFO) << "config1->foo_int() = " << config1->foo_int(); },
 #if __has_feature(memory_sanitizer)
       "use-of-uninitialized-value"
 #else
