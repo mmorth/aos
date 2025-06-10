@@ -552,6 +552,8 @@ cc_library(
     hdrs = ["foxglove_websocket_lib.h"],
     deps = [
         ":mcap_logger",
+        "//aos:configuration_fbs",
+        "//aos:configuration_schema",
         "//aos/events:event_loop",
         "@com_github_foxglove_ws-protocol",
         "@com_google_absl//absl/log",

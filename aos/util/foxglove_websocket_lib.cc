@@ -24,6 +24,7 @@
 #include <foxglove/websocket/websocket_server.hpp>
 
 #include "aos/configuration.h"
+#include "aos/configuration_schema.h"
 #include "aos/events/context.h"
 #include "aos/flatbuffer_merge.h"
 #include "aos/flatbuffers.h"
@@ -75,6 +76,8 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
     CanonicalChannelNames canonical_channels,
     std::vector<std::regex> client_topic_patterns)
     : event_loop_(event_loop),
+      stripped_configuration_(
+          configuration::StripConfiguration(event_loop_->configuration())),
       serialization_(serialization),
       fetch_pinned_channels_(fetch_pinned_channels),
       canonical_channels_(canonical_channels),
@@ -109,6 +112,31 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
     LOG(FATAL) << "Unreachable";
   };
 
+  // Add some special channels that are not real channels on the system.
+  // The current motivation here is to make a live system more similar to
+  // looking at an MCAP file.
+  if (serialization_ == Serialization::kFlatbuffer) {
+    // Add the AOS configuration under the "configuration" channel. This matches
+    // what the McapLogger does.
+    absl::Span<const uint8_t> configuration_schema = ConfigurationSchema();
+    const std::vector<ChannelId> ids =
+        server_.addChannels({foxglove::ChannelWithoutId{
+            .topic = "configuration",
+            .encoding = "flatbuffer",
+            .schemaName = Configuration::GetFullyQualifiedName(),
+            .schema = absl::Base64Escape(
+                {reinterpret_cast<const char *>(configuration_schema.data()),
+                 configuration_schema.size()}),
+            .schemaEncoding = std::nullopt}});
+    CHECK_EQ(ids.size(), 1u);
+    special_channels_.emplace(ids[0],
+                              SpecialChannelState{
+                                  .message = stripped_configuration_.span(),
+                                  .pending_sends = {},
+                              });
+  }
+
+  // Add all the channels that we want foxglove to be able to look at.
   for (const aos::Channel *channel :
        *event_loop_->configuration()->channels()) {
     const bool is_pinned = (channel->read_method() == ReadMethod::PIN);
@@ -172,6 +200,12 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
   handlers.subscribeHandler = [this](ChannelId channel,
                                      foxglove::ConnHandle client_handle) {
     if (fetchers_.count(channel) == 0) {
+      if (special_channels_.count(channel) == 0) {
+        return;
+      }
+      // Note down that this client wants to receive a message from this special
+      // channel.
+      special_channels_[channel].pending_sends.insert(client_handle);
       return;
     }
     if (!active_channels_.contains(channel)) {
@@ -185,9 +219,22 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
   handlers.unsubscribeHandler = [this](ChannelId channel,
                                        foxglove::ConnHandle client_handle) {
     auto it = active_channels_.find(channel);
-    if (it == active_channels_.end()) {
+    auto special_channel_it = special_channels_.find(channel);
+    if (it == active_channels_.end() &&
+        special_channel_it == special_channels_.end()) {
       // As far as we're aware, no one is listening on this channel. This might
       // be a bogus request from the client. Either way, ignore it.
+      return;
+    }
+
+    if (special_channel_it != special_channels_.end()) {
+      CHECK(it == active_channels_.end())
+          << ": Somehow allowed a channel to be both a real channel and a "
+             "special channel.";
+
+      // Remove the client from the list of clients that need to receive this
+      // message.
+      special_channel_it->second.pending_sends.erase(client_handle);
       return;
     }
 
@@ -311,6 +358,21 @@ FoxgloveWebsocketServer::FoxgloveWebsocketServer(
     // Pair of <send_time, channel id>.
     absl::btree_set<std::pair<aos::monotonic_clock::time_point, ChannelId>>
         fetcher_times;
+
+    // Go through the special channels and service those.
+    for (auto &channel_and_state : special_channels_) {
+      const ChannelId channel = channel_and_state.first;
+      SpecialChannelState &state = channel_and_state.second;
+      const int64_t timestamp =
+          event_loop_->monotonic_now().time_since_epoch().count();
+
+      for (foxglove::ConnHandle connection : state.pending_sends) {
+        server_.sendMessage(connection, channel, timestamp,
+                            state.message.data(), state.message.size());
+      }
+      // Take note that we sent out all the special messages.
+      state.pending_sends.clear();
+    }
 
     // Go through and seed fetcher_times with the first message on each channel.
     for (const auto &[channel, _connections] : active_channels_) {

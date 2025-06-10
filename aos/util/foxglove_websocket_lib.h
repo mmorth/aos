@@ -71,11 +71,31 @@ class FoxgloveWebsocketServer {
     bool fetch_next = true;
   };
 
+  // A special channel is a channel that doesn't exist in the AOS configuration.
+  // It's a purely virtual channel that is useful for conveying metadata to the
+  // client. For example, there is no real channel that contains the AOS
+  // configuration. If a client wants to use the configuration for something,
+  // however, then they need access to it somehow. That's where special channels
+  // come in. Each special channel has a unique ChannelId, separate from the
+  // ChannelId's of the real channels.
+  //
+  // At the moment special channels only contain a single message. We have no
+  // use case for special channels to contain more than a single message.
+  struct SpecialChannelState {
+    // Non-owning reference to the special message.
+    absl::Span<const uint8_t> message;
+    // A list of connections that still need the special message.
+    std::set<foxglove::ConnHandle, std::owner_less<>> pending_sends;
+  };
+
   aos::EventLoop *event_loop_;
+  FlatbufferDetachedBuffer<Configuration> stripped_configuration_;
   const Serialization serialization_;
   const FetchPinnedChannels fetch_pinned_channels_;
   const CanonicalChannelNames canonical_channels_;
   foxglove::Server<foxglove::WebSocketNoTls> server_;
+  // A map of the state for every special channel.
+  std::map<ChannelId, SpecialChannelState> special_channels_;
   // A map of fetchers for every single channel that could be subscribed to.
   std::map<ChannelId, FetcherState> fetchers_;
   // The set of channels that we have clients actively subscribed to. Each
