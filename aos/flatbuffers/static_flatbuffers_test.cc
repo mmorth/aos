@@ -29,6 +29,7 @@
 
 #include "aos/flatbuffers.h"
 #include "aos/flatbuffers/base.h"
+#include "aos/flatbuffers/binary_annotator.h"
 #include "aos/flatbuffers/builder.h"
 #include "aos/flatbuffers/interesting_schemas.h"
 #include "aos/flatbuffers/static_vector.h"
@@ -48,31 +49,6 @@
 namespace aos::fbs::testing {
 
 namespace {
-// Uses the binary schema to annotate a provided flatbuffer.  Returns the
-// annotated flatbuffer.
-std::string AnnotateBinaries(
-    const aos::NonSizePrefixedFlatbuffer<reflection::Schema> &schema,
-    flatbuffers::span<uint8_t> binary_data) {
-  flatbuffers::BinaryAnnotator binary_annotator(
-      schema.span().data(), schema.span().size(), binary_data.data(),
-      binary_data.size(), /*is_size_prefixed=*/false);
-
-  auto annotations = binary_annotator.Annotate();
-  const std::string schema_filename =
-      aos::testing::TestTmpDir() + "/schema.bfbs";
-
-  aos::WriteFlatbufferToFile(schema_filename, schema);
-
-  flatbuffers::AnnotatedBinaryTextGenerator text_generator(
-      flatbuffers::AnnotatedBinaryTextGenerator::Options{}, annotations,
-      binary_data.data(), binary_data.size());
-
-  text_generator.Generate(aos::testing::TestTmpDir() + "/foo.bfbs",
-                          schema_filename);
-
-  return aos::util::ReadFileToStringOrDie(aos::testing::TestTmpDir() +
-                                          "/foo.afb");
-}
 const reflection::Object *GetObjectByName(const reflection::Schema *schema,
                                           std::string_view name) {
   for (const reflection::Object *object : *schema->objects()) {
