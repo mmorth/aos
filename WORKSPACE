@@ -1281,7 +1281,7 @@ http_archive(
     name = "com_github_foxglove_schemas",
     build_file = "//third_party/foxglove/schemas:schemas.BUILD",
     sha256 = "c0d08365eb8fba0af7773b5f0095fb53fb53f020bde46edaa308af5bb939fc15",
-    strip_prefix = "schemas-7a3e077b88142ac46bb4e2616f83dc029b45352e/schemas/flatbuffer",
+    strip_prefix = "schemas-7a3e077b88142ac46bb4e2616f83dc029b45352e",
     url = "https://github.com/foxglove/schemas/archive/7a3e077b88142ac46bb4e2616f83dc029b45352e.tar.gz",
 )
 

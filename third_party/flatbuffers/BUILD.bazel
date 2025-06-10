@@ -12,7 +12,7 @@ license(
     name = "license",
     package_name = "Flatbuffers",
     license_kinds = ["@rules_license//licenses/spdx:Apache-2.0"],
-    license_text = "LICENSE",
+    license_text = "LICENSE.txt",
     package_url = "https://flatbuffers.dev/",
     package_version = "65e49faf7",
 )
