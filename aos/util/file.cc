@@ -156,7 +156,7 @@ void UnlinkRecursive(std::string_view path) {
 
   while ((curr = fts_read(ftsp))) {
 #if AOS_SANITIZE_MEMORY
-    // fts_read doesn't have propper msan interceptors.  Unpoison it ourselves.
+    // fts_read doesn't have proper msan interceptors.  Unpoison it ourselves.
     if (curr) {
       __msan_unpoison(curr, sizeof(*curr));
       __msan_unpoison_string(curr->fts_accpath);

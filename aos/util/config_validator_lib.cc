@@ -155,7 +155,7 @@ void ConfigIsValid(const aos::Configuration *config,
                     << " should not have remote timestamp logger nodes "
                        "populated. This is for the connection to "
                     << connection->name()->string_view() << " on "
-                    << configuration::StrippedChannelToString(channel);
+                    << configuration::StrippedChannelToString(channel) << ".";
                 validation_failed = true;
               }
               break;
@@ -173,7 +173,7 @@ void ConfigIsValid(const aos::Configuration *config,
                     << channel->source_node()->string_view()
                     << "). This is for the connection to "
                     << connection->name()->string_view() << " on "
-                    << configuration::StrippedChannelToString(channel);
+                    << configuration::StrippedChannelToString(channel) << ".";
                 validation_failed = true;
               }
               // TODO(james): This will be overly noisy, as it ends up

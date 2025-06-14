@@ -192,7 +192,7 @@ ConfigRemapper::ConfigRemapper(const Configuration *config,
           // channel from.  It is more efficient to compare nodes than channels.
           LOG(WARNING) << "Failed to find channel "
                        << finder.SplitChannelName(channel, connection)
-                       << " on node " << FlatbufferToJson(node);
+                       << " on node " << FlatbufferToJson(node) << ".";
           remote_nodes.insert(connection->name()->string_view());
         }
       }

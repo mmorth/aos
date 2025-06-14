@@ -1221,14 +1221,13 @@ std::shared_ptr<UnpackedMessageHeader> MessageReader::ReadMessage() {
                  << total_verified_before_
                  << " | corrupted = " << total_corrupted_
                  << " | during = " << total_verified_during_
-                 << " | after = " << total_verified_after_ << std::endl;
+                 << " | after = " << total_verified_after_;
     }
 
     if (span_reader_.IsIncomplete()) {
-      LOG(ERROR) << "Unable to access some messages in " << filename() << " : "
+      LOG(ERROR) << "Unable to access some messages in " << filename() << ": "
                  << span_reader_.TotalRead() << " bytes read, "
-                 << span_reader_.TotalConsumed() << " bytes usable."
-                 << std::endl;
+                 << span_reader_.TotalConsumed() << " bytes usable.";
     }
     return nullptr;
   }
@@ -1245,7 +1244,7 @@ std::shared_ptr<UnpackedMessageHeader> MessageReader::ReadMessage() {
 
   } else if (!msg.Verify()) {
     LOG(ERROR) << "Corrupted message at offset " << total_verified_before_
-               << " from " << filename() << std::endl;
+               << " from " << filename();
 
     total_corrupted_ += msg_data.size();
 
@@ -1262,7 +1261,7 @@ std::shared_ptr<UnpackedMessageHeader> MessageReader::ReadMessage() {
 
           if (span_reader_.IsIncomplete()) {
             LOG(ERROR) << "Unable to access some messages in " << filename()
-                       << " : " << span_reader_.TotalRead() << " bytes read, "
+                       << ": " << span_reader_.TotalRead() << " bytes read, "
                        << span_reader_.TotalConsumed() << " bytes usable."
                        << std::endl;
           }

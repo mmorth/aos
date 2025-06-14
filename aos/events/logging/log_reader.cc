@@ -974,9 +974,10 @@ Result<void> LogReader::RegisterDuringStartup(EventLoop *event_loop,
                 << " " << state->DebugString();
           } else if (monotonic_remote_now.boot !=
                      timestamped_message.monotonic_remote_time.boot) {
-            LOG(WARNING) << "Missmatched boots, " << monotonic_remote_now.boot
+            LOG(WARNING) << "Mismatched boots, " << monotonic_remote_now.boot
                          << " vs "
-                         << timestamped_message.monotonic_remote_time.boot;
+                         << timestamped_message.monotonic_remote_time.boot
+                         << ".";
           } else if (timestamped_message.monotonic_remote_time >
                      monotonic_remote_now) {
             LOG(WARNING)

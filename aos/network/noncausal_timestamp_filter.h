@@ -97,7 +97,7 @@ class NoncausalTimestampFilter {
     const BootFilter *boot_filter_ = nullptr;
     // The index for t0 into the timestamps list.
     size_t index_ = 0;
-    // The two bounding timestamps.  They will be equal if time last querried
+    // The two bounding timestamps.  They will be equal if time last queried
     // time was outside the extents of our timestamps.  These are mostly used to
     // make sure the underlying filter didn't change between when the pointer is
     // created, and re-looked-up.

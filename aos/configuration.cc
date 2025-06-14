@@ -1020,7 +1020,7 @@ void ValidateUnmergedConfiguration(const Flatbuffer<Configuration> &config) {
         ABSL_LOG(FATAL) << "Channel names must start with '/'";
       }
       if (c->name()->string_view().find("//") != std::string_view::npos) {
-        ABSL_LOG(FATAL) << ": Invalid channel name " << c->name()->string_view()
+        ABSL_LOG(FATAL) << "Invalid channel name " << c->name()->string_view()
                         << ", can't use //.";
       }
       for (const char data : c->name()->string_view()) {

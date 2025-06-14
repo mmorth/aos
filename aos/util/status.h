@@ -211,29 +211,29 @@ inline std::ostream &operator<<(std::ostream &stream, const Status &result) {
   return stream;
 }
 
-// Takes an expression that evalutes to a Result<> and returns the error if
+// Takes an expression that evaluates to a Result<> and returns the error if
 // there is one.
-#define AOS_RETURN_IF_ERROR(result)                                           \
-  {                                                                           \
-    /* Ensure that we only evalute result once. (reference lifetime extension \
-     * should prevent lifetime issues here). */                               \
-    const auto &tmp = (result);                                               \
-    if (!tmp.has_value()) {                                                   \
-      return ::aos::MakeError(tmp.error());                                   \
-    }                                                                         \
+#define AOS_RETURN_IF_ERROR(result)                                            \
+  {                                                                            \
+    /* Ensure that we only evaluate result once. (reference lifetime extension \
+     * should prevent lifetime issues here). */                                \
+    const auto &tmp = (result);                                                \
+    if (!tmp.has_value()) {                                                    \
+      return ::aos::MakeError(tmp.error());                                    \
+    }                                                                          \
   }
 
-// If expression evalutes to a type of Result<T> then a variable named variable
+// If expression evaluates to a type of Result<T> then a variable named variable
 // of type const T& will be declared that is initialized to refer to the result
 // of evaluating the expression. If expression evaluates to an error state,
 // returns the error prior to initializing the variable.
-#define AOS_DECLARE_OR_RETURN_IF_ERROR(variable, expression)                \
-  /* Ensure that we only evalute result once. (reference lifetime extension \
-   * should prevent lifetime issues here). */                               \
-  const auto &variable##__tmp = (expression);                               \
-  if (!variable##__tmp.has_value()) {                                       \
-    return ::aos::MakeError(variable##__tmp.error());                       \
-  }                                                                         \
+#define AOS_DECLARE_OR_RETURN_IF_ERROR(variable, expression)                 \
+  /* Ensure that we only evaluate result once. (reference lifetime extension \
+   * should prevent lifetime issues here). */                                \
+  const auto &variable##__tmp = (expression);                                \
+  if (!variable##__tmp.has_value()) {                                        \
+    return ::aos::MakeError(variable##__tmp.error());                        \
+  }                                                                          \
   const auto &variable = variable##__tmp.value();
 
 namespace internal {
@@ -269,7 +269,7 @@ T ForwardExpression(T &&rvalue) {
 // this would result in a copy or a move of the provided lvalue, and most
 // use-cases will take an rvalue of some sort.
 #define AOS_GET_VALUE_OR_RETURN_ERROR(variable, expression)                  \
-  /* Ensure that we only evalute result once. Note that we use decltype()    \
+  /* Ensure that we only evaluate result once. Note that we use decltype()   \
    * rather than auto to preserve any reference type returned by             \
    * ForwardExpression() (not currently relevant, but may become relevant if \
    * we support lvalues in (expression). */                                  \

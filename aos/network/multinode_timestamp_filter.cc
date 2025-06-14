@@ -1295,8 +1295,8 @@ NewtonSolver::SolveConstrainedNewton(
     SOLVE_VLOG(my_solve_number_, 1) << " y(" << iteration << ") is now "
                                     << y.transpose().format(kHeavyFormat);
 
-    // Very import, use the last set of derivatives we picked for our new y for
-    // the next iteration.
+    // Very important, use the last set of derivatives we picked for our new y
+    // for the next iteration.
     derivatives = std::move(next_derivatives);
     ++iteration;
 
