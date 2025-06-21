@@ -1,0 +1,25 @@
+{
+    "applications": [
+      {
+        "name": "ping"
+      },
+      {
+        "name": "pong"
+      }
+    ],
+    "channels": [
+      {
+        "name": "/test",
+        "type": "aos.examples.Ping",
+        "frequency": 4500
+      },
+      {
+        "name": "/test",
+        "type": "aos.examples.Pong",
+        "frequency": 4500
+      }
+    ],
+    "imports": [
+      "../aos/events/aos.json"
+    ]
+  }
