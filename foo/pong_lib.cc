@@ -1,3 +1,6 @@
+#include <chrono>
+#include <thread>
+
 #include "foo/pong_lib.h"
 
 #include "aos/events/event_loop.h"
@@ -9,6 +12,10 @@ Pong::Pong(EventLoop *event_loop)
     : event_loop_(event_loop),
       sender_(event_loop_->MakeSender<examples::Pong>("/test")) {
   event_loop_->MakeWatcher("/test", [this](const examples::Ping &ping) {
+
+    // Mimic getting behind with messages
+    // std::this_thread::sleep_for(std::chrono::microseconds(10));
+
     last_value_ = ping.value();
     last_send_time_ = ping.send_time();
     aos::Sender<examples::Pong>::Builder builder = sender_.MakeBuilder();

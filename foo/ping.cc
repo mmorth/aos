@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   aos::InitGoogle(&argc, &argv);
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(FLAGS_config);
+      aos::configuration::ReadConfig(absl::GetFlag(FLAGS_config));
 
   // Create a shared-memory based EventLoop using the provided config.
   // This is currently the only EventLoop implementation for using on realtime

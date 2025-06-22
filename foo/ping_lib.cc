@@ -10,7 +10,7 @@ ABSL_FLAG(int32_t, sleep_ms, 10, "Time to sleep between pings");
 namespace aos {
 
 namespace chrono = std::chrono;
-
+ 
 Ping::Ping(EventLoop *event_loop)
     : event_loop_(event_loop),
       sender_(event_loop_->MakeSender<examples::Ping>("/test")) {
@@ -22,7 +22,7 @@ Ping::Ping(EventLoop *event_loop)
 
   event_loop_->OnRun([this]() {
     timer_handle_->Schedule(event_loop_->monotonic_now(),
-                            chrono::milliseconds(FLAGS_sleep_ms));
+                            chrono::milliseconds(absl::GetFlag(FLAGS_sleep_ms)));
   });
 }
 

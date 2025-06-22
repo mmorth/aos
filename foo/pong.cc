@@ -1,5 +1,5 @@
 #include "aos/configuration.h"
-#include "foo/Ping_lib.h"
+#include "foo/pong_lib.h"
 #include "aos/events/shm_event_loop.h"
 #include "aos/init.h"
 #include "absl/flags/flag.h"
@@ -8,14 +8,14 @@
 // application will use. Generally defaulted to the actual path that will be
 // used on the real system (most applications default to a name of
 // aos_config.json, by convention).
-ABSL_FLAG(std::string, config, "foo/Pongpong_config.json", "Path to the config.");
+ABSL_FLAG(std::string, config, "foo/pingpong_config.json", "Path to the config.");
 
 int main(int argc, char **argv) {
   // Various common initialization steps, including command line flag parsing.
   aos::InitGoogle(&argc, &argv);
 
   aos::FlatbufferDetachedBuffer<aos::Configuration> config =
-      aos::configuration::ReadConfig(FLAGS_config);
+      aos::configuration::ReadConfig(absl::GetFlag(FLAGS_config));
 
   // Create a shared-memory based EventLoop using the provided config.
   // This is currently the only EventLoop implementation for using on realtime
