@@ -22,6 +22,7 @@ Pong::Pong(EventLoop *event_loop)
         ->AddPhasedLoop(
             [this](int) {
               while (fetcher_.FetchNext()) {
+                // std::this_thread::sleep_for(std::chrono::seconds(10));
                 HandlePing(*fetcher_.get());
               }
             },
@@ -29,7 +30,7 @@ Pong::Pong(EventLoop *event_loop)
         ->set_name("pong");
   } else {
     event_loop_->MakeWatcher(
-        "/test", [this](const examples::Ping &ping) { HandlePing(ping); });
+        "/test", [this](const examples::Ping &ping) { std::this_thread::sleep_for(std::chrono::seconds(10)); HandlePing(ping); });
   }
 
   event_loop_->SetRuntimeRealtimePriority(5);
