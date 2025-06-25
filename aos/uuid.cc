@@ -82,16 +82,43 @@ std::mt19937 FullySeededRandomGenerator() {
   // Number, rounded up, of random values required.
   constexpr size_t kSeedsRequired =
       ((kInternalEntropy - 1) / sizeof(std::random_device::result_type)) + 1;
-  std::random_device random_device;
+
+  std::array<std::random_device::result_type, kSeedsRequired> random_data;
+#if defined __linux__
+  // /dev/random is *much* faster than std::random_device on modern Linux.
+  //
+  // My AMD Ryzen 7 PRO 7840U w/ Radeon 780M Graphics takes ~3 hours with
+  // random_device to generate 1<<18 seeds, and 6 seconds with /dev/urandom.
+  //
+  // This is async safe.  open, read, and close are async safe.
+  {
+    int fp = open("/dev/urandom", O_RDONLY);
+    ABSL_PCHECK(fp != -1);
+    size_t to_read = sizeof(std::random_device::result_type) * kSeedsRequired;
+    char *data = reinterpret_cast<char *>(&random_data[0]);
+    while (to_read != 0) {
+      size_t was_read = read(fp, data, to_read);
+      ABSL_PCHECK(was_read > 0) << "Read " << was_read;
+      to_read -= was_read;
+      data += was_read;
+    }
+    ABSL_PCHECK(close(fp) == 0);
+  }
+#else
+  // Portable fallback for Windows.
+  {
+    std::random_device random_device;
 // Older LLVM libstdc++'s just return 0 for the random device entropy.
 #if !defined(__clang__) || (__clang_major__ > 13)
-  ABSL_CHECK_EQ(sizeof(std::random_device::result_type) * 8,
-                random_device.entropy())
-      << ": Does your random_device actually support generating entropy?";
+    ABSL_CHECK_EQ(sizeof(std::random_device::result_type) * 8,
+                  random_device.entropy())
+        << ": Does your random_device actually support generating entropy?";
 #endif
-  std::array<std::random_device::result_type, kSeedsRequired> random_data;
-  std::generate(std::begin(random_data), std::end(random_data),
-                std::ref(random_device));
+    std::generate(std::begin(random_data), std::end(random_data),
+                  std::ref(random_device));
+  }
+#endif
+
   std::seed_seq seeds(std::begin(random_data), std::end(random_data));
   return std::mt19937(seeds);
 }

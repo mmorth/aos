@@ -811,6 +811,7 @@ cc_test(
     deps = [
         ":uuid",
         "//aos/testing:googletest",
+        "@com_google_absl//absl/container:btree",
     ],
 )
 
