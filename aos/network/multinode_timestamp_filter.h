@@ -15,7 +15,7 @@
 #include "aos/events/logging/boot_timestamp.h"
 #include "aos/events/logging/logfile_utils.h"
 #include "aos/events/simulated_event_loop.h"
-#include "aos/network/timestamp_filter.h"
+#include "aos/network/noncausal_timestamp_filter.h"
 #include "aos/time/time.h"
 
 namespace aos::message_bridge {

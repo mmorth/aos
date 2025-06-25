@@ -13,7 +13,7 @@
 #include "aos/configuration.h"
 #include "aos/events/logging/boot_timestamp.h"
 #include "aos/events/simulated_event_loop.h"
-#include "aos/network/timestamp_filter.h"
+#include "aos/network/noncausal_timestamp_filter.h"
 #include "aos/time/time.h"
 
 ABSL_FLAG(bool, timestamps_to_csv, false,
