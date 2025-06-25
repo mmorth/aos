@@ -22,6 +22,6 @@ int main(int argc, char *argv[]) {
     output_path = std::string(argv[argc - 1]);
     --argc;
   }
-  std::vector<std::string> log_paths(argv, argv + argc);
+  std::vector<std::string> log_paths(argv + 1, argv + argc);
   return aos::util::ConvertLogToMcap(log_paths, output_path);
 }
