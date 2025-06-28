@@ -1,12 +1,13 @@
 TODO:
 Create a separate constructor for Fetcher that accepts a callback function and creates a behind the scenes Watcher
+
+Backlog:
 Create an "await" function that will stop the Watcher from triggering callbacks and fall back to normal Fetcher behavior
-
-Investigations:
-Look into where segfault occurs when the buffer becomes too full
-Find method to prevent Watcher callback from triggering when new "await" function is called
-
-Future Features:
+    This will be done through the WatcherState returned when Watcher created (Design Decision: Whether to make this just not call the callback or to remove the Watcher entirely or make this a one-time configuration at creation)
+    Find method to prevent Watcher callback from triggering when new "await" function is called
+        event_loop is what tracks all the watchers -> returns a WatcherState that holds the ability to call callback function
 Create ability to configure behavior when falling behind in message processing (drop oldest, clear, log)
     Determine whether there's a mechanism to determine how full the buffer is
-Create functionality to destroy the Fetcer/Watcher
+    shm_event_loop is what we would need to pass the additional config param to on how to handle getting too far behind
+    Configure the SimpleShmFetcher to control handling when it gets too far behind
+Create functionality to destroy the Fetcer/Watcher and remove all watched information
