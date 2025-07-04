@@ -13,24 +13,30 @@ ABSL_FLAG(uint32_t, fetch_period_ms, 10, "Frequency at which to fetch.");
 
 namespace aos {
 
+// Call MakeWatcher and save the WatcherState in the Fetcher class
+
 Pong::Pong(EventLoop *event_loop)
     : event_loop_(event_loop),
       fetcher_(event_loop_->MakeFetcher<examples::Ping>("/test")),
       sender_(event_loop_->MakeSender<examples::PongStatic>("/test")) {
-  if (absl::GetFlag(FLAGS_fetch)) {
-    event_loop_
-        ->AddPhasedLoop(
-            [this](int) {
-              while (fetcher_.FetchNext()) {
-                HandlePing(*fetcher_.get());
-              }
-            },
-            std::chrono::milliseconds(absl::GetFlag(FLAGS_fetch_period_ms)))
-        ->set_name("pong");
-  } else {
-    event_loop_->MakeWatcher(
-        "/test", [this](const examples::Ping &ping) { HandlePing(ping); });
-  }
+  fetcher_.ConfigureFallBehindStrategy(FallBehindStrategy::CLEAR);
+  fetcher_.RegisterCallback( event_loop_->MakeWatcher("/test", [this](const examples::Ping &ping) { HandlePing(ping); }) );
+
+  
+  // if (absl::GetFlag(FLAGS_fetch)) {
+  //   event_loop_
+  //       ->AddPhasedLoop(
+  //           [this](int) {
+  //             while (fetcher_.FetchNext()) {
+  //               HandlePing(*fetcher_.get());
+  //             }
+  //           },
+  //           std::chrono::milliseconds(absl::GetFlag(FLAGS_fetch_period_ms)))
+  //       ->set_name("pong");
+  // } else {
+  //   event_loop_->MakeWatcher(
+  //       "/test", [this](const examples::Ping &ping) { HandlePing(ping); });
+  // }
 
   event_loop_->SetRuntimeRealtimePriority(5);
 }

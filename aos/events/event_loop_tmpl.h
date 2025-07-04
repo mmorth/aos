@@ -36,7 +36,7 @@ typename Sender<T>::Builder Sender<T>::MakeBuilder() {
 }
 
 template <typename Watch>
-void EventLoop::MakeWatcher(const std::string_view channel_name, Watch &&w) {
+WatcherState *EventLoop::MakeWatcher(const std::string_view channel_name, Watch &&w) {
   using MessageType = typename event_loop_internal::watch_message_type_trait<
       decltype(&Watch::operator())>::message_type;
   // Note: This could be done with SFINAE, but then you don't get as good an
@@ -55,7 +55,7 @@ void EventLoop::MakeWatcher(const std::string_view channel_name, Watch &&w) {
       << MessageType::GetFullyQualifiedName()
       << "\" } not found in config for application " << name() << ".";
 
-  MakeRawWatcher(channel,
+  return MakeRawWatcher(channel,
                  [this, w](const Context &context, const void *message) {
                    context_ = context;
                    w(*flatbuffers::GetRoot<MessageType>(
@@ -141,7 +141,7 @@ inline bool RawFetcher::FetchNextIf(std::function<bool(const Context &)> fn) {
 }
 
 inline bool RawFetcher::Fetch() {
-  const auto result = DoFetch();
+  const auto result = DoFetch(strategy_);
   if (result.first) {
     if (timing_.fetcher) {
       timing_.fetcher->mutate_count(timing_.fetcher->count() + 1);

@@ -40,6 +40,13 @@ namespace aos {
 class EventLoop;
 class WatcherState;
 
+// Note: the name of this could become more generic to support other configurations beyond just message configs
+enum class FallBehindStrategy {
+  ERROR_MSG,
+  READ_LATEST,
+  CLEAR
+};
+
 // Raw version of fetcher. Contains a local variable that the fetcher will
 // update.  This is used for reflection and as an interface to implement typed
 // fetchers.
@@ -49,6 +56,12 @@ class RawFetcher {
   RawFetcher(const RawFetcher &) = delete;
   RawFetcher &operator=(const RawFetcher &) = delete;
   virtual ~RawFetcher();
+
+  // Configures message handling strategy to follow when handling gets sufficiently behind
+  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) { strategy_ = strategy; }
+
+  // Registers a callback 
+  void RegisterCallback(WatcherState *watcher) { watcher_state_ = watcher; }
 
   // Fetches the next message in the queue without blocking. Returns true if
   // there was a new message and we got it.
@@ -81,13 +94,16 @@ class RawFetcher {
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchNext() = 0;
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchNextIf(
       std::function<bool(const Context &)> fn) = 0;
-  virtual std::pair<bool, monotonic_clock::time_point> DoFetch() = 0;
+  virtual std::pair<bool, monotonic_clock::time_point> DoFetch(FallBehindStrategy strategy) = 0;
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchIf(
       std::function<bool(const Context &)> fn) = 0;
 
   EventLoop *const event_loop_;
   const Channel *const channel_;
   const std::string ftrace_prefix_;
+
+  WatcherState *watcher_state_;
+  FallBehindStrategy strategy_;
 
   internal::RawFetcherTiming timing_;
   Ftrace ftrace_;
@@ -296,6 +312,15 @@ template <typename T>
 class Fetcher {
  public:
   Fetcher() {}
+
+  // Registers a Watcher callback
+  void RegisterCallback(WatcherState *watcher) {
+    fetcher_->RegisterCallback(watcher);
+  }
+
+  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) {
+    fetcher_->ConfigureFallBehindStrategy(strategy);
+  }
 
   // Fetches the next message. Returns true if it fetched a new message.  This
   // method will only return messages sent after the Fetcher was created.
@@ -850,7 +875,7 @@ class EventLoop {
   // differently in newer versions of C++, but those have their own corner
   // cases.
   template <typename Watch>
-  void MakeWatcher(const std::string_view channel_name, Watch &&w);
+  WatcherState *MakeWatcher(const std::string_view channel_name, Watch &&w);
 
   // Like MakeWatcher, but doesn't have access to the message data. This may be
   // implemented to use less resources than an equivalent MakeWatcher.
@@ -913,7 +938,7 @@ class EventLoop {
       const Channel *channel) = 0;
 
   // Watches channel (name, type) for new messages.
-  virtual void MakeRawWatcher(
+  virtual WatcherState *MakeRawWatcher(
       const Channel *channel,
       std::function<void(const Context &context, const void *message)>
           watcher) = 0;
@@ -1012,6 +1037,7 @@ class EventLoop {
   void NewFetcher(RawFetcher *fetcher);
   void DeleteFetcher(RawFetcher *fetcher);
   WatcherState *NewWatcher(std::unique_ptr<WatcherState> watcher);
+  void DeleteWatcher(WatcherState *watcher);
 
   // Tracks that we have a (single) watcher on the given channel.
   void TakeWatcher(const Channel *channel);

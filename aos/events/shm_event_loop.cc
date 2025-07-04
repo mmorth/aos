@@ -165,12 +165,12 @@ class SimpleShmFetcher {
 
   bool FetchNextIf(std::function<bool(const Context &)> fn) {
     const ipc_lib::LocklessQueueReader::Result read_result =
-        DoFetch(actual_queue_index_, std::move(fn));
+        DoFetch(actual_queue_index_, std::move(fn), FallBehindStrategy::CLEAR); // TODO: This should be changed to actually pass a value in
 
     return read_result == ipc_lib::LocklessQueueReader::Result::GOOD;
   }
 
-  bool FetchIf(std::function<bool(const Context &)> fn) {
+  bool FetchIf(std::function<bool(const Context &)> fn, FallBehindStrategy strategy) {
     const ipc_lib::QueueIndex queue_index = reader_.LatestIndex();
     // actual_queue_index_ is only meaningful if it was set by Fetch or
     // FetchNext.  This happens when valid_data_ has been set.  So, only
@@ -185,7 +185,7 @@ class SimpleShmFetcher {
     }
 
     const ipc_lib::LocklessQueueReader::Result read_result =
-        DoFetch(queue_index, std::move(fn));
+        DoFetch(queue_index, std::move(fn), strategy);
 
     ABSL_CHECK(read_result != ipc_lib::LocklessQueueReader::Result::NOTHING_NEW)
         << ": Queue index went backwards.  This should never happen.  "
@@ -194,7 +194,7 @@ class SimpleShmFetcher {
     return read_result == ipc_lib::LocklessQueueReader::Result::GOOD;
   }
 
-  bool Fetch() { return FetchIf(should_fetch_); }
+  bool Fetch(FallBehindStrategy strategy) { return FetchIf(should_fetch_, strategy); }
 
   Context context() const { return context_; }
 
@@ -237,7 +237,8 @@ class SimpleShmFetcher {
  private:
   ipc_lib::LocklessQueueReader::Result DoFetch(
       ipc_lib::QueueIndex queue_index,
-      std::function<bool(const Context &context)> fn) {
+      std::function<bool(const Context &context)> fn,
+      FallBehindStrategy strategy) {
     // TODO(austin): Get behind and make sure it dies.
     char *copy_buffer = nullptr;
     if (copy_data()) {
@@ -298,6 +299,10 @@ class SimpleShmFetcher {
     // This isn't worth recovering from since this means we went to sleep
     // for a long time in the middle of this function.
     if (read_result == ipc_lib::LocklessQueueReader::Result::TOO_OLD) {
+      if (strategy == FallBehindStrategy::CLEAR) {
+        ABSL_LOG(WARNING) << "FALL BEHIND STRATEGY SET TO CLEAR!!!!!";
+      }
+
       event_loop_->SendTimingReport();
       ABSL_LOG(FATAL) << "The next message is no longer available.  "
                       << configuration::CleanedChannelToString(channel_);
@@ -382,9 +387,9 @@ class ShmFetcher : public RawFetcher {
     return std::make_pair(false, monotonic_clock::min_time);
   }
 
-  std::pair<bool, monotonic_clock::time_point> DoFetch() override {
+  std::pair<bool, monotonic_clock::time_point> DoFetch(FallBehindStrategy strategy) override {
     shm_event_loop()->CheckCurrentThread();
-    if (simple_shm_fetcher_.Fetch()) {
+    if (simple_shm_fetcher_.Fetch(strategy)) {
       context_ = simple_shm_fetcher_.context();
       return std::make_pair(true, monotonic_clock::now());
     }
@@ -394,7 +399,7 @@ class ShmFetcher : public RawFetcher {
   std::pair<bool, monotonic_clock::time_point> DoFetchIf(
       std::function<bool(const Context &context)> fn) override {
     shm_event_loop()->CheckCurrentThread();
-    if (simple_shm_fetcher_.FetchIf(std::move(fn))) {
+    if (simple_shm_fetcher_.FetchIf(std::move(fn), FallBehindStrategy::CLEAR)) { // TODO: Replace this with a passed in parameter instead
       context_ = simple_shm_fetcher_.context();
       return std::make_pair(true, monotonic_clock::now());
     }
@@ -815,13 +820,13 @@ class ShmPhasedLoopHandler final : public PhasedLoopHandler {
   return ::std::unique_ptr<RawSender>(new ShmSender(shm_base_, this, channel));
 }
 
-void ShmEventLoop::MakeRawWatcher(
+WatcherState *ShmEventLoop::MakeRawWatcher(
     const Channel *channel,
     std::function<void(const Context &context, const void *message)> watcher) {
   CheckCurrentThread();
   TakeWatcher(channel);
 
-  NewWatcher(::std::unique_ptr<WatcherState>(
+  return NewWatcher(::std::unique_ptr<WatcherState>(
       new ShmWatcherState(shm_base_, this, channel, std::move(watcher), true)));
 }
 

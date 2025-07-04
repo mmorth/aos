@@ -264,6 +264,17 @@ WatcherState *EventLoop::NewWatcher(std::unique_ptr<WatcherState> watcher) {
   return watchers_.back().get();
 }
 
+void EventLoop::DeleteWatcher(WatcherState *watcher) {
+  ABSL_CHECK(!is_running());
+  auto w = std::find_if(watchers_.begin(), watchers_.end(),
+                      [watcher](const std::unique_ptr<WatcherState>& ptr) {
+                          return ptr.get() == watcher;
+                      });
+  ABSL_CHECK(w != watchers_.end()) << ": Watcher not in watchers list";
+  watchers_.erase(w);
+  UpdateTimingReport();
+}
+
 void EventLoop::TakeWatcher(const Channel *channel) {
   ABSL_CHECK(!is_running()) << ": Cannot add new objects while running.";
   ChannelIndex(channel);

@@ -1,3 +1,6 @@
+# AutomationOperatingSystem
+This is a local repo to the AOS repo
+
 # Build Status
 [![Build status](https://badge.buildkite.com/fcbebde155a2437db2ddd5caf1c6d3d49e8302c621289e337e.svg?branch=main)](https://buildkite.com/realtimeroboticsgroup/ci)
 
