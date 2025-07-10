@@ -551,8 +551,7 @@ class SimulatedFetcher : public RawFetcher {
     return std::make_pair(true, event_loop()->monotonic_now());
   }
 
-  std::pair<bool, monotonic_clock::time_point> DoFetch(FallBehindStrategy strategy) override {
-    (void) strategy; // TODO: Ensure this gets used
+  std::pair<bool, monotonic_clock::time_point> DoFetch() override {
     return DoFetchIf(std::function<bool(const Context &context)>());
   }
 

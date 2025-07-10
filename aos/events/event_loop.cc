@@ -112,9 +112,11 @@ void RawSender::RecordSendResult(const Error error, size_t message_size) {
 }
 
 RawFetcher::RawFetcher(EventLoop *event_loop, const Channel *channel)
-    : event_loop_(event_loop),
+    : strategy_(FallBehindStrategy::CRASH),
+      event_loop_(event_loop),
       channel_(channel),
       ftrace_prefix_(configuration::StrippedChannelToString(channel)),
+      watcher_state_(nullptr),
       timing_(event_loop_->ChannelIndex(channel)) {
   context_.monotonic_event_time = monotonic_clock::min_time;
   context_.monotonic_remote_time = monotonic_clock::min_time;

@@ -101,13 +101,15 @@ namespace shm_event_loop_internal {
 
 class SimpleShmFetcher {
  public:
+  // TODO: Update this to initialize strategy_ default after testing: strategy_(FallBehindStrategy::CLEAR)
   explicit SimpleShmFetcher(std::string_view shm_base, ShmEventLoop *event_loop,
                             const Channel *channel)
       : event_loop_(event_loop),
         channel_(channel),
         lockless_queue_memory_(shm_base, absl::GetFlag(FLAGS_permissions),
                                event_loop->configuration(), channel),
-        reader_(lockless_queue_memory_.queue()) {
+        reader_(lockless_queue_memory_.queue()),
+        strategy_(FallBehindStrategy::CRASH) {
     context_.data = nullptr;
     // Point the queue index at the next index to read starting now.  This
     // makes it such that FetchNext will read the next message sent after
@@ -165,12 +167,12 @@ class SimpleShmFetcher {
 
   bool FetchNextIf(std::function<bool(const Context &)> fn) {
     const ipc_lib::LocklessQueueReader::Result read_result =
-        DoFetch(actual_queue_index_, std::move(fn), FallBehindStrategy::CLEAR); // TODO: This should be changed to actually pass a value in
+        DoFetch(actual_queue_index_, std::move(fn));
 
     return read_result == ipc_lib::LocklessQueueReader::Result::GOOD;
   }
 
-  bool FetchIf(std::function<bool(const Context &)> fn, FallBehindStrategy strategy) {
+  bool FetchIf(std::function<bool(const Context &)> fn) {
     const ipc_lib::QueueIndex queue_index = reader_.LatestIndex();
     // actual_queue_index_ is only meaningful if it was set by Fetch or
     // FetchNext.  This happens when valid_data_ has been set.  So, only
@@ -185,7 +187,7 @@ class SimpleShmFetcher {
     }
 
     const ipc_lib::LocklessQueueReader::Result read_result =
-        DoFetch(queue_index, std::move(fn), strategy);
+        DoFetch(queue_index, std::move(fn));
 
     ABSL_CHECK(read_result != ipc_lib::LocklessQueueReader::Result::NOTHING_NEW)
         << ": Queue index went backwards.  This should never happen.  "
@@ -194,7 +196,7 @@ class SimpleShmFetcher {
     return read_result == ipc_lib::LocklessQueueReader::Result::GOOD;
   }
 
-  bool Fetch(FallBehindStrategy strategy) { return FetchIf(should_fetch_, strategy); }
+  bool Fetch() { return FetchIf(should_fetch_); }
 
   Context context() const { return context_; }
 
@@ -234,16 +236,22 @@ class SimpleShmFetcher {
     reader_.set_use_writable_memory(use_writable_memory);
   }
 
+  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) {
+    std::cout << "Strategy set!\n";
+    strategy_ = strategy;
+  }
+
  private:
   ipc_lib::LocklessQueueReader::Result DoFetch(
       ipc_lib::QueueIndex queue_index,
-      std::function<bool(const Context &context)> fn,
-      FallBehindStrategy strategy) {
+      std::function<bool(const Context &context)> fn) {
     // TODO(austin): Get behind and make sure it dies.
     char *copy_buffer = nullptr;
     if (copy_data()) {
       copy_buffer = data_storage_start();
     }
+
+    // TODO: Check and configure this to be able to read latest and read first
     ipc_lib::LocklessQueueReader::Result read_result = reader_.Read(
         queue_index.index(), &context_.monotonic_event_time,
         &context_.realtime_event_time, &context_.monotonic_remote_time,
@@ -299,8 +307,38 @@ class SimpleShmFetcher {
     // This isn't worth recovering from since this means we went to sleep
     // for a long time in the middle of this function.
     if (read_result == ipc_lib::LocklessQueueReader::Result::TOO_OLD) {
-      if (strategy == FallBehindStrategy::CLEAR) {
-        ABSL_LOG(WARNING) << "FALL BEHIND STRATEGY SET TO CLEAR!!!!!";
+      std::cout << "strategy_ = " << static_cast<int>(strategy_) << "\n";
+      std::cout << "FallBehindStrategy::CRASH = " << static_cast<int>(FallBehindStrategy::CRASH) << "\n";
+
+      switch (strategy_)
+      {
+        case FallBehindStrategy::CRASH:
+          ABSL_LOG(FATAL) << "FALL BEHIND STRATEGY SET TO CRASH!!!!!";
+          break;
+        case FallBehindStrategy::USE_LATEST:
+          ABSL_LOG(FATAL) << "FALL BEHIND STRATEGY SET TO USE_LATEST!!!!!";
+
+          // TODO: Change the queue index to read the newest message
+          // read_result = reader_.Read(
+          //   queue_index.index(), &context_.monotonic_event_time,
+          //   &context_.realtime_event_time, &context_.monotonic_remote_time,
+          //   &context_.monotonic_remote_transmit_time,
+          //   &context_.realtime_remote_time, &context_.remote_queue_index,
+          //   &context_.source_boot_uuid, &context_.size, copy_buffer, std::move(fn));
+
+          break;
+        case FallBehindStrategy::USE_OLDEST:
+          ABSL_LOG(FATAL) << "FALL BEHIND STRATEGY SET TO USE_OLDEST!!!!!";
+
+          // TODO: Change the queue index to read the oldest message
+          // read_result = reader_.Read(
+          //   queue_index.index(), &context_.monotonic_event_time,
+          //   &context_.realtime_event_time, &context_.monotonic_remote_time,
+          //   &context_.monotonic_remote_transmit_time,
+          //   &context_.realtime_remote_time, &context_.remote_queue_index,
+          //   &context_.source_boot_uuid, &context_.size, copy_buffer, std::move(fn));
+
+          break;
       }
 
       event_loop_->SendTimingReport();
@@ -348,6 +386,8 @@ class SimpleShmFetcher {
 
   Context context_;
 
+  FallBehindStrategy strategy_;
+
   // Pre-allocated should_fetch function so we don't allocate.
   const std::function<bool(const Context &)> should_fetch_;
 };
@@ -366,6 +406,12 @@ class ShmFetcher : public RawFetcher {
         << ": Can't destroy Fetcher while running";
     shm_event_loop()->CheckCurrentThread();
     context_.data = nullptr;
+  }
+
+  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) override { 
+    RawFetcher::ConfigureFallBehindStrategy(strategy);
+
+    simple_shm_fetcher_.ConfigureFallBehindStrategy(strategy);
   }
 
   std::pair<bool, monotonic_clock::time_point> DoFetchNext() override {
@@ -387,9 +433,9 @@ class ShmFetcher : public RawFetcher {
     return std::make_pair(false, monotonic_clock::min_time);
   }
 
-  std::pair<bool, monotonic_clock::time_point> DoFetch(FallBehindStrategy strategy) override {
+  std::pair<bool, monotonic_clock::time_point> DoFetch() override {
     shm_event_loop()->CheckCurrentThread();
-    if (simple_shm_fetcher_.Fetch(strategy)) {
+    if (simple_shm_fetcher_.Fetch()) {
       context_ = simple_shm_fetcher_.context();
       return std::make_pair(true, monotonic_clock::now());
     }
@@ -399,7 +445,7 @@ class ShmFetcher : public RawFetcher {
   std::pair<bool, monotonic_clock::time_point> DoFetchIf(
       std::function<bool(const Context &context)> fn) override {
     shm_event_loop()->CheckCurrentThread();
-    if (simple_shm_fetcher_.FetchIf(std::move(fn), FallBehindStrategy::CLEAR)) { // TODO: Replace this with a passed in parameter instead
+    if (simple_shm_fetcher_.FetchIf(std::move(fn))) {
       context_ = simple_shm_fetcher_.context();
       return std::make_pair(true, monotonic_clock::now());
     }
@@ -588,6 +634,10 @@ class ShmWatcherState : public WatcherState {
   ~ShmWatcherState() override {
     event_loop_->CheckCurrentThread();
     event_loop_->RemoveEvent(&event_);
+  }
+
+  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) override {
+    simple_shm_fetcher_.ConfigureFallBehindStrategy(strategy);
   }
 
   void Construct() override {

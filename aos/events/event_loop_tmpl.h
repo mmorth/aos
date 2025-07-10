@@ -141,7 +141,7 @@ inline bool RawFetcher::FetchNextIf(std::function<bool(const Context &)> fn) {
 }
 
 inline bool RawFetcher::Fetch() {
-  const auto result = DoFetch(strategy_);
+  const auto result = DoFetch();
   if (result.first) {
     if (timing_.fetcher) {
       timing_.fetcher->mutate_count(timing_.fetcher->count() + 1);
@@ -375,9 +375,13 @@ class WatcherState {
       std::function<void(const Context &context, const void *message)> fn)
       : channel_index_(event_loop->ChannelIndex(channel)),
         ftrace_prefix_(configuration::StrippedChannelToString(channel)),
-        fn_(std::move(fn)) {}
+        fn_(std::move(fn)),
+        strategy_(FallBehindStrategy::CRASH) {}
 
   virtual ~WatcherState() {}
+
+  // Configures the message fall behind strategy for this Watcher
+  virtual void ConfigureFallBehindStrategy(FallBehindStrategy strategy) { strategy_ = strategy; }
 
   // Calls the callback, measuring time with get_time, with the provided
   // context.
@@ -435,8 +439,23 @@ class WatcherState {
   internal::TimingStatistic handler_time_;
   timing::Watcher *watcher_ = nullptr;
 
+  FallBehindStrategy strategy_;
+
   Ftrace ftrace_;
 };
+
+inline void RawFetcher::ConfigureFallBehindStrategy(FallBehindStrategy strategy) {
+  if (watcher_state_)
+    watcher_state_->ConfigureFallBehindStrategy(strategy);
+  
+  strategy_ = strategy; 
+}
+
+inline void RawFetcher::RegisterCallback(WatcherState *watcher) { 
+  watcher_state_ = watcher; 
+
+  watcher_state_->ConfigureFallBehindStrategy(strategy_);
+}
 
 template <typename T>
 RawSender::Error Sender<T>::Send(

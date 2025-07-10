@@ -40,13 +40,6 @@ namespace aos {
 class EventLoop;
 class WatcherState;
 
-// Note: the name of this could become more generic to support other configurations beyond just message configs
-enum class FallBehindStrategy {
-  ERROR_MSG,
-  READ_LATEST,
-  CLEAR
-};
-
 // Raw version of fetcher. Contains a local variable that the fetcher will
 // update.  This is used for reflection and as an interface to implement typed
 // fetchers.
@@ -58,10 +51,10 @@ class RawFetcher {
   virtual ~RawFetcher();
 
   // Configures message handling strategy to follow when handling gets sufficiently behind
-  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) { strategy_ = strategy; }
+  virtual void ConfigureFallBehindStrategy(FallBehindStrategy strategy);
 
   // Registers a callback 
-  void RegisterCallback(WatcherState *watcher) { watcher_state_ = watcher; }
+  void RegisterCallback(WatcherState *watcher);
 
   // Fetches the next message in the queue without blocking. Returns true if
   // there was a new message and we got it.
@@ -87,6 +80,7 @@ class RawFetcher {
   const EventLoop *event_loop() const { return event_loop_; }
 
   Context context_;
+  FallBehindStrategy strategy_;
 
  private:
   friend class EventLoop;
@@ -94,7 +88,7 @@ class RawFetcher {
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchNext() = 0;
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchNextIf(
       std::function<bool(const Context &)> fn) = 0;
-  virtual std::pair<bool, monotonic_clock::time_point> DoFetch(FallBehindStrategy strategy) = 0;
+  virtual std::pair<bool, monotonic_clock::time_point> DoFetch() = 0;
   virtual std::pair<bool, monotonic_clock::time_point> DoFetchIf(
       std::function<bool(const Context &)> fn) = 0;
 
@@ -103,7 +97,6 @@ class RawFetcher {
   const std::string ftrace_prefix_;
 
   WatcherState *watcher_state_;
-  FallBehindStrategy strategy_;
 
   internal::RawFetcherTiming timing_;
   Ftrace ftrace_;
@@ -312,13 +305,25 @@ template <typename T>
 class Fetcher {
  public:
   Fetcher() {}
+  virtual ~Fetcher() = default;
+
+  // Move constructor and assignment
+  Fetcher(Fetcher&&) = default;
+  Fetcher& operator=(Fetcher&&) = default;
+
+  // Delete copy operations
+  Fetcher(const Fetcher&) = delete;
+  Fetcher& operator=(const Fetcher&) = delete;
 
   // Registers a Watcher callback
   void RegisterCallback(WatcherState *watcher) {
+    // // TODO: Do a check to ensure the lambda function parameter type is the same as T
+    // WatcherState *watcher = MakeWatcher(channel_name_,  w);
+
     fetcher_->RegisterCallback(watcher);
   }
 
-  void ConfigureFallBehindStrategy(FallBehindStrategy strategy) {
+  virtual void ConfigureFallBehindStrategy(FallBehindStrategy strategy) {
     fetcher_->ConfigureFallBehindStrategy(strategy);
   }
 

@@ -297,6 +297,13 @@ bool operator<(const FlatbufferDetachedBuffer<Channel> &lhs,
 bool operator==(const FlatbufferDetachedBuffer<Channel> &lhs,
                 const FlatbufferDetachedBuffer<Channel> &rhs);
 
+// Enum to support different message handling strategies when falling behind
+enum class FallBehindStrategy {
+  CRASH=0,
+  USE_LATEST=1,
+  USE_OLDEST=2
+};
+
 }  // namespace aos
 
 #endif  // AOS_CONFIGURATION_H_

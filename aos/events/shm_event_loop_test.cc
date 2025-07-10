@@ -324,6 +324,101 @@ TEST_P(ShmEventLoopTest, SuccessfulExitTest) {
   EXPECT_TRUE(factory()->Run().has_value());
 }
 
+// Tests that registering a callback on a Fetcher creates a Watcher that listens to the specified messages
+TEST_P(ShmEventLoopTest, FetcherRegisterCallbackCreatesWatcher) {
+  auto loop = factory()->MakePrimary("primary");
+
+  loop->SetRuntimeRealtimePriority(1);
+
+  auto sender = loop->MakeSender<TestMessage>("/test");
+
+  bool did_onrun = false;
+  bool did_timer = false;
+  bool did_watcher = false;
+
+  auto timer = loop->AddTimer([this, &did_timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_timer = true;
+    factory()->Exit();
+  });
+
+  auto fetcher = loop->MakeFetcher<TestMessage>("/test");
+
+  // FUT
+  fetcher.RegisterCallback(
+    loop->MakeWatcher("/test", [&did_watcher](const TestMessage &) {
+      EXPECT_TRUE(IsRealtime());
+      did_watcher = true;
+    })
+  );
+
+  loop->OnRun([&loop, &did_onrun, &sender, timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_onrun = true;
+    timer->Schedule(loop->monotonic_now() + chrono::milliseconds(100));
+
+    aos::Sender<TestMessage>::Builder msg = sender.MakeBuilder();
+    TestMessage::Builder builder = msg.MakeBuilder<TestMessage>();
+    builder.add_value(200);
+    msg.CheckOk(msg.Send(builder.Finish()));
+  });
+
+  factory()->Run();
+
+  EXPECT_TRUE(did_onrun);
+  EXPECT_TRUE(did_timer);
+  EXPECT_TRUE(did_watcher);
+  ASSERT_TRUE(fetcher.Fetch());
+}
+
+// Tests that attempting to register a callback on a Fetcher after the event loop has started triggers a crash
+TEST_P(ShmEventLoopTest, FetcherRegisterCallbackAfterEventLoopStartedCrashes) {
+  auto loop = factory()->MakePrimary("primary");
+
+  loop->SetRuntimeRealtimePriority(1);
+
+  auto sender = loop->MakeSender<TestMessage>("/test");
+
+  bool did_onrun = false;
+  bool did_timer = false;
+  bool did_watcher = false;
+
+  auto timer = loop->AddTimer([this, &did_timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_timer = true;
+    factory()->Exit();
+  });
+
+  auto fetcher = loop->MakeFetcher<TestMessage>("/test");
+
+  loop->OnRun([&loop, &did_onrun, &sender, timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_onrun = true;
+    timer->Schedule(loop->monotonic_now() + chrono::milliseconds(100));
+
+    aos::Sender<TestMessage>::Builder msg = sender.MakeBuilder();
+    TestMessage::Builder builder = msg.MakeBuilder<TestMessage>();
+    builder.add_value(200);
+    msg.CheckOk(msg.Send(builder.Finish()));
+  });
+
+  factory()->Run();
+
+  // TODO: Ensure that this crashes
+  // FUT
+  fetcher.RegisterCallback(
+    loop->MakeWatcher("/test", [&did_watcher](const TestMessage &) {
+      EXPECT_TRUE(IsRealtime());
+      did_watcher = true;
+    })
+  );
+
+  EXPECT_TRUE(did_onrun);
+  EXPECT_TRUE(did_timer);
+  EXPECT_TRUE(did_watcher);
+  ASSERT_TRUE(fetcher.Fetch());
+}
+
 // Test GetWatcherSharedMemory in a few basic scenarios.
 TEST_P(ShmEventLoopDeathTest, GetWatcherSharedMemory) {
   auto generic_loop1 = factory()->MakePrimary("primary");
@@ -535,6 +630,112 @@ TEST_P(ShmEventLoopDeathTest, NextMessageNotAvailableNoRun) {
 // when Run is never called without timing reports.
 TEST_P(ShmEventLoopDeathTest, NextMessageNotAvailableNoRunNoTimingReports) {
   TestNextMessageNotAvailableNoRun(true);
+}
+
+// Tests that the latest message is read when FallBehindStrategy set to READ_OLDEST
+TEST_P(ShmEventLoopDeathTest, NextMessageNotAvailableFallBehindStrategyREADOLDESTReturnsOldestMessage) {
+  auto loop = factory()->MakePrimary("primary");
+
+  loop->SetRuntimeRealtimePriority(1);
+
+  auto sender = loop->MakeSender<TestMessage>("/test");
+
+  bool did_onrun = false;
+  bool did_timer = false;
+  bool did_watcher = false;
+
+  auto timer = loop->AddTimer([this, &did_timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_timer = true;
+    factory()->Exit();
+  });
+
+  auto fetcher = loop->MakeFetcher<TestMessage>("/test");
+
+  // FUT
+  fetcher.ConfigureFallBehindStrategy(FallBehindStrategy::USE_OLDEST);
+
+  // FUT
+  fetcher.RegisterCallback(
+    loop->MakeWatcher("/test", [&did_watcher](const TestMessage &) {
+      EXPECT_TRUE(IsRealtime());
+      did_watcher = true;
+    })
+  );
+
+  loop->OnRun([&loop, &did_onrun, &sender, timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_onrun = true;
+    timer->Schedule(loop->monotonic_now() + chrono::milliseconds(100));
+
+    // TODO: Ensure oldest message is read
+    ASSERT_TRUE(false);
+
+    aos::Sender<TestMessage>::Builder msg = sender.MakeBuilder();
+    TestMessage::Builder builder = msg.MakeBuilder<TestMessage>();
+    builder.add_value(200);
+    msg.CheckOk(msg.Send(builder.Finish()));
+  });
+
+  factory()->Run();
+
+  EXPECT_TRUE(did_onrun);
+  EXPECT_TRUE(did_timer);
+  EXPECT_TRUE(did_watcher);
+  ASSERT_TRUE(fetcher.Fetch());
+}
+
+// Tests that the latest message is read when FallBehindStrategy set to READ_LATEST
+TEST_P(ShmEventLoopDeathTest, NextMessageNotAvailableFallBehindStrategyREADLATESTReturnsNewestMessage) {
+  auto loop = factory()->MakePrimary("primary");
+
+  loop->SetRuntimeRealtimePriority(1);
+
+  auto sender = loop->MakeSender<TestMessage>("/test");
+
+  bool did_onrun = false;
+  bool did_timer = false;
+  bool did_watcher = false;
+
+  auto timer = loop->AddTimer([this, &did_timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_timer = true;
+    factory()->Exit();
+  });
+
+  auto fetcher = loop->MakeFetcher<TestMessage>("/test");
+
+  // FUT
+  fetcher.ConfigureFallBehindStrategy(FallBehindStrategy::USE_LATEST);
+
+  // FUT
+  fetcher.RegisterCallback(
+    loop->MakeWatcher("/test", [&did_watcher](const TestMessage &) {
+      EXPECT_TRUE(IsRealtime());
+      did_watcher = true;
+    })
+  );
+
+  loop->OnRun([&loop, &did_onrun, &sender, timer]() {
+    EXPECT_TRUE(IsRealtime());
+    did_onrun = true;
+    timer->Schedule(loop->monotonic_now() + chrono::milliseconds(100));
+
+    // TODO: Ensure newest message is read
+    ASSERT_TRUE(false);
+
+    aos::Sender<TestMessage>::Builder msg = sender.MakeBuilder();
+    TestMessage::Builder builder = msg.MakeBuilder<TestMessage>();
+    builder.add_value(200);
+    msg.CheckOk(msg.Send(builder.Finish()));
+  });
+
+  factory()->Run();
+
+  EXPECT_TRUE(did_onrun);
+  EXPECT_TRUE(did_timer);
+  EXPECT_TRUE(did_watcher);
+  ASSERT_TRUE(fetcher.Fetch());
 }
 
 // Test that an ExitHandle outliving its EventLoop is caught.

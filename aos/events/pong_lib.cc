@@ -19,8 +19,8 @@ Pong::Pong(EventLoop *event_loop)
     : event_loop_(event_loop),
       fetcher_(event_loop_->MakeFetcher<examples::Ping>("/test")),
       sender_(event_loop_->MakeSender<examples::PongStatic>("/test")) {
-  fetcher_.ConfigureFallBehindStrategy(FallBehindStrategy::CLEAR);
-  fetcher_.RegisterCallback( event_loop_->MakeWatcher("/test", [this](const examples::Ping &ping) { HandlePing(ping); }) );
+  fetcher_.ConfigureFallBehindStrategy(FallBehindStrategy::CRASH);
+  fetcher_.RegisterCallback( event_loop_->MakeWatcher("/test", [this](const examples::Ping &ping) { std::this_thread::sleep_for(std::chrono::seconds(10)); HandlePing(ping); }) );
 
   
   // if (absl::GetFlag(FLAGS_fetch)) {
