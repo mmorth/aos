@@ -113,6 +113,7 @@ void RawSender::RecordSendResult(const Error error, size_t message_size) {
 
 RawFetcher::RawFetcher(EventLoop *event_loop, const Channel *channel)
     : strategy_(FallBehindStrategy::CRASH),
+      num_skipped_msgs_(0),
       event_loop_(event_loop),
       channel_(channel),
       ftrace_prefix_(configuration::StrippedChannelToString(channel)),
@@ -132,6 +133,12 @@ RawFetcher::RawFetcher(EventLoop *event_loop, const Channel *channel)
 }
 
 RawFetcher::~RawFetcher() { event_loop_->DeleteFetcher(this); }
+
+void RawFetcher::set_timing_report(timing::Fetcher *fetcher) {
+  if (fetcher) {
+    fetcher->mutate_num_skipped_msgs(num_skipped_msgs_);
+  }
+}
 
 TimerHandler::TimerHandler(EventLoop *event_loop, std::function<void()> fn)
     : event_loop_(event_loop), fn_(std::move(fn)) {}
@@ -425,6 +432,7 @@ void EventLoop::UpdateTimingReport() {
         timing::CreateStatistic(fbb);
     flatbuffers::Offset<timing::Statistic> handler_time_offset =
         timing::CreateStatistic(fbb);
+    
 
     timing::Watcher::Builder watcher_builder(fbb);
 
@@ -432,6 +440,7 @@ void EventLoop::UpdateTimingReport() {
     watcher_builder.add_wakeup_latency(wakeup_latency_offset);
     watcher_builder.add_handler_time(handler_time_offset);
     watcher_builder.add_count(0);
+    watcher_builder.add_num_skipped_msgs(0);
     watcher_offsets.emplace_back(watcher_builder.Finish());
   }
 
@@ -465,6 +474,7 @@ void EventLoop::UpdateTimingReport() {
     fetcher_builder.add_channel_index(fetcher->timing_.channel_index);
     fetcher_builder.add_count(0);
     fetcher_builder.add_latency(latency_offset);
+    fetcher_builder.add_num_skipped_msgs(0);
     fetcher_offsets.emplace_back(fetcher_builder.Finish());
   }
 
@@ -559,6 +569,10 @@ void EventLoop::UpdateTimingReport() {
 
   for (size_t i = 0; i < fetchers_.size(); ++i) {
     fetchers_[i]->timing_.set_timing_report(
+        timing_report_.mutable_message()->mutable_fetchers()->GetMutableObject(
+            i));
+    // The number of skipped messages are stored in Fetcher, need to have this in order to properly set that within the timing report
+    fetchers_[i]->set_timing_report(
         timing_report_.mutable_message()->mutable_fetchers()->GetMutableObject(
             i));
   }
@@ -703,6 +717,7 @@ void WatcherState::set_timing_report(timing::Watcher *watcher) {
   } else {
     wakeup_latency_.set_statistic(watcher->mutable_wakeup_latency());
     handler_time_.set_statistic(watcher->mutable_handler_time());
+    watcher->mutate_num_skipped_msgs(num_skipped_msgs_);
   }
 }
 

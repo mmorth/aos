@@ -56,6 +56,9 @@ class RawFetcher {
   // Registers a callback 
   void RegisterCallback(WatcherState *watcher);
 
+  // Unregisteres a callback
+  void UnregisterCallback(EventLoop *event_loop);
+
   // Fetches the next message in the queue without blocking. Returns true if
   // there was a new message and we got it.
   bool FetchNext();
@@ -75,12 +78,18 @@ class RawFetcher {
   // Returns the context for the current message.
   const Context &context() const { return context_; }
 
+  // Returns whether this RawFetcher has a watcher configured
+  bool HasWatcher() const { return watcher_state_ != nullptr; }
+
+  void set_timing_report(timing::Fetcher *fetcher);
+
  protected:
   EventLoop *event_loop() { return event_loop_; }
   const EventLoop *event_loop() const { return event_loop_; }
 
   Context context_;
   FallBehindStrategy strategy_;
+  uint32_t num_skipped_msgs_;
 
  private:
   friend class EventLoop;
@@ -315,12 +324,12 @@ class Fetcher {
   Fetcher(const Fetcher&) = delete;
   Fetcher& operator=(const Fetcher&) = delete;
 
-  // Registers a Watcher callback
-  void RegisterCallback(WatcherState *watcher) {
-    // // TODO: Do a check to ensure the lambda function parameter type is the same as T
-    // WatcherState *watcher = MakeWatcher(channel_name_,  w);
+  template <typename Watch>
+  void RegisterCallback(EventLoop *event_loop, const std::string_view channel_name, Watch &&w);
 
-    fetcher_->RegisterCallback(watcher);
+  // Unregister a Watcher callback
+  void UnregisterCallback(EventLoop *event_loop) {
+    fetcher_->UnregisterCallback(event_loop);
   }
 
   virtual void ConfigureFallBehindStrategy(FallBehindStrategy strategy) {

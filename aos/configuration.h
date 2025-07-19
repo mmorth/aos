@@ -300,8 +300,7 @@ bool operator==(const FlatbufferDetachedBuffer<Channel> &lhs,
 // Enum to support different message handling strategies when falling behind
 enum class FallBehindStrategy {
   CRASH=0,
-  USE_LATEST=1,
-  USE_OLDEST=2
+  USE_LATEST=1
 };
 
 }  // namespace aos

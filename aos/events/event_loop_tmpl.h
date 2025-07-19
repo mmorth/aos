@@ -79,6 +79,17 @@ void EventLoop::MakeNoArgWatcher(const std::string_view channel_name,
   });
 }
 
+template <typename T>
+template <typename Watch>
+void Fetcher<T>::RegisterCallback(EventLoop *event_loop, const std::string_view channel_name, Watch &&w) {
+  ABSL_CHECK(!fetcher_->HasWatcher()) << ": A callback has only been registered. Only one callback can be registered at one time";
+
+  WatcherState *watcher = event_loop->MakeWatcher(channel_name, std::forward<Watch>(w));
+
+  fetcher_->RegisterCallback(watcher);
+}
+
+
 inline bool RawFetcher::FetchNext() {
   const auto result = DoFetchNext();
   if (result.first) {
@@ -376,7 +387,8 @@ class WatcherState {
       : channel_index_(event_loop->ChannelIndex(channel)),
         ftrace_prefix_(configuration::StrippedChannelToString(channel)),
         fn_(std::move(fn)),
-        strategy_(FallBehindStrategy::CRASH) {}
+        strategy_(FallBehindStrategy::CRASH),
+        num_skipped_msgs_(0) {}
 
   virtual ~WatcherState() {}
 
@@ -440,6 +452,7 @@ class WatcherState {
   timing::Watcher *watcher_ = nullptr;
 
   FallBehindStrategy strategy_;
+  uint32_t num_skipped_msgs_;
 
   Ftrace ftrace_;
 };
@@ -451,10 +464,18 @@ inline void RawFetcher::ConfigureFallBehindStrategy(FallBehindStrategy strategy)
   strategy_ = strategy; 
 }
 
-inline void RawFetcher::RegisterCallback(WatcherState *watcher) { 
+inline void RawFetcher::RegisterCallback(WatcherState *watcher) {
+  ABSL_CHECK(!watcher_state_) << ": A callback has only been registered. Only one callback can be registered at one time";
   watcher_state_ = watcher; 
 
   watcher_state_->ConfigureFallBehindStrategy(strategy_);
+}
+
+inline void RawFetcher::UnregisterCallback(EventLoop *event_loop) { 
+  ABSL_CHECK(watcher_state_) << ": No callback registered to unregister";
+
+  event_loop->DeleteWatcher(watcher_state_);
+  watcher_state_ = nullptr;
 }
 
 template <typename T>
